@@ -1,0 +1,626 @@
+import { useEffect, useRef, useState } from 'react'
+import { NavLink, Navigate, Outlet, useNavigate } from 'react-router-dom'
+import PropTypes from 'prop-types'
+
+import Avatar from '../components/ui/Avatar'
+import Button from '../components/ui/Button'
+import Footer from '../components/ui/Footer'
+import { useAuth } from '../hooks/useAuth'
+import { useNotifications } from '../hooks/useNotifications'
+
+function Layout() {
+  const navigate = useNavigate()
+  const { isAuthenticated, isBootstrapping, logout, user } = useAuth()
+  const { unreadCount, realtimeStatus, isRealtimeEnabled } = useNotifications()
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const mobileMenuTriggerRef = useRef(null)
+  const mobileMenuCloseRef = useRef(null)
+  const realtimeIndicator = getRealtimeIndicator(realtimeStatus, isRealtimeEnabled)
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = isMobileMenuOpen ? 'hidden' : ''
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+    }
+  }, [isMobileMenuOpen])
+
+  useEffect(() => {
+    if (!isMobileMenuOpen) {
+      return undefined
+    }
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setIsMobileMenuOpen(false)
+      }
+    }
+
+    globalThis.addEventListener('keydown', handleKeyDown)
+    const focusTimerId = globalThis.setTimeout(() => {
+      mobileMenuCloseRef.current?.focus()
+    }, 30)
+
+    return () => {
+      globalThis.removeEventListener('keydown', handleKeyDown)
+      globalThis.clearTimeout(focusTimerId)
+    }
+  }, [isMobileMenuOpen])
+
+  useEffect(() => {
+    if (!isMobileMenuOpen) {
+      mobileMenuTriggerRef.current?.focus()
+    }
+  }, [isMobileMenuOpen])
+
+  if (isBootstrapping) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[linear-gradient(180deg,_#fffaff_0%,_#f7f1ff_100%)] px-4">
+        <div className="w-full max-w-sm rounded-[28px] border border-white/70 bg-white/88 p-5 shadow-[0_20px_48px_rgba(124,58,237,0.08)]">
+          <div className="mx-auto h-14 w-14 animate-pulse rounded-full bg-violet-100" />
+          <div className="mx-auto mt-4 h-4 w-40 animate-pulse rounded-full bg-violet-100" />
+          <div className="mx-auto mt-3 h-3 w-56 animate-pulse rounded-full bg-violet-50" />
+        </div>
+      </div>
+    )
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />
+  }
+
+  const handleCreateStory = () => {
+    navigate('/feed', {
+      state: {
+        openStoryComposer: true,
+      },
+    })
+  }
+
+  const navigationItems = [
+    { to: '/feed', label: 'Feed' },
+    { to: '/profile', label: 'Profil' },
+    { to: '/marketplace', label: 'Animaux & Produits' },
+    { to: '/communities', label: 'Communautes' },
+    { to: '/messages', label: 'Messages' },
+    { to: '/reservations', label: 'Reservations' },
+    { to: '/orders/history', label: 'Historique' },
+    {
+      to: '/notifications',
+      label: unreadCount > 0 ? `Notifications (${unreadCount})` : 'Notifications',
+    },
+  ]
+
+  if (user?.isAdmin) {
+    navigationItems.push(
+      { to: '/admin/moderation', label: 'Admin contenus' },
+      { to: '/admin/orders', label: 'Admin commandes' },
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.18),_transparent_24%),radial-gradient(circle_at_top_right,_rgba(244,208,255,0.24),_transparent_20%),linear-gradient(180deg,_#fffaff_0%,_#f7f1ff_100%)]">
+      <div className="w-full px-3 pb-28 pt-3 sm:px-4 sm:pt-4 lg:px-6 lg:pb-8">
+        <header className="sticky top-3 z-30 rounded-[26px] border border-white/55 bg-[linear-gradient(135deg,_rgba(255,255,255,0.52),_rgba(248,240,255,0.36),_rgba(255,255,255,0.24))] p-3 shadow-[0_20px_48px_rgba(124,58,237,0.1)] backdrop-blur-2xl sm:p-4">
+          <div className="flex items-center gap-3">
+            <NavLink to="/feed" className="flex min-w-0 items-center gap-3">
+              <img src="/yazoo-logo.svg" alt="Logo YaZoo" className="h-12 w-12 shrink-0 object-contain" />
+              <div className="min-w-0">
+                <p className="yz-wordmark truncate text-base">YaZoo</p>
+                <p className="truncate text-xs text-stone-700">Reseau social animalier</p>
+              </div>
+            </NavLink>
+
+            <div className="hidden min-w-[220px] flex-1 md:block">
+              <label className="block">
+                <span className="sr-only">Rechercher</span>
+                <input
+                  type="text"
+                  placeholder="Rechercher..."
+                  className="w-full rounded-full border border-white/55 bg-white/70 px-4 py-2 text-sm text-stone-700 outline-none transition focus:border-violet-300 focus:bg-white"
+                />
+              </label>
+            </div>
+
+            <div className="ml-auto flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setIsMobileMenuOpen(true)}
+                ref={mobileMenuTriggerRef}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/55 bg-white/35 text-stone-700 transition hover:border-violet-200 hover:bg-white/55 hover:text-violet-900 lg:hidden"
+                aria-label="Ouvrir le menu"
+                aria-expanded={isMobileMenuOpen}
+                aria-controls="yazoo-mobile-navigation"
+              >
+                <AppIcon name="menu" className="h-5 w-5" />
+              </button>
+
+              <DesktopActionLink to="/feed" icon="home" label="Feed" className="hidden lg:inline-flex" />
+              <DesktopActionLink to="/messages" icon="chat" label="Messages" className="hidden lg:inline-flex" />
+              <DesktopActionLink to="/notifications" icon="bell" label="Notifications" className="hidden lg:inline-flex" />
+
+              <div className="hidden lg:block">
+                <InlinePill tone={realtimeIndicator.tone}>{realtimeIndicator.label}</InlinePill>
+              </div>
+
+              <div className="hidden lg:flex items-center gap-2 rounded-full border border-white/50 bg-white/35 px-3 py-1.5">
+                <Avatar
+                  name={user?.name ?? 'Utilisateur'}
+                  src={user?.avatar || ''}
+                  className="h-7 w-7 border border-white/80 text-[10px]"
+                />
+                <span className="max-w-[120px] truncate text-xs font-medium text-stone-700">
+                  {user?.name ?? 'Utilisateur'}
+                </span>
+              </div>
+
+              <Button type="button" variant="secondary" onClick={logout} className="hidden lg:inline-flex">
+                Se deconnecter
+              </Button>
+            </div>
+          </div>
+
+          <div className="mt-3 md:hidden">
+            <label className="block">
+              <span className="sr-only">Rechercher</span>
+              <input
+                type="text"
+                placeholder="Rechercher..."
+                className="w-full rounded-full border border-white/55 bg-white/70 px-4 py-2 text-sm text-stone-700 outline-none transition focus:border-violet-300 focus:bg-white"
+              />
+            </label>
+          </div>
+
+          <div className="mt-3 flex flex-wrap items-center gap-2 sm:hidden">
+            <InlinePill tone={realtimeIndicator.tone}>{realtimeIndicator.shortLabel}</InlinePill>
+            <InlinePill>
+              {unreadCount} notification{unreadCount > 1 ? 's' : ''}
+            </InlinePill>
+            {user?.isAdmin ? <InlinePill tone="violet">Admin</InlinePill> : null}
+          </div>
+        </header>
+
+        <DesktopNav items={navigationItems} />
+
+        <main className="mt-4 rounded-[30px] border border-white/55 bg-[linear-gradient(180deg,_rgba(255,255,255,0.6),_rgba(248,241,255,0.42),_rgba(255,255,255,0.28))] p-4 shadow-[0_24px_70px_rgba(124,58,237,0.1)] backdrop-blur-2xl sm:rounded-[34px] sm:p-5">
+          <Outlet />
+          <Footer mode="app" className="mt-8" />
+        </main>
+      </div>
+
+      <MobileMenuDrawer
+        isOpen={isMobileMenuOpen}
+        items={navigationItems}
+        user={user}
+        onClose={() => setIsMobileMenuOpen(false)}
+        onLogout={logout}
+        onCreateStory={handleCreateStory}
+        closeButtonRef={mobileMenuCloseRef}
+      />
+
+      <MobileBottomDock user={user} onCreateStory={handleCreateStory} />
+    </div>
+  )
+}
+
+function DesktopNav({ items }) {
+  return (
+    <nav className="mt-3 hidden overflow-x-auto rounded-[24px] border border-white/55 bg-[linear-gradient(135deg,_rgba(255,255,255,0.44),_rgba(248,240,255,0.32),_rgba(255,255,255,0.2))] p-2 shadow-[0_16px_36px_rgba(124,58,237,0.08)] backdrop-blur-2xl lg:block">
+      <div className="mx-auto flex min-w-max items-center justify-center gap-2">
+        {items.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            className={({ isActive }) =>
+              `whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition ${
+                isActive
+                  ? 'bg-[linear-gradient(135deg,#7c3aed,#a855f7,#c4b5fd)] text-white shadow-[0_12px_24px_rgba(124,58,237,0.18)]'
+                  : 'text-stone-600 hover:bg-white/55 hover:text-violet-900'
+              }`
+            }
+          >
+            {item.label}
+          </NavLink>
+        ))}
+      </div>
+    </nav>
+  )
+}
+
+function MobileMenuDrawer({
+  isOpen,
+  items,
+  user,
+  onClose,
+  onLogout,
+  onCreateStory,
+  closeButtonRef,
+}) {
+  return (
+    <div className={`fixed inset-0 z-40 lg:hidden ${isOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}>
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Fermer le menu"
+        className={`absolute inset-0 bg-violet-950/30 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`}
+      />
+
+      <aside
+        id="yazoo-mobile-navigation"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Menu principal"
+        className={`absolute right-0 top-0 h-full w-[86%] max-w-sm overflow-y-auto border-l border-white/55 bg-[linear-gradient(180deg,_rgba(255,255,255,0.9),_rgba(246,239,255,0.95))] p-4 shadow-[0_30px_70px_rgba(124,58,237,0.2)] backdrop-blur-2xl transition-transform duration-300 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+      >
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <Avatar
+              name={user?.name ?? 'Utilisateur'}
+              src={user?.avatar || ''}
+              className="border border-white/80"
+            />
+            <div>
+              <p className="text-sm font-semibold text-stone-950">{user?.name ?? 'Utilisateur'}</p>
+              <p className="text-xs text-stone-500">
+                Navigation rapide <span className="yz-wordmark text-xs font-semibold">YaZoo</span>
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            ref={closeButtonRef}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/55 bg-white/55 text-stone-700 transition hover:border-violet-200 hover:text-violet-900"
+            aria-label="Fermer"
+          >
+            <AppIcon name="close" className="h-5 w-5" />
+          </button>
+        </div>
+
+        <nav className="mt-5 space-y-2">
+          {items.map((item) => (
+            <NavLink
+              key={`mobile-menu-${item.to}`}
+              to={item.to}
+              onClick={onClose}
+              className={({ isActive }) =>
+                `block rounded-2xl px-4 py-3 text-sm font-medium transition ${
+                  isActive
+                    ? 'bg-[linear-gradient(135deg,#7c3aed,#a855f7,#c4b5fd)] text-white shadow-[0_12px_24px_rgba(124,58,237,0.18)]'
+                    : 'text-stone-700 hover:bg-violet-50 hover:text-violet-900'
+                }`
+              }
+            >
+              {item.label}
+            </NavLink>
+          ))}
+        </nav>
+
+        <div className="mt-6 grid gap-3">
+          <Button
+            type="button"
+            onClick={() => {
+              onClose()
+              onCreateStory()
+            }}
+          >
+            Creer ma story
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => {
+              onClose()
+              onLogout()
+            }}
+          >
+            Se deconnecter
+          </Button>
+        </div>
+      </aside>
+    </div>
+  )
+}
+
+function DesktopActionLink({ to, icon, label, className = '' }) {
+  return (
+    <NavLink
+      to={to}
+      className={({ isActive }) =>
+        `${className} h-10 w-10 items-center justify-center rounded-2xl border transition ${
+          isActive
+            ? 'border-violet-300 bg-[linear-gradient(135deg,#7c3aed,#a855f7,#c4b5fd)] text-white shadow-[0_10px_22px_rgba(124,58,237,0.18)]'
+            : 'border-white/55 bg-white/35 text-stone-700 hover:border-violet-200 hover:bg-white/55 hover:text-violet-900'
+        }`
+      }
+      aria-label={label}
+      title={label}
+    >
+      <AppIcon name={icon} className="h-5 w-5" />
+    </NavLink>
+  )
+}
+
+function MobileBottomDock({ user, onCreateStory }) {
+  return (
+    <nav className="fixed bottom-3 left-1/2 z-30 flex w-[calc(100%-1rem)] max-w-md -translate-x-1/2 items-center justify-between rounded-[24px] border border-white/55 bg-[linear-gradient(135deg,_rgba(255,255,255,0.46),_rgba(248,240,255,0.32),_rgba(255,255,255,0.18))] px-1.5 py-1.5 pb-[max(0.375rem,env(safe-area-inset-bottom))] shadow-[0_20px_44px_rgba(124,58,237,0.14)] backdrop-blur-2xl lg:hidden">
+      <MobileDockLink to="/feed" label="Feed" icon="home" />
+      <MobileDockLink to="/marketplace" label="Marche" icon="search" />
+      <MobileDockStoryButton onClick={onCreateStory} />
+      <MobileDockLink to="/messages" label="Msgs" icon="chat" />
+      <MobileDockProfileLink user={user} />
+    </nav>
+  )
+}
+
+function MobileDockLink({ to, label, icon }) {
+  return (
+    <NavLink
+      to={to}
+      className={({ isActive }) =>
+        `relative flex min-w-[56px] flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-medium transition ${
+          isActive
+            ? 'bg-[linear-gradient(135deg,#7c3aed,#a855f7,#c4b5fd)] text-white shadow-[0_12px_24px_rgba(124,58,237,0.18)]'
+            : 'text-stone-500 hover:bg-violet-50'
+        }`
+      }
+    >
+      <AppIcon name={icon} className="h-5 w-5" />
+      <span>{label}</span>
+    </NavLink>
+  )
+}
+
+function MobileDockProfileLink({ user }) {
+  return (
+    <NavLink
+      to="/profile"
+      className={({ isActive }) =>
+        `relative flex min-w-[56px] flex-col items-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-medium transition ${
+          isActive
+            ? 'bg-[linear-gradient(135deg,#7c3aed,#a855f7,#c4b5fd)] text-white shadow-[0_12px_24px_rgba(124,58,237,0.18)]'
+            : 'text-stone-500 hover:bg-violet-50'
+        }`
+      }
+    >
+      <Avatar
+        name={user?.name ?? 'Utilisateur'}
+        src={user?.avatar || ''}
+        className="h-5 w-5 border border-white/80 text-[10px]"
+      />
+      <span>Profil</span>
+    </NavLink>
+  )
+}
+
+function MobileDockStoryButton({ onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex min-w-[64px] flex-col items-center gap-1 rounded-[20px] bg-[linear-gradient(135deg,#7c3aed,#a855f7)] px-3 py-2 text-[11px] font-semibold text-white transition hover:brightness-105"
+      aria-label="Publier une story"
+    >
+      <AppIcon name="story" className="h-5 w-5" />
+      <span>Story</span>
+    </button>
+  )
+}
+
+function InlinePill({ children, tone = 'stone' }) {
+  const tones = {
+    stone: 'border border-white/50 bg-white/32 text-stone-700 backdrop-blur-xl',
+    violet: 'border border-violet-200/40 bg-violet-500/10 text-violet-950 backdrop-blur-xl',
+    emerald: 'border border-emerald-200/45 bg-emerald-500/10 text-emerald-900 backdrop-blur-xl',
+    amber: 'border border-amber-200/50 bg-amber-400/12 text-amber-900 backdrop-blur-xl',
+  }
+
+  return (
+    <div className={`inline-flex whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium shadow-[0_8px_20px_rgba(124,58,237,0.06)] ${tones[tone]}`}>
+      {children}
+    </div>
+  )
+}
+
+function AppIcon({ name, className = 'h-5 w-5' }) {
+  if (name === 'home') {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+        <path
+          d="M3.75 10.5 12 4.5l8.25 6v8.25a1.5 1.5 0 0 1-1.5 1.5h-4.5v-6h-4.5v6h-4.5a1.5 1.5 0 0 1-1.5-1.5V10.5Z"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    )
+  }
+
+  if (name === 'chat') {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+        <path
+          d="M7.5 16.5 4.5 19.5v-12A2.25 2.25 0 0 1 6.75 5.25h10.5A2.25 2.25 0 0 1 19.5 7.5v6A2.25 2.25 0 0 1 17.25 15.75H7.5Z"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    )
+  }
+
+  if (name === 'bell') {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+        <path
+          d="M14.25 18.75a2.25 2.25 0 1 1-4.5 0m7.5-6v-1.5a5.25 5.25 0 1 0-10.5 0v1.5L5.25 15v1.5h13.5V15l-1.5-2.25Z"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    )
+  }
+
+  if (name === 'story') {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+        <path
+          d="M12 20.25a8.25 8.25 0 1 0 0-16.5 8.25 8.25 0 0 0 0 16.5Z"
+          stroke="currentColor"
+          strokeWidth="1.7"
+        />
+        <path
+          d="M12 8.25v7.5m3.75-3.75h-7.5"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    )
+  }
+
+  if (name === 'search') {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+        <path
+          d="m16.5 16.5 3.75 3.75m-1.5-8.625a7.125 7.125 0 1 1-14.25 0 7.125 7.125 0 0 1 14.25 0Z"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    )
+  }
+
+  if (name === 'menu') {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+        <path
+          d="M4.5 7.5h15m-15 4.5h15m-15 4.5h15"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    )
+  }
+
+  if (name === 'close') {
+    return (
+      <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+        <path
+          d="m6.75 6.75 10.5 10.5m0-10.5-10.5 10.5"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    )
+  }
+
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+      <path
+        d="M12 4.5v15m7.5-7.5h-15"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+function getRealtimeIndicator(realtimeStatus, isRealtimeEnabled) {
+  if (!isRealtimeEnabled) {
+    return {
+      label: 'Sync 30s',
+      shortLabel: 'Sync 30s',
+      tone: 'stone',
+    }
+  }
+
+  if (realtimeStatus === 'connected') {
+    return {
+      label: 'Temps reel actif',
+      shortLabel: 'Temps reel',
+      tone: 'emerald',
+    }
+  }
+
+  if (realtimeStatus === 'connecting') {
+    return {
+      label: 'Connexion',
+      shortLabel: 'Connexion',
+      tone: 'amber',
+    }
+  }
+
+  return {
+    label: 'Sync secours',
+    shortLabel: 'Secours',
+    tone: 'stone',
+  }
+}
+
+DesktopNav.propTypes = {
+  items: PropTypes.array,
+}
+
+MobileMenuDrawer.propTypes = {
+  isOpen: PropTypes.bool,
+  items: PropTypes.array,
+  user: PropTypes.object,
+  onClose: PropTypes.func,
+  onLogout: PropTypes.func,
+  onCreateStory: PropTypes.func,
+  closeButtonRef: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
+}
+
+DesktopActionLink.propTypes = {
+  to: PropTypes.string,
+  icon: PropTypes.string,
+  label: PropTypes.string,
+  className: PropTypes.string,
+}
+
+MobileBottomDock.propTypes = {
+  user: PropTypes.object,
+  onCreateStory: PropTypes.func,
+}
+
+MobileDockLink.propTypes = {
+  to: PropTypes.string,
+  label: PropTypes.string,
+  icon: PropTypes.string,
+}
+
+MobileDockProfileLink.propTypes = {
+  user: PropTypes.object,
+}
+
+MobileDockStoryButton.propTypes = {
+  onClick: PropTypes.func,
+}
+
+InlinePill.propTypes = {
+  children: PropTypes.node,
+  tone: PropTypes.string,
+}
+
+AppIcon.propTypes = {
+  name: PropTypes.string,
+  className: PropTypes.string,
+}
+
+export default Layout

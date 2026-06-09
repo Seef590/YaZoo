@@ -1,0 +1,83 @@
+<?php
+
+namespace App\Http\Requests\Marketplace;
+
+use App\Models\Animal;
+use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+
+class StoreAnimalRequest extends FormRequest
+{
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
+    {
+        return $this->user() !== null;
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, ValidationRule|array<mixed>|string>
+     */
+    public function rules(): array
+    {
+        return [
+            'name' => ['required', 'string', 'max:150'],
+            'category' => ['required', Rule::in(Animal::CATEGORIES)],
+            'type' => ['required', 'string', 'max:100'],
+            'breed' => ['nullable', 'string', 'max:150'],
+            'age' => ['nullable', 'integer', 'min:0', 'max:100'],
+            'sex' => ['required', Rule::in(['male', 'female', 'unknown'])],
+            'location' => ['required', 'string', 'max:150'],
+            'photo_url' => ['nullable', 'string', 'max:2048'],
+            'photo' => ['nullable', 'image', 'max:5120'],
+            'gallery_urls' => ['nullable', 'array', 'max:6'],
+            'gallery_urls.*' => ['string', 'max:2048'],
+            'gallery_files' => ['nullable', 'array', 'max:6'],
+            'gallery_files.*' => ['image', 'max:5120'],
+            'price' => ['nullable', 'numeric', 'min:0', 'max:999999.99'],
+            'is_for_adoption' => ['required', 'boolean'],
+            'listing_status' => ['required', Rule::in(Animal::LISTING_STATUSES)],
+            'description' => ['nullable', 'string', 'max:5000'],
+        ];
+    }
+
+    /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        $fields = ['name', 'category', 'type', 'breed', 'location', 'photo_url', 'listing_status', 'description'];
+        $normalized = [];
+
+        foreach ($fields as $field) {
+            $value = $this->input($field);
+            $normalized[$field] = is_string($value) ? trim($value) : $value;
+        }
+
+        $galleryUrls = collect($this->input('gallery_urls', []))
+            ->filter(fn ($value) => is_string($value))
+            ->map(fn ($value) => trim($value))
+            ->filter()
+            ->values()
+            ->all();
+
+        $normalized['gallery_urls'] = $galleryUrls;
+        $normalized['is_for_adoption'] = filter_var(
+            $this->input('is_for_adoption'),
+            FILTER_VALIDATE_BOOLEAN,
+            FILTER_NULL_ON_FAILURE
+        );
+        $normalized['category'] = $normalized['category'] ?: 'other';
+        $normalized['listing_status'] = $normalized['listing_status'] ?: 'available';
+
+        if (! $normalized['photo_url'] && ! empty($galleryUrls)) {
+            $normalized['photo_url'] = $galleryUrls[0];
+        }
+
+        $this->merge($normalized);
+    }
+}

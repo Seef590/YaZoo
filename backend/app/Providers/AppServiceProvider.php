@@ -1,0 +1,79 @@
+<?php
+
+namespace App\Providers;
+
+use App\Events\UserNotificationCreated;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Notifications\Events\NotificationSent;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\ServiceProvider;
+
+class AppServiceProvider extends ServiceProvider
+{
+    /**
+     * Register any application services.
+     */
+    public function register(): void
+    {
+        //
+    }
+
+    /**
+     * Bootstrap any application services.
+     */
+    public function boot(): void
+    {
+        Model::preventLazyLoading(! $this->app->isProduction());
+
+        RateLimiter::for('api', function (Request $request) {
+            return Limit::perMinute(120)->by($request->user()?->id ?: $request->ip());
+        });
+
+        RateLimiter::for('feed-write', function (Request $request) {
+            return Limit::perMinute(30)->by($request->user()?->id ?: $request->ip());
+        });
+
+        RateLimiter::for('marketplace-write', function (Request $request) {
+            return Limit::perMinute(30)->by($request->user()?->id ?: $request->ip());
+        });
+
+        RateLimiter::for('messages-write', function (Request $request) {
+            return Limit::perMinute(40)->by($request->user()?->id ?: $request->ip());
+        });
+
+        RateLimiter::for('stories-write', function (Request $request) {
+            return Limit::perMinute(20)->by($request->user()?->id ?: $request->ip());
+        });
+
+        RateLimiter::for('reservations-write', function (Request $request) {
+            return Limit::perMinute(20)->by($request->user()?->id ?: $request->ip());
+        });
+
+        Event::listen(NotificationSent::class, function (NotificationSent $event): void {
+            if (
+                $event->channel !== 'database'
+                || ! $event->response
+                || ! method_exists($event->notifiable, 'unreadNotifications')
+            ) {
+                return;
+            }
+
+            $notification = $event->response->fresh();
+
+            if (! $notification) {
+                return;
+            }
+
+            event(
+                (new UserNotificationCreated(
+                    $notification,
+                    (int) $event->notifiable->getKey(),
+                    (int) $event->notifiable->unreadNotifications()->count(),
+                ))->dontBroadcastToCurrentUser(),
+            );
+        });
+    }
+}

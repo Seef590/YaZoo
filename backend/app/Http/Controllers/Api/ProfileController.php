@@ -1,0 +1,87 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Profile\UpdateProfileRequest;
+use App\Http\Resources\Profile\UserProfileResource;
+use App\Models\User;
+use App\Support\MediaStorage;
+use Illuminate\Support\Facades\Schema;
+
+class ProfileController extends Controller
+{
+    /**
+     * Display the given user's public profile.
+     */
+    public function show(User $user): UserProfileResource
+    {
+        $this->loadProfileAggregates($user);
+
+        return UserProfileResource::make($user);
+    }
+
+    /**
+     * Update the given user's profile.
+     */
+    public function update(UpdateProfileRequest $request, User $user): UserProfileResource
+    {
+        $validated = $request->validated();
+        $updates = collect($validated)
+            ->except([
+                'avatar_file',
+                'cover_photo_file',
+                'remove_avatar',
+                'remove_cover_photo',
+            ])
+            ->all();
+
+        if ($request->boolean('remove_avatar') && ! $request->hasFile('avatar_file')) {
+            MediaStorage::deleteStoredFiles([$user->avatar]);
+            $updates['avatar'] = null;
+        }
+
+        if ($request->boolean('remove_cover_photo') && ! $request->hasFile('cover_photo_file')) {
+            MediaStorage::deleteStoredFiles([$user->cover_photo]);
+            $updates['cover_photo'] = null;
+        }
+
+        if ($request->hasFile('avatar_file')) {
+            $avatarPath = MediaStorage::storeUploadedFile(
+                $request->file('avatar_file'),
+                'profiles/avatars',
+            );
+            MediaStorage::deleteStoredFiles([$user->avatar]);
+            $updates['avatar'] = $avatarPath;
+        }
+
+        if ($request->hasFile('cover_photo_file')) {
+            $coverPath = MediaStorage::storeUploadedFile(
+                $request->file('cover_photo_file'),
+                'profiles/covers',
+            );
+            MediaStorage::deleteStoredFiles([$user->cover_photo]);
+            $updates['cover_photo'] = $coverPath;
+        }
+
+        $user->update($updates);
+        $this->loadProfileAggregates($user);
+
+        return UserProfileResource::make($user);
+    }
+
+    private function loadProfileAggregates(User $user): void
+    {
+        $relations = ['posts', 'animals', 'products'];
+
+        if (Schema::hasTable('reservation_reviews')) {
+            $relations[] = 'reviewsReceived';
+        }
+
+        $user->loadCount($relations);
+
+        if (Schema::hasTable('reservation_reviews')) {
+            $user->loadAvg('reviewsReceived', 'rating');
+        }
+    }
+}

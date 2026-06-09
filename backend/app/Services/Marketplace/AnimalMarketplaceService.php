@@ -1,0 +1,162 @@
+<?php
+
+namespace App\Services\Marketplace;
+
+use App\Models\Animal;
+use App\Models\User;
+use App\Support\MarketplaceMedia;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+
+class AnimalMarketplaceService
+{
+    public function paginate(Request $request, int $perPage): LengthAwarePaginator
+    {
+        if (app()->runningUnitTests()) {
+            return $this->query($request)->paginate($perPage);
+        }
+
+        return Cache::remember(
+            $this->cacheKey($request, $perPage),
+            now()->addSeconds(30),
+            fn (): LengthAwarePaginator => $this->query($request)->paginate($perPage),
+        );
+    }
+
+    protected function query(Request $request)
+    {
+        return Animal::query()
+            ->with('user:id,name,avatar,city,country')
+            ->when($request->filled('q'), function ($query) use ($request): void {
+                $this->search($query, ['name', 'type', 'breed', 'description'], (string) $request->string('q')->trim());
+            })
+            ->when($request->filled('category'), function ($query) use ($request): void {
+                $query->where('category', $request->string('category')->trim());
+            })
+            ->when($request->filled('type'), function ($query) use ($request): void {
+                $this->search($query, ['type'], (string) $request->string('type')->trim());
+            })
+            ->when($request->filled('sex'), function ($query) use ($request): void {
+                $query->where('sex', $request->string('sex')->trim());
+            })
+            ->when($request->filled('location'), function ($query) use ($request): void {
+                $this->search($query, ['location'], (string) $request->string('location')->trim());
+            })
+            ->when($request->filled('listing_status'), function ($query) use ($request): void {
+                $query->where('listing_status', $request->string('listing_status')->trim());
+            })
+            ->when($request->filled('min_price'), fn ($query) => $query->where('price', '>=', $request->input('min_price')))
+            ->when($request->filled('max_price'), fn ($query) => $query->where('price', '<=', $request->input('max_price')))
+            ->when($request->has('adoption') && $request->input('adoption') !== '', function ($query) use ($request): void {
+                $query->where('is_for_adoption', filter_var(
+                    $request->input('adoption'),
+                    FILTER_VALIDATE_BOOLEAN,
+                ));
+            })
+            ->latest();
+    }
+
+    /**
+     * @param  array<string, mixed>  $validated
+     */
+    public function create(User $user, Request $request, array $validated): Animal
+    {
+        $payload = MarketplaceMedia::prepareUploadedMedia(
+            $request,
+            $validated,
+            'photo_url',
+            'photo',
+            'marketplace/animals',
+        );
+
+        $animal = $user->animals()->create($payload);
+
+        return $this->loadForResponse($animal);
+    }
+
+    /**
+     * @param  array<string, mixed>  $validated
+     */
+    public function update(Animal $animal, Request $request, array $validated): Animal
+    {
+        $payload = MarketplaceMedia::prepareUploadedMedia(
+            $request,
+            $validated,
+            'photo_url',
+            'photo',
+            'marketplace/animals',
+        );
+
+        $animal->update($payload);
+
+        return $this->loadForResponse($animal);
+    }
+
+    public function delete(Animal $animal): void
+    {
+        MarketplaceMedia::deleteStoredFiles([
+            $animal->photo_url,
+            ...($animal->gallery_urls ?? []),
+        ]);
+
+        $animal->reservations()->delete();
+        $animal->delete();
+    }
+
+    public function loadForResponse(Animal $animal): Animal
+    {
+        return $animal->load('user:id,name,avatar,city,country');
+    }
+
+    /**
+     * @param  array<int, string>  $columns
+     */
+    protected function search($query, array $columns, string $value): void
+    {
+        $terms = $this->booleanFullTextTerms($value);
+
+        if ($terms !== null && in_array(DB::connection()->getDriverName(), ['mysql', 'mariadb'], true)) {
+            $query->whereFullText($columns, $terms, ['mode' => 'boolean']);
+
+            return;
+        }
+
+        $query->where(function ($innerQuery) use ($columns, $value): void {
+            foreach ($columns as $column) {
+                $innerQuery->orWhere($column, 'like', $this->prefixLike($value));
+            }
+        });
+    }
+
+    protected function booleanFullTextTerms(string $value): ?string
+    {
+        preg_match_all('/[\pL\pN]+/u', mb_strtolower($value), $matches);
+
+        $terms = collect($matches[0] ?? [])
+            ->map(fn (string $term): string => trim($term))
+            ->filter(fn (string $term): bool => mb_strlen($term) >= 2)
+            ->unique()
+            ->map(fn (string $term): string => '+'.$term.'*')
+            ->values();
+
+        return $terms->isEmpty() ? null : $terms->implode(' ');
+    }
+
+    protected function prefixLike(string $value): string
+    {
+        return addcslashes($value, '\\%_').'%';
+    }
+
+    protected function cacheKey(Request $request, int $perPage): string
+    {
+        $query = $request->query();
+        ksort($query);
+
+        return 'marketplace:animals:'.hash('xxh128', json_encode([
+            'query' => $query,
+            'per_page' => $perPage,
+        ], JSON_THROW_ON_ERROR));
+    }
+}

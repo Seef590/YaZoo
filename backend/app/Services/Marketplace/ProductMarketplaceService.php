@@ -1,0 +1,153 @@
+<?php
+
+namespace App\Services\Marketplace;
+
+use App\Models\Product;
+use App\Models\User;
+use App\Support\MarketplaceMedia;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+
+class ProductMarketplaceService
+{
+    public function paginate(Request $request, int $perPage): LengthAwarePaginator
+    {
+        if (app()->runningUnitTests()) {
+            return $this->query($request)->paginate($perPage);
+        }
+
+        return Cache::remember(
+            $this->cacheKey($request, $perPage),
+            now()->addSeconds(30),
+            fn (): LengthAwarePaginator => $this->query($request)->paginate($perPage),
+        );
+    }
+
+    protected function query(Request $request)
+    {
+        return Product::query()
+            ->with('user:id,name,avatar,city,country')
+            ->when($request->filled('q'), function ($query) use ($request): void {
+                $this->search($query, ['name', 'description'], (string) $request->string('q')->trim());
+            })
+            ->when($request->filled('category'), function ($query) use ($request): void {
+                $query->where('category', $request->string('category')->trim());
+            })
+            ->when($request->filled('min_price'), fn ($query) => $query->where('price', '>=', $request->input('min_price')))
+            ->when($request->filled('max_price'), fn ($query) => $query->where('price', '<=', $request->input('max_price')))
+            ->when($request->filled('location'), function ($query) use ($request): void {
+                $this->search($query, ['location'], (string) $request->string('location')->trim());
+            })
+            ->when($request->filled('listing_status'), function ($query) use ($request): void {
+                $query->where('listing_status', $request->string('listing_status')->trim());
+            })
+            ->when($request->filled('condition_status'), function ($query) use ($request): void {
+                $query->where('condition_status', $request->string('condition_status')->trim());
+            })
+            ->latest();
+    }
+
+    /**
+     * @param  array<string, mixed>  $validated
+     */
+    public function create(User $user, Request $request, array $validated): Product
+    {
+        $payload = MarketplaceMedia::prepareUploadedMedia(
+            $request,
+            $validated,
+            'image_url',
+            'image',
+            'marketplace/products',
+        );
+
+        $product = $user->products()->create($payload);
+
+        return $this->loadForResponse($product);
+    }
+
+    /**
+     * @param  array<string, mixed>  $validated
+     */
+    public function update(Product $product, Request $request, array $validated): Product
+    {
+        $payload = MarketplaceMedia::prepareUploadedMedia(
+            $request,
+            $validated,
+            'image_url',
+            'image',
+            'marketplace/products',
+        );
+
+        $product->update($payload);
+
+        return $this->loadForResponse($product);
+    }
+
+    public function delete(Product $product): void
+    {
+        MarketplaceMedia::deleteStoredFiles([
+            $product->image_url,
+            ...($product->gallery_urls ?? []),
+        ]);
+
+        $product->reservations()->delete();
+        $product->delete();
+    }
+
+    public function loadForResponse(Product $product): Product
+    {
+        return $product->load('user:id,name,avatar,city,country');
+    }
+
+    /**
+     * @param  array<int, string>  $columns
+     */
+    protected function search($query, array $columns, string $value): void
+    {
+        $terms = $this->booleanFullTextTerms($value);
+
+        if ($terms !== null && in_array(DB::connection()->getDriverName(), ['mysql', 'mariadb'], true)) {
+            $query->whereFullText($columns, $terms, ['mode' => 'boolean']);
+
+            return;
+        }
+
+        $query->where(function ($innerQuery) use ($columns, $value): void {
+            foreach ($columns as $column) {
+                $innerQuery->orWhere($column, 'like', $this->prefixLike($value));
+            }
+        });
+    }
+
+    protected function booleanFullTextTerms(string $value): ?string
+    {
+        preg_match_all('/[\pL\pN]+/u', mb_strtolower($value), $matches);
+
+        $terms = collect($matches[0] ?? [])
+            ->map(fn (string $term): string => trim($term))
+            ->filter(fn (string $term): bool => mb_strlen($term) >= 2)
+            ->unique()
+            ->map(fn (string $term): string => '+'.$term.'*')
+            ->values();
+
+        return $terms->isEmpty() ? null : $terms->implode(' ');
+    }
+
+    protected function prefixLike(string $value): string
+    {
+        return addcslashes($value, '\\%_').'%';
+    }
+
+    protected function cacheKey(Request $request, int $perPage): string
+    {
+        $query = $request->query();
+        ksort($query);
+
+        return 'marketplace:products:'.hash('xxh128', json_encode([
+            'query' => $query,
+            'per_page' => $perPage,
+        ], JSON_THROW_ON_ERROR));
+    }
+}
