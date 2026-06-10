@@ -7,6 +7,7 @@ import {
   meRequest,
   registerRequest,
 } from '../api/auth'
+import { AUTH_SESSION_EXPIRED_EVENT, ensureCsrfCookie } from '../api/client'
 import { setMonitoringUser } from '../lib/monitoring'
 import { disconnectRealtime } from '../lib/realtime'
 import { normalizeAuthUserMedia } from '../utils/media'
@@ -24,6 +25,7 @@ export function AuthProvider({ children }) {
 
     const bootstrap = async () => {
       try {
+        await ensureCsrfCookie()
         const response = await meRequest()
 
         if (!cancelled) {
@@ -46,6 +48,19 @@ export function AuthProvider({ children }) {
 
     return () => {
       cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    const handleSessionExpired = () => {
+      setUser(null)
+      setIsAuthenticated(false)
+    }
+
+    globalThis.addEventListener?.(AUTH_SESSION_EXPIRED_EVENT, handleSessionExpired)
+
+    return () => {
+      globalThis.removeEventListener?.(AUTH_SESSION_EXPIRED_EVENT, handleSessionExpired)
     }
   }, [])
 

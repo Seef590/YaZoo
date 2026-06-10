@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 
+import { getPostsRequest } from '../api/posts'
 import { getProfileRequest, updateProfileRequest } from '../api/profile'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import ScrollTopButton from '../components/ui/ScrollTopButton'
 import { useAuth } from '../hooks/useAuth'
+import { formatDate } from '../utils/formatDate'
 import { getErrorMessage } from '../utils/getErrorMessage'
 import { normalizeAuthUserMedia, normalizeProfileMediaPayload } from '../utils/media'
 
@@ -26,6 +28,7 @@ function ProfilePage() {
   const [removeCoverPhoto, setRemoveCoverPhoto] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
+  const [recentPublications, setRecentPublications] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
@@ -44,9 +47,14 @@ function ProfilePage() {
       try {
         const response = await getProfileRequest(user.id)
         const data = normalizeProfileMediaPayload(response.data.data)
+        const postsResponse = await getPostsRequest()
+        const userPosts = (postsResponse.data.data ?? []).filter(
+          (post) => String(post.author?.id) === String(user.id),
+        )
 
         if (!cancelled) {
           setProfile(data)
+          setRecentPublications(userPosts.slice(0, 5))
           setForm({
             name: data.name ?? '',
             phone: data.phone ?? '',
@@ -62,6 +70,7 @@ function ProfilePage() {
         }
       } catch (error) {
         if (!cancelled) {
+          setRecentPublications([])
           setErrorMessage(
             getErrorMessage(error, 'Impossible de charger le profil.'),
           )
@@ -226,22 +235,9 @@ function ProfilePage() {
   const coverImage = removeCoverPhoto
     ? ''
     : coverPreview || profile?.coverPhoto || user?.cover_photo || ''
-  const followersCount = 45
-  const followingCount = 12
-  const recentPublications = [
-    {
-      id: 'recent-1',
-      text: 'Balade avec mon chien ce matin',
-      time: '1h',
-      location: profile?.city || 'Casablanca',
-    },
-    {
-      id: 'recent-2',
-      text: 'Petit nouveau a la maison',
-      time: '2j',
-      location: profile?.city || 'Casablanca',
-    },
-  ]
+  const followersCount = profile?.followersCount ?? 0
+  const followingCount = profile?.followingCount ?? 0
+  const profileLocation = profile?.city || user?.city || ''
 
   const handleEditToggle = () => {
     if (isEditOpen) {
@@ -314,11 +310,8 @@ function ProfilePage() {
                 </h2>
                 <p className="mt-1 text-sm text-stone-500">
                   @{(profile?.name ?? user?.name ?? 'username').toLowerCase().replace(/\s+/g, '')}
-                  {' '}
-                  -{' '}
-                  {profile?.city || profile?.country
-                    ? [profile?.city, profile?.country].filter(Boolean).join(', ')
-                    : 'Casablanca'}
+                  {profileLocation || profile?.country ? ' - ' : ''}
+                  {[profileLocation, profile?.country].filter(Boolean).join(', ')}
                 </p>
                 <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-600">
                   {profile?.bio ||
@@ -372,46 +365,68 @@ function ProfilePage() {
         </h3>
 
         <div className="mt-5 space-y-4">
-          {recentPublications.map((publication) => (
+          {recentPublications.length === 0 ? (
+            <div className="rounded-[24px] border border-dashed border-violet-200 bg-white/84 px-5 py-10 text-center text-sm text-stone-500">
+              Aucune publication recente pour le moment.
+            </div>
+          ) : null}
+
+          {recentPublications.map((post) => {
+            const postMediaUrl = post.mediaUrl ?? post.imageUrl ?? ''
+            const postMediaKind = post.mediaKind ?? (post.imageUrl ? 'image' : null)
+
+            return (
             <article
-              key={publication.id}
+              key={post.id}
               className="overflow-hidden rounded-[24px] border border-violet-100 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.82))] p-4"
             >
               <div className="flex items-center gap-3">
                 <Avatar
-                  name={profile?.name ?? user?.name ?? 'Utilisateur'}
-                  src={avatarSrc}
+                  name={post.author?.name ?? profile?.name ?? user?.name ?? 'Utilisateur'}
+                  src={post.author?.avatar ?? avatarSrc}
                   size="sm"
                   className="border border-white"
                 />
                 <div>
                   <p className="text-sm font-semibold text-stone-900">
-                    {profile?.name ?? user?.name ?? 'Utilisateur'}
+                    {post.author?.name ?? profile?.name ?? user?.name ?? 'Utilisateur'}
                   </p>
                   <p className="text-xs text-stone-500">
-                    {publication.time} - {publication.location}
+                    {[post.location, post.createdAt ? formatDate(post.createdAt) : null]
+                      .filter(Boolean)
+                      .join(' - ')}
                   </p>
                 </div>
               </div>
 
-              <p className="mt-3 text-sm text-stone-700">{publication.text}</p>
+              <p className="mt-3 text-sm text-stone-700">{post.content}</p>
 
-              <div
-                className="mt-3 h-52 rounded-[20px] bg-cover bg-center"
-                style={{
-                  backgroundImage: coverImage
-                    ? `linear-gradient(rgba(15,23,42,0.2),rgba(15,23,42,0.1)), url(${coverImage})`
-                    : 'linear-gradient(135deg, #7c3aed 0%, #a855f7 45%, #ddd6fe 100%)',
-                }}
-              />
+              {postMediaUrl ? (
+                <div className="mt-3 overflow-hidden rounded-[20px] bg-stone-100">
+                  {postMediaKind === 'video' ? (
+                    <video
+                      src={postMediaUrl}
+                      controls
+                      className="h-80 w-full object-cover sm:h-96 lg:h-[28rem]"
+                    />
+                  ) : (
+                    <img
+                      src={postMediaUrl}
+                      alt="Media de publication"
+                      className="h-80 w-full object-cover sm:h-96 lg:h-[28rem]"
+                    />
+                  )}
+                </div>
+              ) : null}
 
               <div className="mt-3 flex gap-4 text-sm text-stone-500">
-                <span>45 likes</span>
-                <span>12 commentaires</span>
-                <span>4 partages</span>
+                <span>{post.likesCount ?? post.likes ?? 0} likes</span>
+                <span>{post.commentsCount ?? 0} commentaires</span>
+                <span>{post.sharesCount ?? 0} partages</span>
               </div>
             </article>
-          ))}
+            )
+          })}
         </div>
       </section>
 

@@ -1,9 +1,11 @@
 import axios from 'axios'
 
 import { getErrorMessage } from '../utils/getErrorMessage'
-import { getApiBaseUrl } from '../lib/appConfig'
+import { getApiBaseUrl, getBackendBaseUrl } from '../lib/appConfig'
 import { getCurrentSocketId } from '../lib/realtime'
 import { emitErrorToast } from '../lib/toastBus'
+
+export const AUTH_SESSION_EXPIRED_EVENT = 'yazoo:auth-session-expired'
 
 const api = axios.create({
   baseURL: getApiBaseUrl(),
@@ -13,6 +15,14 @@ const api = axios.create({
     Accept: 'application/json',
   },
 })
+
+export const ensureCsrfCookie = () =>
+  axios.get(`${getBackendBaseUrl()}/sanctum/csrf-cookie`, {
+    withCredentials: true,
+    headers: {
+      Accept: 'application/json',
+    },
+  })
 
 api.interceptors.request.use((config) => {
   if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
@@ -42,6 +52,10 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    if (shouldEmitAuthSessionExpired(error)) {
+      globalThis.dispatchEvent?.(new CustomEvent(AUTH_SESSION_EXPIRED_EVENT))
+    }
+
     if (shouldShowGlobalErrorToast(error)) {
       emitErrorToast(
         getErrorMessage(error, getGlobalFallbackMessage(error?.response?.status)),
@@ -51,6 +65,22 @@ api.interceptors.response.use(
     return Promise.reject(error)
   },
 )
+
+function shouldEmitAuthSessionExpired(error) {
+  if (error?.config?.skipAuthSessionExpired) {
+    return false
+  }
+
+  if (error?.response?.status !== 401) {
+    return false
+  }
+
+  const requestUrl = String(error?.config?.url ?? '')
+
+  return !['/auth/login', '/auth/register', '/auth/me'].some((segment) =>
+    requestUrl.includes(segment),
+  )
+}
 
 function shouldShowGlobalErrorToast(error) {
   if (error?.config?.skipGlobalErrorToast) {

@@ -72,7 +72,7 @@ class ProfileController extends Controller
 
     private function loadProfileAggregates(User $user): void
     {
-        $relations = ['posts', 'animals', 'products'];
+        $relations = ['posts', 'animals', 'products', 'followers', 'following'];
 
         if (Schema::hasTable('reservation_reviews')) {
             $relations[] = 'reviewsReceived';

@@ -17,6 +17,18 @@ param(
     [string] $RedisPassword,
     [string] $RedisPort = "6380",
     [string] $RedisScheme = "tls",
+    [string] $GoogleClientId = "",
+    [string] $GoogleClientSecret = "",
+    [string] $GoogleRedirectUri = "",
+    [string] $GoogleFrontendRedirect = "",
+    [string] $MailMailer = "log",
+    [string] $MailHost = "",
+    [string] $MailPort = "",
+    [string] $MailUsername = "",
+    [string] $MailPassword = "",
+    [string] $MailEncryption = "",
+    [string] $MailFromAddress = "",
+    [string] $MailFromName = "YaZoo",
     [switch] $SkipMigrations
 )
 
@@ -52,6 +64,12 @@ if (-not $RedisPassword) { $RedisPassword = Read-Host "Azure Redis access key" }
 
 $frontendHost = ([Uri] $FrontendUrl).Host
 $runMigrations = if ($SkipMigrations) { "false" } else { "true" }
+if (-not $GoogleRedirectUri) {
+    $GoogleRedirectUri = "https://$WebAppName.azurewebsites.net/api/auth/google/callback"
+}
+if (-not $GoogleFrontendRedirect) {
+    $GoogleFrontendRedirect = "$FrontendUrl/feed"
+}
 
 $groupExists = az group exists --name $ResourceGroup | ConvertFrom-Json
 if (-not $groupExists) {
@@ -116,9 +134,20 @@ REDIS_CACHE_DB=1 `
 FRONTEND_URL='$FrontendUrl' `
 SANCTUM_STATEFUL_DOMAINS='$frontendHost' `
 CORS_ALLOWED_ORIGINS='$FrontendUrl' `
+GOOGLE_CLIENT_ID='$GoogleClientId' `
+GOOGLE_CLIENT_SECRET='$GoogleClientSecret' `
+GOOGLE_REDIRECT_URI='$GoogleRedirectUri' `
+GOOGLE_FRONTEND_REDIRECT='$GoogleFrontendRedirect' `
 FILESYSTEM_DISK=public `
 MEDIA_STORAGE_DRIVER=filesystem `
-MAIL_MAILER=log
+MAIL_MAILER='$MailMailer' `
+MAIL_HOST='$MailHost' `
+MAIL_PORT='$MailPort' `
+MAIL_USERNAME='$MailUsername' `
+MAIL_PASSWORD='$MailPassword' `
+MAIL_ENCRYPTION='$MailEncryption' `
+MAIL_FROM_ADDRESS='$MailFromAddress' `
+MAIL_FROM_NAME='$MailFromName'
 "@
 
 Invoke-AzCommand "az webapp restart --resource-group '$ResourceGroup' --name '$WebAppName'"

@@ -89,13 +89,13 @@ function PostCard({
                   <video
                     src={mediaUrl}
                     controls
-                    className="h-64 w-full object-cover"
+                    className="h-64 w-full object-cover sm:h-80 md:h-96 lg:h-[28rem]"
                   />
                 ) : (
                   <img
                     src={mediaUrl}
                     alt="Illustration du post"
-                    className="h-64 w-full object-cover transition duration-500 group-hover:scale-[1.02]"
+                    className="h-64 w-full object-cover transition duration-500 group-hover:scale-[1.02] sm:h-80 md:h-96 lg:h-[28rem]"
                   />
                 )}
               </div>

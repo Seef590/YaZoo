@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AdminOrdersController;
 use App\Http\Controllers\Api\AnimalController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CommentController;
+use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\CommunityController;
 use App\Http\Controllers\Api\ConversationController;
 use App\Http\Controllers\Api\MediaController;
@@ -35,10 +36,15 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
     Route::post('/monitoring/frontend-error', [MonitoringController::class, 'store'])
         ->middleware('throttle:10,1');
 
+    Route::post('/contact', [ContactController::class, 'send'])
+        ->middleware('throttle:5,1');
+
     Route::prefix('auth')->group(function (): void {
         Route::post('/otp/request', [AuthController::class, 'requestOtp'])->middleware('throttle:5,1');
         Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:10,1');
         Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
+        Route::get('/google', [AuthController::class, 'redirectToGoogle'])->middleware('throttle:10,1');
+        Route::get('/google/callback', [AuthController::class, 'handleGoogleCallback'])->middleware('throttle:10,1');
 
         Route::middleware([UseSanctumTokenFromCookie::class, 'auth:sanctum'])->group(function (): void {
             Route::get('/me', [AuthController::class, 'me']);

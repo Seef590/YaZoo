@@ -509,7 +509,7 @@ function CommunityCard({
 
   return (
     <article className="overflow-hidden rounded-[28px] border border-white/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.99),_rgba(246,239,255,0.9))] shadow-[0_18px_42px_rgba(124,58,237,0.08)]">
-      <div className="h-40 bg-violet-100/70 sm:h-44">
+      <div className="h-40 bg-violet-100/70 sm:h-52 md:h-64 lg:h-72">
         {community.imageUrl ? (
           <img
             src={community.imageUrl}

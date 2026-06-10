@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 
+import { getGoogleAuthUrl } from '../api/auth'
 import Button from '../components/ui/Button'
 import Footer from '../components/ui/Footer'
 import PasswordField from '../components/ui/PasswordField'
@@ -48,6 +49,10 @@ function LoginPage() {
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  const handleGoogleLogin = () => {
+    globalThis.location.assign(getGoogleAuthUrl())
   }
 
   return (
@@ -126,6 +131,23 @@ function LoginPage() {
             </Button>
           </form>
 
+          <div className="my-5 flex items-center gap-3">
+            <div className="h-px flex-1 bg-violet-100" />
+            <span className="text-xs uppercase tracking-[0.16em] text-stone-400">
+              ou
+            </span>
+            <div className="h-px flex-1 bg-violet-100" />
+          </div>
+
+          <button
+            type="button"
+            onClick={handleGoogleLogin}
+            className="inline-flex w-full items-center justify-center gap-3 rounded-full border border-violet-100 bg-white px-4 py-3 text-sm font-semibold text-stone-800 shadow-[0_14px_30px_rgba(124,58,237,0.08)] transition hover:-translate-y-0.5 hover:border-violet-200 hover:bg-violet-50/80"
+          >
+            <GoogleMark />
+            Continuer avec Google
+          </button>
+
           <p className="mt-5 text-sm text-stone-500">
             Pas encore de compte ?{' '}
             <Link className="font-medium text-violet-900" to="/register">
@@ -138,6 +160,14 @@ function LoginPage() {
         <Footer mode="public" className="mt-8" />
       </div>
     </main>
+  )
+}
+
+function GoogleMark() {
+  return (
+    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-sm font-bold text-violet-700 shadow-sm">
+      G
+    </span>
   )
 }
 

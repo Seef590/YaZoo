@@ -6,6 +6,7 @@ use App\Support\PhoneNumber;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -30,6 +31,8 @@ class User extends Authenticatable
         'bio',
         'avatar',
         'cover_photo',
+        'google_id',
+        'google_avatar',
         'is_admin',
         'password',
         'phone_verified_at',
@@ -91,6 +94,32 @@ class User extends Authenticatable
     public function likes(): HasMany
     {
         return $this->hasMany(Like::class);
+    }
+
+    /**
+     * Get the users following this user.
+     */
+    public function followers(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            self::class,
+            'follows',
+            'followed_user_id',
+            'follower_user_id',
+        )->withTimestamps();
+    }
+
+    /**
+     * Get the users followed by this user.
+     */
+    public function following(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            self::class,
+            'follows',
+            'follower_user_id',
+            'followed_user_id',
+        )->withTimestamps();
     }
 
     /**

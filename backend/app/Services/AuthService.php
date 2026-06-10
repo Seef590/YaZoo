@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Laravel\Socialite\Contracts\User as SocialiteUser;
 use Symfony\Component\HttpFoundation\Cookie;
 
 class AuthService
@@ -141,6 +142,64 @@ class AuthService
         );
     }
 
+    public function loginWithGoogle(SocialiteUser $googleUser): AuthResult
+    {
+        $email = $googleUser->getEmail();
+
+        if (! $email) {
+            throw ValidationException::withMessages([
+                'email' => ['Google n a pas retourne d adresse email utilisable.'],
+            ]);
+        }
+
+        $user = DB::transaction(function () use ($googleUser, $email): User {
+            $isFirstAdmin = ! User::query()->where('is_admin', true)->exists();
+            $userQuery = User::query()->where('email', $email);
+
+            if ($googleUser->getId()) {
+                $userQuery->orWhere('google_id', $googleUser->getId());
+            }
+
+            $user = $userQuery->first();
+
+            if (! $user) {
+                return User::create([
+                    'name' => $googleUser->getName() ?: Str::before($email, '@'),
+                    'email' => $email,
+                    'email_verified_at' => now(),
+                    'password' => Str::random(32),
+                    'avatar' => $googleUser->getAvatar(),
+                    'google_id' => $googleUser->getId(),
+                    'google_avatar' => $googleUser->getAvatar(),
+                    'preferred_locale' => app()->getLocale(),
+                    'is_admin' => $isFirstAdmin,
+                ]);
+            }
+
+            $updates = [
+                'google_id' => $googleUser->getId(),
+                'google_avatar' => $googleUser->getAvatar(),
+            ];
+
+            if (! $user->email_verified_at) {
+                $updates['email_verified_at'] = now();
+            }
+
+            if (! $user->avatar && $googleUser->getAvatar()) {
+                $updates['avatar'] = $googleUser->getAvatar();
+            }
+
+            $user->forceFill($updates)->save();
+
+            return $user;
+        });
+
+        return new AuthResult(
+            $user,
+            $this->createPlainTextToken($user, 'google-oauth'),
+        );
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -172,6 +231,12 @@ class AuthService
     {
         $expiration = (int) (config('sanctum.expiration') ?? 0);
         $minutes = $expiration > 0 ? $expiration : 60 * 24 * 7;
+        $sameSite = config('session.same_site', 'lax');
+        $secure = (bool) (config('session.secure') ?? request()->isSecure());
+
+        if ($sameSite === 'none') {
+            $secure = true;
+        }
 
         return cookie(
             'yazoo_api_token',
@@ -179,10 +244,10 @@ class AuthService
             $minutes,
             '/',
             config('session.domain'),
-            (bool) (config('session.secure') ?? request()->isSecure()),
+            $secure,
             true,
             false,
-            'lax',
+            $sameSite,
         );
     }
 

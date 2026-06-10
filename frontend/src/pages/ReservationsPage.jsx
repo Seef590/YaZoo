@@ -222,7 +222,7 @@ function ReservationCard({ reservation, processingId, onAction }) {
   return (
     <article className="overflow-hidden rounded-[28px] border border-white/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.99),_rgba(246,239,255,0.9))] shadow-[0_18px_42px_rgba(124,58,237,0.08)]">
       {imageUrl ? (
-        <div className="h-48 bg-stone-200">
+        <div className="h-48 bg-stone-200 sm:h-60 md:h-72 lg:h-80">
           <img
             src={imageUrl}
             alt={reservation.listing.title}

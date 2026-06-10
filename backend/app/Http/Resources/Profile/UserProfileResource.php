@@ -33,6 +33,8 @@ class UserProfileResource extends JsonResource
             'avatar' => MediaStorage::resolveUrl($this->avatar),
             'coverPhoto' => MediaStorage::resolveUrl($this->cover_photo),
             'postsCount' => $this->posts_count ?? 0,
+            'followersCount' => $this->followers_count ?? 0,
+            'followingCount' => $this->following_count ?? 0,
             'animalsCount' => $this->animals_count ?? 0,
             'productsCount' => $this->products_count ?? 0,
             'ratingCount' => $this->reviews_received_count ?? 0,

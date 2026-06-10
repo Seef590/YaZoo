@@ -1,6 +1,9 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
+import api from '../api/client'
 import Footer from '../components/ui/Footer'
+import { useAuth } from '../hooks/useAuth'
 
 const companyContact = {
   phone: '0606610014',
@@ -8,6 +11,47 @@ const companyContact = {
 }
 
 function ContactPage() {
+  const { user } = useAuth()
+  const [objet, setObjet] = useState('')
+  const [message, setMessage] = useState('')
+  const [sending, setSending] = useState(false)
+  const [sent, setSent] = useState(false)
+  const [contactError, setContactError] = useState('')
+  const [senderEmail, setSenderEmail] = useState(user?.email ?? '')
+
+  useEffect(() => {
+    if (user?.email) {
+      setSenderEmail(user.email)
+    }
+  }, [user?.email])
+
+  const handleSend = async (event) => {
+    event.preventDefault()
+
+    if (!message.trim() || !senderEmail.trim()) {
+      return
+    }
+
+    setSending(true)
+    setSent(false)
+    setContactError('')
+
+    try {
+      await api.post('/contact', {
+        email: senderEmail,
+        objet: objet || 'Message depuis YaZoo',
+        message,
+      })
+      setSent(true)
+      setMessage('')
+      setObjet('')
+    } catch {
+      setContactError("Impossible d'envoyer le message pour le moment.")
+    } finally {
+      setSending(false)
+    }
+  }
+
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.18),_transparent_24%),radial-gradient(circle_at_bottom_right,_rgba(221,214,254,0.42),_transparent_24%),linear-gradient(180deg,_#fffaff_0%,_#f7f1ff_100%)] px-3 py-6 sm:px-4 sm:py-8">
       <div className="mx-auto max-w-5xl">
@@ -48,6 +92,88 @@ function ContactPage() {
               <p className="mt-3 text-xl font-semibold text-stone-950">{companyContact.email}</p>
             </a>
           </div>
+
+          <section className="mt-5 rounded-[26px] border border-violet-100 bg-violet-50/70 px-5 py-5">
+            <p className="text-xs uppercase tracking-[0.18em] text-violet-700">
+              Message direct
+            </p>
+            <h2 className="mt-2 text-2xl font-semibold text-stone-950">
+              Envoyez-nous un message
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600">
+              Expliquez votre besoin, posez une question ou demandez une
+              demonstration de YaZoo. Nous vous repondrons par email.
+            </p>
+
+            <form onSubmit={handleSend} className="mt-5 grid gap-4">
+              <label className="block">
+                <span className="mb-2 block text-sm font-medium text-stone-700">
+                  Votre email
+                </span>
+                <input
+                  type="email"
+                  value={senderEmail}
+                  onChange={(event) => setSenderEmail(event.target.value)}
+                  readOnly={Boolean(user?.email)}
+                  required
+                  className={`w-full rounded-[22px] border px-4 py-3 text-sm outline-none transition ${
+                    user?.email
+                      ? 'border-stone-200 bg-white/70 text-stone-500'
+                      : 'border-violet-100 bg-white/90 text-stone-700 focus:border-violet-300'
+                  }`}
+                  placeholder="votre@email.com"
+                />
+              </label>
+
+              <label className="block">
+                <span className="mb-2 block text-sm font-medium text-stone-700">
+                  Objet
+                </span>
+                <input
+                  value={objet}
+                  onChange={(event) => setObjet(event.target.value)}
+                  className="w-full rounded-[22px] border border-violet-100 bg-white/90 px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-300"
+                  placeholder="Objet de votre message"
+                />
+              </label>
+
+              <label className="block">
+                <span className="mb-2 block text-sm font-medium text-stone-700">
+                  Message
+                </span>
+                <textarea
+                  rows={5}
+                  value={message}
+                  onChange={(event) => setMessage(event.target.value)}
+                  required
+                  className="w-full rounded-[22px] border border-violet-100 bg-white/90 px-4 py-3 text-sm leading-6 text-stone-700 outline-none transition focus:border-violet-300"
+                  placeholder="Decrivez votre question ou besoin..."
+                />
+              </label>
+
+              {sent ? (
+                <p className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                  Message envoye avec succes.
+                </p>
+              ) : null}
+
+              {contactError ? (
+                <p className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                  {contactError}
+                </p>
+              ) : null}
+
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  disabled={sending || !message.trim() || !senderEmail.trim()}
+                  className="inline-flex rounded-full bg-[linear-gradient(135deg,#7c3aed,#a855f7)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(124,58,237,0.2)] transition hover:-translate-y-0.5 hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {sending ? 'Envoi...' : 'Envoyer le message'}
+                </button>
+              </div>
+            </form>
+          </section>
         </section>
 
         <Footer mode="public" className="mt-8" />

@@ -7,7 +7,10 @@ param(
     [string] $AcrName = 'yazooacr',
     [string] $DockerHubUser = '',
     [string] $DockerHubRepository = 'yazoo-api',
+    [ValidateSet('backend', 'frontend')]
+    [string] $App = 'backend',
     [string] $Tag = 'latest',
+    [string] $FrontendApiUrl = 'https://yazoo-api.azurewebsites.net/api',
     [switch] $SkipDockerHubLogin
 )
 
@@ -23,10 +26,15 @@ if ($Registry -eq 'acr') {
         throw "Unable to resolve ACR login server for '$AcrName'."
     }
 
-    $image = "$loginServer/yazoo-api:$Tag"
+    $imageName = if ($App -eq 'frontend') { 'yazoo-frontend' } else { 'yazoo-api' }
+    $image = "${loginServer}/${imageName}:$Tag"
 
-    Write-Host "Building backend image: $image"
-    docker build -t $image -f backend/Dockerfile .
+    Write-Host "Building $App image: $image"
+    if ($App -eq 'frontend') {
+        docker build -t $image -f frontend/Dockerfile --build-arg VITE_API_URL=$FrontendApiUrl .
+    } else {
+        docker build -t $image -f backend/Dockerfile .
+    }
     if ($LASTEXITCODE -ne 0) { throw 'Docker build failed.' }
 
     Write-Host "Logging in to ACR: $AcrName"
@@ -47,8 +55,12 @@ if (-not $DockerHubUser) {
 
 $image = "$DockerHubUser/${DockerHubRepository}:$Tag"
 
-Write-Host "Building backend image: $image"
-docker build -t $image -f backend/Dockerfile .
+Write-Host "Building $App image: $image"
+if ($App -eq 'frontend') {
+    docker build -t $image -f frontend/Dockerfile --build-arg VITE_API_URL=$FrontendApiUrl .
+} else {
+    docker build -t $image -f backend/Dockerfile .
+}
 if ($LASTEXITCODE -ne 0) { throw 'Docker build failed.' }
 
 if (-not $SkipDockerHubLogin) {

@@ -11,6 +11,9 @@ use App\Services\AuthService;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Laravel\Socialite\Facades\Socialite;
+use Throwable;
 
 class AuthController extends Controller
 {
@@ -51,6 +54,32 @@ class AuthController extends Controller
             $this->auth->login($request->validated()),
             __('messages.auth.login_success'),
         );
+    }
+
+    public function redirectToGoogle(): RedirectResponse
+    {
+        return Socialite::driver('google')
+            ->stateless()
+            ->scopes(['openid', 'email', 'profile'])
+            ->redirect();
+    }
+
+    public function handleGoogleCallback(): RedirectResponse
+    {
+        $frontendRedirect = (string) config('services.google.frontend_redirect');
+
+        try {
+            $googleUser = Socialite::driver('google')->stateless()->user();
+            $result = $this->auth->loginWithGoogle($googleUser);
+
+            return redirect()
+                ->away($frontendRedirect)
+                ->withCookie($this->auth->makeAuthCookie($result->plainTextToken));
+        } catch (Throwable) {
+            $separator = str_contains($frontendRedirect, '?') ? '&' : '?';
+
+            return redirect()->away($frontendRedirect.$separator.'auth_error=google');
+        }
     }
 
     public function me(Request $request): JsonResponse
