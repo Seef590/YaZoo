@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 
 import { getOrdersHistoryRequest } from '../api/reservations'
 import Avatar from '../components/ui/Avatar'
@@ -7,9 +7,12 @@ import { formatDate } from '../utils/formatDate'
 import { getErrorMessage } from '../utils/getErrorMessage'
 
 function OrderHistoryPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const queryFromUrl = searchParams.get('q') ?? ''
   const [buyerHistory, setBuyerHistory] = useState([])
   const [sellerHistory, setSellerHistory] = useState([])
   const [activeTab, setActiveTab] = useState('buyer')
+  const [search, setSearch] = useState(queryFromUrl)
   const [errorMessage, setErrorMessage] = useState('')
   const [isLoading, setIsLoading] = useState(true)
 
@@ -46,6 +49,26 @@ function OrderHistoryPage() {
   }, [])
 
   const orders = activeTab === 'buyer' ? buyerHistory : sellerHistory
+  const visibleOrders = filterOrders(orders, queryFromUrl)
+
+  useEffect(() => {
+    setSearch(queryFromUrl)
+  }, [queryFromUrl])
+
+  const handleSearch = (event) => {
+    event.preventDefault()
+
+    if (search.trim()) {
+      setSearchParams({ q: search.trim() })
+    } else {
+      setSearchParams({})
+    }
+  }
+
+  const handleResetSearch = () => {
+    setSearch('')
+    setSearchParams({})
+  }
 
   return (
     <section className="space-y-6">
@@ -119,6 +142,33 @@ function OrderHistoryPage() {
           </div>
         </div>
 
+        <form onSubmit={handleSearch} className="mt-5 flex flex-col gap-3 md:flex-row">
+          <input
+            type="search"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Rechercher une commande, une facture, un contact..."
+            className="flex-1 rounded-[22px] border border-violet-100 bg-[linear-gradient(135deg,_rgba(248,245,255,0.98),_rgba(255,255,255,0.94))] px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-300 focus:bg-white"
+          />
+          <div className="grid gap-3 sm:flex sm:flex-wrap">
+            <button
+              type="submit"
+              className="w-full rounded-full bg-[linear-gradient(135deg,#7c3aed,#a855f7,#c4b5fd)] px-4 py-2 text-sm font-medium text-white transition hover:brightness-105 sm:w-auto"
+            >
+              Rechercher
+            </button>
+            {queryFromUrl ? (
+              <button
+                type="button"
+                onClick={handleResetSearch}
+                className="w-full rounded-full bg-violet-50 px-4 py-2 text-sm font-medium text-violet-800 transition hover:bg-violet-100 sm:w-auto"
+              >
+                Reinitialiser
+              </button>
+            ) : null}
+          </div>
+        </form>
+
         {isLoading ? (
           <StateBox>Chargement de l'historique...</StateBox>
         ) : null}
@@ -127,9 +177,13 @@ function OrderHistoryPage() {
           <StateBox>Aucun historique disponible pour cette section.</StateBox>
         ) : null}
 
-        {!isLoading && orders.length > 0 ? (
+        {!isLoading && orders.length > 0 && visibleOrders.length === 0 ? (
+          <StateBox>Aucune commande ne correspond a votre recherche.</StateBox>
+        ) : null}
+
+        {!isLoading && visibleOrders.length > 0 ? (
           <div className="mt-5 grid gap-4 lg:grid-cols-2">
-            {orders.map((order) => (
+            {visibleOrders.map((order) => (
               <OrderHistoryCard key={order.id} order={order} />
             ))}
           </div>
@@ -305,6 +359,37 @@ function formatPrice(value) {
   }
 
   return `${value} MAD`
+}
+
+function filterOrders(orders, searchTerm) {
+  if (!searchTerm) {
+    return orders
+  }
+
+  const normalizedSearch = normalizeSearchText(searchTerm)
+
+  return orders.filter((order) => {
+    const counterpart = order.isBuyer ? order.seller : order.buyer
+
+    return [
+      order.listing?.title,
+      order.listing?.location,
+      order.invoiceNumber,
+      counterpart?.name,
+      counterpart?.email,
+      order.reservationStatus,
+      order.deliveryStatus,
+      order.paymentStatus,
+      order.deliveryMethod,
+    ].some((value) => normalizeSearchText(value).includes(normalizedSearch))
+  })
+}
+
+function normalizeSearchText(value) {
+  return String(value ?? '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
 }
 
 export default OrderHistoryPage

@@ -23,7 +23,9 @@ const defaultConversationForm = {
 function MessagesPage() {
   const { user } = useAuth()
   const [searchParams, setSearchParams] = useSearchParams()
+  const queryFromUrl = searchParams.get('q') ?? ''
   const [conversations, setConversations] = useState([])
+  const [search, setSearch] = useState(queryFromUrl)
   const [selectedConversationId, setSelectedConversationId] = useState(null)
   const [selectedConversation, setSelectedConversation] = useState(null)
   const [conversationForm, setConversationForm] = useState(defaultConversationForm)
@@ -40,6 +42,7 @@ function MessagesPage() {
     (sum, conversation) => sum + (conversation.unreadCount ?? 0),
     0,
   )
+  const visibleConversations = filterConversations(conversations, queryFromUrl)
 
   const loadConversations = useCallback(
     async ({ silent = false } = {}) => {
@@ -89,7 +92,11 @@ function MessagesPage() {
         await refreshUnreadCount()
 
         if (updateQuery) {
-          setSearchParams({ conversation: String(conversationId) })
+          const nextSearchParams = new URLSearchParams(searchParams)
+          nextSearchParams.set('conversation', String(conversationId))
+          nextSearchParams.delete('email')
+          nextSearchParams.delete('message')
+          setSearchParams(nextSearchParams)
         }
       } catch (error) {
         setErrorMessage(
@@ -99,12 +106,16 @@ function MessagesPage() {
         setIsConversationLoading(false)
       }
     },
-    [refreshUnreadCount, setSearchParams],
+    [refreshUnreadCount, searchParams, setSearchParams],
   )
 
   useEffect(() => {
     loadConversations()
   }, [loadConversations])
+
+  useEffect(() => {
+    setSearch(queryFromUrl)
+  }, [queryFromUrl])
 
   useEffect(() => {
     if (isLoading) {
@@ -285,6 +296,28 @@ function MessagesPage() {
     }
   }
 
+  const handleSearch = (event) => {
+    event.preventDefault()
+
+    const nextSearchParams = new URLSearchParams(searchParams)
+
+    if (search.trim()) {
+      nextSearchParams.set('q', search.trim())
+    } else {
+      nextSearchParams.delete('q')
+    }
+
+    setSearchParams(nextSearchParams)
+  }
+
+  const handleResetSearch = () => {
+    const nextSearchParams = new URLSearchParams(searchParams)
+
+    nextSearchParams.delete('q')
+    setSearch('')
+    setSearchParams(nextSearchParams)
+  }
+
   const handleSendMessage = async (event) => {
     event.preventDefault()
 
@@ -444,15 +477,39 @@ function MessagesPage() {
               </div>
             </div>
 
+            <form onSubmit={handleSearch} className="mb-4 flex flex-col gap-3">
+              <input
+                type="search"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Rechercher une conversation..."
+                className="w-full rounded-[22px] border border-violet-100 bg-[linear-gradient(135deg,_rgba(248,245,255,0.98),_rgba(255,255,255,0.94))] px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-300 focus:bg-white"
+              />
+              <div className="grid gap-3 sm:flex sm:flex-wrap">
+                <Button type="submit" className="w-full sm:w-auto">
+                  Rechercher
+                </Button>
+                {queryFromUrl ? (
+                  <Button type="button" variant="ghost" onClick={handleResetSearch} className="w-full sm:w-auto">
+                    Reinitialiser
+                  </Button>
+                ) : null}
+              </div>
+            </form>
+
             {isLoading ? <StateBox>Chargement des conversations...</StateBox> : null}
 
             {!isLoading && conversations.length === 0 ? (
               <StateBox>Aucune conversation pour le moment.</StateBox>
             ) : null}
 
-            {!isLoading && conversations.length > 0 ? (
+            {!isLoading && conversations.length > 0 && visibleConversations.length === 0 ? (
+              <StateBox>Aucune conversation ne correspond a votre recherche.</StateBox>
+            ) : null}
+
+            {!isLoading && visibleConversations.length > 0 ? (
               <div className="space-y-3">
-                {conversations.map((conversation) => {
+                {visibleConversations.map((conversation) => {
                   const isActive = selectedConversationId === conversation.id
 
                   return (
@@ -666,6 +723,30 @@ function appendUniqueMessage(messages, nextMessage) {
   }
 
   return [...messages, nextMessage]
+}
+
+function filterConversations(conversations, searchTerm) {
+  if (!searchTerm) {
+    return conversations
+  }
+
+  const normalizedSearch = normalizeSearchText(searchTerm)
+
+  return conversations.filter((conversation) =>
+    [
+      conversation.participant?.name,
+      conversation.participant?.email,
+      conversation.latestMessage?.body,
+      conversation.updatedAt,
+    ].some((value) => normalizeSearchText(value).includes(normalizedSearch)),
+  )
+}
+
+function normalizeSearchText(value) {
+  return String(value ?? '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
 }
 
 export default MessagesPage

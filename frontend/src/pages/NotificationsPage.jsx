@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import {
   getNotificationsRequest,
@@ -13,8 +13,11 @@ import { getErrorMessage } from '../utils/getErrorMessage'
 
 function NotificationsPage() {
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const queryFromUrl = searchParams.get('q') ?? ''
   const { refreshUnreadCount, latestNotification } = useNotifications()
   const [notifications, setNotifications] = useState([])
+  const [search, setSearch] = useState(queryFromUrl)
   const [errorMessage, setErrorMessage] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -23,6 +26,7 @@ function NotificationsPage() {
 
   const unreadCount = notifications.filter((notification) => !notification.isRead).length
   const readCount = notifications.length - unreadCount
+  const visibleNotifications = filterNotifications(notifications, queryFromUrl)
 
   const fetchNotifications = async () => {
     try {
@@ -42,6 +46,10 @@ function NotificationsPage() {
   useEffect(() => {
     fetchNotifications()
   }, [])
+
+  useEffect(() => {
+    setSearch(queryFromUrl)
+  }, [queryFromUrl])
 
   useEffect(() => {
     if (!latestNotification) {
@@ -120,6 +128,21 @@ function NotificationsPage() {
     navigate(notification.actionUrl ?? '/feed')
   }
 
+  const handleSearch = (event) => {
+    event.preventDefault()
+
+    if (search.trim()) {
+      setSearchParams({ q: search.trim() })
+    } else {
+      setSearchParams({})
+    }
+  }
+
+  const handleResetSearch = () => {
+    setSearch('')
+    setSearchParams({})
+  }
+
   return (
     <section className="space-y-6">
       <section className="overflow-hidden rounded-[30px] border border-white/80 bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.16),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(221,214,254,0.5),_transparent_28%),linear-gradient(135deg,_rgba(255,255,255,0.98)_0%,_rgba(247,241,255,0.9)_48%,_rgba(237,233,254,0.84)_100%)] p-5 shadow-[0_24px_60px_rgba(124,58,237,0.1)] sm:rounded-[32px] sm:p-6">
@@ -188,15 +211,39 @@ function NotificationsPage() {
           </div>
         </div>
 
+        <form onSubmit={handleSearch} className="mt-5 flex flex-col gap-3 md:flex-row">
+          <input
+            type="search"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Rechercher une notification..."
+            className="flex-1 rounded-[22px] border border-violet-100 bg-[linear-gradient(135deg,_rgba(248,245,255,0.98),_rgba(255,255,255,0.94))] px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-300 focus:bg-white"
+          />
+          <div className="grid gap-3 sm:flex sm:flex-wrap">
+            <Button type="submit" className="w-full sm:w-auto">
+              Rechercher
+            </Button>
+            {queryFromUrl ? (
+              <Button type="button" variant="ghost" onClick={handleResetSearch} className="w-full sm:w-auto">
+                Reinitialiser
+              </Button>
+            ) : null}
+          </div>
+        </form>
+
         {isLoading ? <StateBox>Chargement des notifications...</StateBox> : null}
 
         {!isLoading && notifications.length === 0 ? (
           <StateBox>Aucune notification pour le moment.</StateBox>
         ) : null}
 
-        {!isLoading && notifications.length > 0 ? (
+        {!isLoading && notifications.length > 0 && visibleNotifications.length === 0 ? (
+          <StateBox>Aucune notification ne correspond a votre recherche.</StateBox>
+        ) : null}
+
+        {!isLoading && visibleNotifications.length > 0 ? (
           <div className="mt-5 space-y-4">
-            {notifications.map((notification) => {
+            {visibleNotifications.map((notification) => {
               const isProcessing = processingIds.includes(notification.id)
               const isUnread = !notification.isRead
 
@@ -314,6 +361,31 @@ function upsertNotification(currentNotifications, nextNotification) {
       new Date(secondNotification.createdAt ?? 0).getTime() -
       new Date(firstNotification.createdAt ?? 0).getTime(),
   )
+}
+
+function filterNotifications(notifications, searchTerm) {
+  if (!searchTerm) {
+    return notifications
+  }
+
+  const normalizedSearch = normalizeSearchText(searchTerm)
+
+  return notifications.filter((notification) =>
+    [
+      notification.title,
+      notification.body,
+      notification.type,
+      formatNotificationType(notification.type),
+      notification.actionUrl,
+    ].some((value) => normalizeSearchText(value).includes(normalizedSearch)),
+  )
+}
+
+function normalizeSearchText(value) {
+  return String(value ?? '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
 }
 
 export default NotificationsPage

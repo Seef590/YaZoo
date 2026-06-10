@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import PropTypes from 'prop-types'
 
 import {
@@ -25,8 +26,10 @@ const defaultForm = {
 }
 
 function CommunitiesPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const queryFromUrl = searchParams.get('q') ?? ''
   const [communities, setCommunities] = useState([])
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useState(queryFromUrl)
   const [form, setForm] = useState(defaultForm)
   const [editingId, setEditingId] = useState(null)
   const [errorMessage, setErrorMessage] = useState('')
@@ -59,10 +62,11 @@ function CommunitiesPage() {
 
   useEffect(() => {
     let cancelled = false
+    setSearch(queryFromUrl)
 
     const loadInitialCommunities = async () => {
       try {
-        const response = await getCommunitiesRequest()
+        const response = await getCommunitiesRequest(queryFromUrl ? { q: queryFromUrl } : {})
 
         if (!cancelled) {
           setCommunities(response.data.data)
@@ -86,7 +90,7 @@ function CommunitiesPage() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [queryFromUrl])
 
   const heroStats = useMemo(() => {
     const privateCount = communities.filter((community) => community.isPrivate).length
@@ -105,12 +109,18 @@ function CommunitiesPage() {
 
   const handleSearch = async (event) => {
     event.preventDefault()
+    if (search.trim()) {
+      setSearchParams({ q: search.trim() })
+    } else {
+      setSearchParams({})
+    }
     setIsLoading(true)
     await fetchCommunities(search)
   }
 
   const handleResetSearch = async () => {
     setSearch('')
+    setSearchParams({})
     setIsLoading(true)
     await fetchCommunities('')
   }

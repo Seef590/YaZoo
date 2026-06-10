@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 
 import { getPostsRequest } from '../api/posts'
 import { getProfileRequest, updateProfileRequest } from '../api/profile'
@@ -12,6 +13,7 @@ import { normalizeAuthUserMedia, normalizeProfileMediaPayload } from '../utils/m
 
 function ProfilePage() {
   const { setUser, user } = useAuth()
+  const [searchParams] = useSearchParams()
   const [profile, setProfile] = useState(null)
   const [form, setForm] = useState({
     name: '',
@@ -238,6 +240,11 @@ function ProfilePage() {
   const followersCount = profile?.followersCount ?? 0
   const followingCount = profile?.followingCount ?? 0
   const profileLocation = profile?.city || user?.city || ''
+  const searchTerm = searchParams.get('q')?.trim() ?? ''
+  const visibleRecentPublications = filterPublications(
+    recentPublications,
+    searchTerm,
+  )
 
   const handleEditToggle = () => {
     if (isEditOpen) {
@@ -371,7 +378,13 @@ function ProfilePage() {
             </div>
           ) : null}
 
-          {recentPublications.map((post) => {
+          {recentPublications.length > 0 && visibleRecentPublications.length === 0 ? (
+            <div className="rounded-[24px] border border-dashed border-violet-200 bg-white/84 px-5 py-10 text-center text-sm text-stone-500">
+              Aucune publication ne correspond a votre recherche.
+            </div>
+          ) : null}
+
+          {visibleRecentPublications.map((post) => {
             const postMediaUrl = post.mediaUrl ?? post.imageUrl ?? ''
             const postMediaKind = post.mediaKind ?? (post.imageUrl ? 'image' : null)
 
@@ -615,6 +628,31 @@ function StatCard({ label, value }) {
       </p>
     </div>
   )
+}
+
+function filterPublications(publications, searchTerm) {
+  if (!searchTerm) {
+    return publications
+  }
+
+  const normalizedSearch = normalizeSearchText(searchTerm)
+
+  return publications.filter((post) =>
+    [
+      post.content,
+      post.location,
+      post.author?.name,
+      post.author?.email,
+      ...(post.tags ?? []),
+    ].some((value) => normalizeSearchText(value).includes(normalizedSearch)),
+  )
+}
+
+function normalizeSearchText(value) {
+  return String(value ?? '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
 }
 
 export default ProfilePage

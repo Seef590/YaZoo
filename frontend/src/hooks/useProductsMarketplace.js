@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 
 import { defaultProductFilters, defaultProductForm } from '../features/marketplace/marketplaceOptions'
 import {
@@ -16,8 +17,13 @@ const cloneProductForm = () => ({
 })
 
 export function useProductsMarketplace() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const queryFromUrl = searchParams.get('q') ?? ''
   const [products, setProducts] = useState([])
-  const [filters, setFilters] = useState(defaultProductFilters)
+  const [filters, setFilters] = useState(() => ({
+    ...defaultProductFilters,
+    q: queryFromUrl,
+  }))
   const [form, setForm] = useState(cloneProductForm)
   const [imageFile, setImageFile] = useState(null)
   const [galleryFiles, setGalleryFiles] = useState([])
@@ -72,6 +78,20 @@ export function useProductsMarketplace() {
     }
   }, [])
 
+  useEffect(() => {
+    setFilters((current) => {
+      if (current.q === queryFromUrl) {
+        return current
+      }
+
+      return { ...current, q: queryFromUrl }
+    })
+
+    setIsLoading(true)
+    void loadProducts({ ...filters, q: queryFromUrl })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queryFromUrl])
+
   const handleFilterChange = (field) => (event) => {
     setFilters((current) => ({ ...current, [field]: event.target.value }))
   }
@@ -89,12 +109,18 @@ export function useProductsMarketplace() {
 
   const handleSearch = async (event) => {
     event.preventDefault()
+    if (filters.q.trim()) {
+      setSearchParams({ q: filters.q.trim() })
+    } else {
+      setSearchParams({})
+    }
     setIsLoading(true)
     await loadProducts(filters)
   }
 
   const handleResetFilters = async () => {
     setFilters(defaultProductFilters)
+    setSearchParams({})
     setIsLoading(true)
     await loadProducts(defaultProductFilters)
   }

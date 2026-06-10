@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 
 import { defaultAnimalFilters, defaultAnimalForm } from '../features/marketplace/marketplaceOptions'
 import {
@@ -16,8 +17,13 @@ const cloneAnimalForm = () => ({
 })
 
 export function useAnimalsMarketplace() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const queryFromUrl = searchParams.get('q') ?? ''
   const [animals, setAnimals] = useState([])
-  const [filters, setFilters] = useState(defaultAnimalFilters)
+  const [filters, setFilters] = useState(() => ({
+    ...defaultAnimalFilters,
+    q: queryFromUrl,
+  }))
   const [form, setForm] = useState(cloneAnimalForm)
   const [photoFile, setPhotoFile] = useState(null)
   const [galleryFiles, setGalleryFiles] = useState([])
@@ -72,6 +78,20 @@ export function useAnimalsMarketplace() {
     }
   }, [])
 
+  useEffect(() => {
+    setFilters((current) => {
+      if (current.q === queryFromUrl) {
+        return current
+      }
+
+      return { ...current, q: queryFromUrl }
+    })
+
+    setIsLoading(true)
+    void loadAnimals({ ...filters, q: queryFromUrl })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [queryFromUrl])
+
   const handleFilterChange = (field) => (event) => {
     setFilters((current) => ({ ...current, [field]: event.target.value }))
   }
@@ -92,12 +112,18 @@ export function useAnimalsMarketplace() {
 
   const handleSearch = async (event) => {
     event.preventDefault()
+    if (filters.q.trim()) {
+      setSearchParams({ q: filters.q.trim() })
+    } else {
+      setSearchParams({})
+    }
     setIsLoading(true)
     await loadAnimals(filters)
   }
 
   const handleResetFilters = async () => {
     setFilters(defaultAnimalFilters)
+    setSearchParams({})
     setIsLoading(true)
     await loadAnimals(defaultAnimalFilters)
   }

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { NavLink, Navigate, Outlet, useNavigate } from 'react-router-dom'
+import { NavLink, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
 
 import Avatar from '../components/ui/Avatar'
@@ -10,9 +10,11 @@ import { useNotifications } from '../hooks/useNotifications'
 
 function Layout() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { isAuthenticated, isBootstrapping, logout, user } = useAuth()
   const { unreadCount, realtimeStatus, isRealtimeEnabled } = useNotifications()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [globalSearch, setGlobalSearch] = useState('')
   const mobileMenuTriggerRef = useRef(null)
   const mobileMenuCloseRef = useRef(null)
   const realtimeIndicator = getRealtimeIndicator(realtimeStatus, isRealtimeEnabled)
@@ -54,6 +56,12 @@ function Layout() {
     }
   }, [isMobileMenuOpen])
 
+  useEffect(() => {
+    const query = new URLSearchParams(location.search).get('q') ?? ''
+
+    setGlobalSearch(query)
+  }, [location.search])
+
   if (isBootstrapping) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[linear-gradient(180deg,_#fffaff_0%,_#f7f1ff_100%)] px-4">
@@ -76,6 +84,21 @@ function Layout() {
         openStoryComposer: true,
       },
     })
+  }
+
+  const handleGlobalSearch = (event) => {
+    event.preventDefault()
+
+    const query = globalSearch.trim()
+    const targetPath = getSearchTargetPath(location.pathname)
+
+    if (!query) {
+      navigate(targetPath)
+      return
+    }
+
+    navigate(`${targetPath}?q=${encodeURIComponent(query)}`)
+    setIsMobileMenuOpen(false)
   }
 
   const navigationItems = [
@@ -112,16 +135,9 @@ function Layout() {
               </div>
             </NavLink>
 
-            <div className="hidden min-w-[220px] flex-1 md:block">
-              <label className="block">
-                <span className="sr-only">Rechercher</span>
-                <input
-                  type="text"
-                  placeholder="Rechercher..."
-                  className="w-full rounded-full border border-white/55 bg-white/70 px-4 py-2 text-sm text-stone-700 outline-none transition focus:border-violet-300 focus:bg-white"
-                />
-              </label>
-            </div>
+            <form onSubmit={handleGlobalSearch} className="hidden min-w-[220px] flex-1 md:block">
+              <SearchInput value={globalSearch} onChange={setGlobalSearch} />
+            </form>
 
             <div className="ml-auto flex items-center gap-2">
               <button
@@ -161,16 +177,9 @@ function Layout() {
             </div>
           </div>
 
-          <div className="mt-3 md:hidden">
-            <label className="block">
-              <span className="sr-only">Rechercher</span>
-              <input
-                type="text"
-                placeholder="Rechercher..."
-                className="w-full rounded-full border border-white/55 bg-white/70 px-4 py-2 text-sm text-stone-700 outline-none transition focus:border-violet-300 focus:bg-white"
-              />
-            </label>
-          </div>
+          <form onSubmit={handleGlobalSearch} className="mt-3 md:hidden">
+            <SearchInput value={globalSearch} onChange={setGlobalSearch} />
+          </form>
 
           <div className="mt-3 flex flex-wrap items-center gap-2 sm:hidden">
             <InlinePill tone={realtimeIndicator.tone}>{realtimeIndicator.shortLabel}</InlinePill>
@@ -226,6 +235,43 @@ function DesktopNav({ items }) {
       </div>
     </nav>
   )
+}
+
+function SearchInput({ value, onChange }) {
+  return (
+    <label className="block">
+      <span className="sr-only">Rechercher</span>
+      <input
+        type="search"
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder="Rechercher..."
+        className="w-full rounded-full border border-white/55 bg-white/70 px-4 py-2 text-sm text-stone-700 outline-none transition focus:border-violet-300 focus:bg-white"
+      />
+    </label>
+  )
+}
+
+function getSearchTargetPath(pathname) {
+  if (pathname.startsWith('/marketplace/products')) {
+    return '/marketplace/products'
+  }
+
+  if (pathname.startsWith('/marketplace')) {
+    return '/marketplace'
+  }
+
+  const searchablePaths = [
+    '/feed',
+    '/profile',
+    '/communities',
+    '/messages',
+    '/reservations',
+    '/notifications',
+    '/orders/history',
+  ]
+
+  return searchablePaths.includes(pathname) ? pathname : '/feed'
 }
 
 function MobileMenuDrawer({
@@ -575,6 +621,11 @@ function getRealtimeIndicator(realtimeStatus, isRealtimeEnabled) {
 
 DesktopNav.propTypes = {
   items: PropTypes.array,
+}
+
+SearchInput.propTypes = {
+  value: PropTypes.string,
+  onChange: PropTypes.func,
 }
 
 MobileMenuDrawer.propTypes = {

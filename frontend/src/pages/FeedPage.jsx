@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import PropTypes from 'prop-types'
 
 import { getAnimalsRequest } from '../api/animals'
@@ -32,6 +32,7 @@ import { normalizeProfileMediaPayload } from '../utils/media'
 function FeedPage() {
   const location = useLocation()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { user } = useAuth()
   const [posts, setPosts] = useState([])
   const [storyGroups, setStoryGroups] = useState([])
@@ -339,6 +340,11 @@ function FeedPage() {
     () => storyGroups.map((group) => mapStoryGroupForViewer(group)),
     [storyGroups],
   )
+  const searchTerm = searchParams.get('q')?.trim() ?? ''
+  const visiblePosts = useMemo(
+    () => filterPosts(posts, searchTerm),
+    [posts, searchTerm],
+  )
   const storyViewerKey = getStoryViewerKey(activeStoryIndex, viewerStories)
   const ownPosts = useMemo(
     () =>
@@ -442,9 +448,15 @@ function FeedPage() {
             </div>
           ) : null}
 
+          {!isLoading && posts.length > 0 && visiblePosts.length === 0 ? (
+            <div className="rounded-[28px] border border-dashed border-violet-200 bg-white/84 px-5 py-12 text-center text-sm text-stone-500">
+              Aucun post ne correspond a votre recherche.
+            </div>
+          ) : null}
+
           {!isLoading ? (
             <div className="space-y-5">
-              {posts.map((post) => (
+              {visiblePosts.map((post) => (
                 <PostCard
                   key={post.id}
                   post={post}
@@ -821,6 +833,31 @@ function truncateText(text, maxLength) {
   }
 
   return `${text.slice(0, Math.max(0, maxLength - 3)).trim()}...`
+}
+
+function filterPosts(posts, searchTerm) {
+  if (!searchTerm) {
+    return posts
+  }
+
+  const normalizedSearch = normalizeSearchText(searchTerm)
+
+  return posts.filter((post) =>
+    [
+      post.content,
+      post.location,
+      post.author?.name,
+      post.author?.email,
+      ...(post.tags ?? []),
+    ].some((value) => normalizeSearchText(value).includes(normalizedSearch)),
+  )
+}
+
+function normalizeSearchText(value) {
+  return String(value ?? '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
 }
 
 function getStoryInitials(name) {

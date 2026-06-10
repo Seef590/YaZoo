@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 
 import {
   approveReservationRequest,
@@ -15,9 +15,12 @@ import { formatDate } from '../utils/formatDate'
 import { getErrorMessage } from '../utils/getErrorMessage'
 
 function ReservationsPage() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const queryFromUrl = searchParams.get('q') ?? ''
   const [buyerReservations, setBuyerReservations] = useState([])
   const [sellerReservations, setSellerReservations] = useState([])
   const [activeTab, setActiveTab] = useState('buyer')
+  const [search, setSearch] = useState(queryFromUrl)
   const [errorMessage, setErrorMessage] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -43,8 +46,28 @@ function ReservationsPage() {
     loadReservations()
   }, [])
 
+  useEffect(() => {
+    setSearch(queryFromUrl)
+  }, [queryFromUrl])
+
   const reservations =
     activeTab === 'buyer' ? buyerReservations : sellerReservations
+  const visibleReservations = filterReservations(reservations, queryFromUrl)
+
+  const handleSearch = (event) => {
+    event.preventDefault()
+
+    if (search.trim()) {
+      setSearchParams({ q: search.trim() })
+    } else {
+      setSearchParams({})
+    }
+  }
+
+  const handleResetSearch = () => {
+    setSearch('')
+    setSearchParams({})
+  }
 
   const handleAction = async (action, reservation, payload = null) => {
     const confirmed = globalThis.confirm(buildConfirmMessage(action, reservation))
@@ -171,6 +194,26 @@ function ReservationsPage() {
           </div>
         </div>
 
+        <form onSubmit={handleSearch} className="mt-5 flex flex-col gap-3 md:flex-row">
+          <input
+            type="search"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Rechercher une reservation, un contact, une ville..."
+            className="flex-1 rounded-[22px] border border-violet-100 bg-[linear-gradient(135deg,_rgba(248,245,255,0.98),_rgba(255,255,255,0.94))] px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-300 focus:bg-white"
+          />
+          <div className="grid gap-3 sm:flex sm:flex-wrap">
+            <Button type="submit" className="w-full sm:w-auto">
+              Rechercher
+            </Button>
+            {queryFromUrl ? (
+              <Button type="button" variant="ghost" onClick={handleResetSearch} className="w-full sm:w-auto">
+                Reinitialiser
+              </Button>
+            ) : null}
+          </div>
+        </form>
+
         {isLoading ? (
           <div className="mt-5 rounded-[24px] border border-dashed border-violet-200 bg-white/84 px-5 py-12 text-center text-sm text-stone-500">
             Chargement des reservations...
@@ -183,9 +226,15 @@ function ReservationsPage() {
           </div>
         ) : null}
 
-        {!isLoading && reservations.length > 0 ? (
+        {!isLoading && reservations.length > 0 && visibleReservations.length === 0 ? (
+          <div className="mt-5 rounded-[24px] border border-dashed border-violet-200 bg-white/84 px-5 py-12 text-center text-sm text-stone-500">
+            Aucune reservation ne correspond a votre recherche.
+          </div>
+        ) : null}
+
+        {!isLoading && visibleReservations.length > 0 ? (
           <div className="mt-5 grid gap-4 lg:grid-cols-2">
-            {reservations.map((reservation) => (
+            {visibleReservations.map((reservation) => (
               <ReservationCard
                 key={reservation.id}
                 reservation={reservation}
@@ -577,6 +626,38 @@ function formatPrice(value) {
   }
 
   return `${value} MAD`
+}
+
+function filterReservations(reservations, searchTerm) {
+  if (!searchTerm) {
+    return reservations
+  }
+
+  const normalizedSearch = normalizeSearchText(searchTerm)
+
+  return reservations.filter((reservation) => {
+    const counterpart = reservation.isBuyer ? reservation.seller : reservation.buyer
+
+    return [
+      reservation.listing?.title,
+      reservation.listing?.location,
+      reservation.delivery?.city,
+      reservation.delivery?.address,
+      counterpart?.name,
+      counterpart?.email,
+      reservation.reservationStatus,
+      reservation.deliveryStatus,
+      reservation.kind,
+      reservation.note,
+    ].some((value) => normalizeSearchText(value).includes(normalizedSearch))
+  })
+}
+
+function normalizeSearchText(value) {
+  return String(value ?? '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
 }
 
 export default ReservationsPage
