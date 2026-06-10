@@ -62,6 +62,7 @@ function Get-DockerContainer {
         [string] $Service,
         [Parameter(Mandatory)]
         [string] $FallbackName,
+        [string[]] $AdditionalFallbackNames = @(),
         [string] $RepoRoot = (Get-YazooRepoRoot)
     )
 
@@ -81,9 +82,11 @@ function Get-DockerContainer {
         return $containerId.Trim()
     }
 
-    $containerId = @(& docker ps --filter "name=$FallbackName" --format '{{.ID}}' 2>$null) | Select-Object -First 1
-    if ($containerId) {
-        return $containerId.Trim()
+    foreach ($name in @($FallbackName) + $AdditionalFallbackNames) {
+        $containerId = @(& docker ps --filter "name=$name" --format '{{.ID}}' 2>$null) | Select-Object -First 1
+        if ($containerId) {
+            return $containerId.Trim()
+        }
     }
 
     throw "Could not find a running Docker container for service '$Service'."
@@ -164,4 +167,3 @@ function Assert-PathInside {
         throw "Refusing to operate outside backup root: $pathFull"
     }
 }
-

@@ -17,7 +17,7 @@ if (-not (Test-Path -LiteralPath $mysqlDir)) {
     New-Item -ItemType Directory -Path $mysqlDir | Out-Null
 }
 
-$container = Get-DockerContainer -Service 'mysql' -FallbackName 'yazoo_v2-mysql-1' -RepoRoot $repoRoot
+$container = Get-DockerContainer -Service 'mysql' -FallbackName 'yazoo-mysql-1' -AdditionalFallbackNames @('yazoo_v2-mysql-1') -RepoRoot $repoRoot
 Assert-ContainerRunning $container
 
 $timestamp = Get-Date -Format 'yyyy-MM-dd_HH-mm'

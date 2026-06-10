@@ -15,6 +15,9 @@ log() {
 
 container=$(cd "$REPO_ROOT" && docker compose ps -q mysql 2>/dev/null || true)
 if [ -z "$container" ]; then
+  container=$(docker ps --filter name=yazoo-mysql-1 --format '{{.ID}}' | head -n 1)
+fi
+if [ -z "$container" ]; then
   container=$(docker ps --filter name=yazoo_v2-mysql-1 --format '{{.ID}}' | head -n 1)
 fi
 if [ -z "$container" ]; then

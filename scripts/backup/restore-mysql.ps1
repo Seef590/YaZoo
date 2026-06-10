@@ -196,7 +196,7 @@ if (-not (Test-Path -LiteralPath $BackupFile)) {
 }
 
 Test-GzipFile -Path $BackupFile | Out-Null
-$container = Get-DockerContainer -Service 'mysql' -FallbackName 'yazoo_v2-mysql-1' -RepoRoot $repoRoot
+$container = Get-DockerContainer -Service 'mysql' -FallbackName 'yazoo-mysql-1' -AdditionalFallbackNames @('yazoo_v2-mysql-1') -RepoRoot $repoRoot
 Assert-ContainerRunning $container
 
 Invoke-TestRestore -Container $container -BackupPath $BackupFile -KeepDatabase:$KeepTestDatabase

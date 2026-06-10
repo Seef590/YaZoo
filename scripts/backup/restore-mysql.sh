@@ -28,6 +28,9 @@ gzip -t "$backup_file"
 
 container=$(cd "$REPO_ROOT" && docker compose ps -q mysql 2>/dev/null || true)
 if [ -z "$container" ]; then
+  container=$(docker ps --filter name=yazoo-mysql-1 --format '{{.ID}}' | head -n 1)
+fi
+if [ -z "$container" ]; then
   container=$(docker ps --filter name=yazoo_v2-mysql-1 --format '{{.ID}}' | head -n 1)
 fi
 if [ -z "$container" ]; then
@@ -58,4 +61,3 @@ docker exec "$container" sh -lc 'mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" -e "C
 docker exec "$container" sh -lc 'gzip -dc /tmp/yazoo_restore.sql.gz | mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE"'
 docker exec "$container" sh -lc 'rm -f /tmp/yazoo_restore.sql.gz'
 printf '%s [INFO] Production restore completed from %s\n' "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$(basename "$backup_file")" >> "$LOG_DIR/restore.log"
-

@@ -119,6 +119,7 @@ Build et lancement local:
 
 ```powershell
 cd "C:\Users\seef7\OneDrive\Desktop\YaZoo"
+docker compose -p yazoo_v2 down
 docker compose build
 docker compose up -d
 ```
@@ -127,8 +128,17 @@ Image backend seule:
 
 ```powershell
 cd "C:\Users\seef7\OneDrive\Desktop\YaZoo"
-docker build -f backend\Dockerfile -t yazoo-backend:local .
+docker build -f backend\Dockerfile -t yazoo-api:local .
 ```
+
+Push manuel vers ACR ou Docker Hub:
+
+```powershell
+.\deploy\quick-build-push.ps1 -Registry acr -ResourceGroup yazoo-rg -AcrName yazooacr -Tag latest
+.\deploy\quick-build-push.ps1 -Registry dockerhub -DockerHubUser <dockerhub-user> -DockerHubRepository yazoo-api -Tag latest
+```
+
+Si Docker Hub refuse le push avec `insufficient_scope`, verifier que `-DockerHubUser` correspond exactement au compte connecte. Exemple: `5eef` et `5eeef` sont deux namespaces differents.
 
 ## Azure Student
 
@@ -167,4 +177,3 @@ Secrets GitHub requis:
 - `AZURE_STATIC_WEB_APPS_API_TOKEN`
 - `ACR_NAME`
 - `ACR_LOGIN_SERVER`
-

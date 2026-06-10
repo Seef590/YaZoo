@@ -16,6 +16,8 @@
 - `AZURE_STATIC_WEB_APPS_API_TOKEN`: token de deploiement Static Web Apps.
 - `ACR_NAME`: nom Azure Container Registry sans suffixe.
 - `ACR_LOGIN_SERVER`: serveur ACR, par exemple `yazooacr.azurecr.io`.
+- `DOCKERHUB_USERNAME`: optionnel, si l'image backend est publiee sur Docker Hub.
+- `DOCKERHUB_TOKEN`: optionnel, token Docker Hub si Docker Hub remplace ACR.
 - `SONAR_TOKEN`: optionnel, uniquement si SonarCloud est utilise.
 
 ## GitHub Variables frontend
@@ -101,6 +103,72 @@ Ajouter ensuite toutes les variables backend listees plus haut avec:
 
 ```powershell
 az webapp config appsettings set --resource-group <resource-group> --name <azure-webapp-name> --settings KEY=value
+```
+
+## Build et push manuel d'image
+
+Depuis la racine du projet:
+
+```powershell
+cd C:\Users\seef7\OneDrive\Desktop\YaZoo
+.\deploy\quick-build-push.ps1 -Registry acr -ResourceGroup <resource-group> -AcrName <acr-name> -Tag latest
+```
+
+Pour Docker Hub:
+
+```powershell
+cd C:\Users\seef7\OneDrive\Desktop\YaZoo
+.\deploy\quick-build-push.ps1 -Registry dockerhub -DockerHubUser <dockerhub-user> -DockerHubRepository yazoo-api -Tag latest
+```
+
+Image Docker Hub obtenue:
+
+```text
+<dockerhub-user>/yazoo-api:latest
+```
+
+Pour utiliser Docker Hub dans Azure App Service au lieu d'ACR:
+
+```powershell
+az webapp config container set --resource-group <resource-group> --name <azure-webapp-name> --docker-custom-image-name <dockerhub-user>/yazoo-api:latest --docker-registry-server-url https://index.docker.io
+```
+
+Si le repository Docker Hub est prive, ajouter aussi les App Settings de registre via le portail Azure ou Azure CLI.
+
+Deploiement backend Azure App Service depuis l'image Docker Hub publique:
+
+```powershell
+cd C:\Users\seef7\OneDrive\Desktop\YaZoo
+$appKey = cd backend; php artisan key:generate --show; cd ..
+.\deploy\azure-dockerhub-deploy.ps1 `
+  -ResourceGroup yazoo-rg `
+  -Location germanywestcentral `
+  -WebAppName yazoo-api `
+  -DockerHubImage 5eef/yazoo-api:latest `
+  -AppKey $appKey `
+  -FrontendUrl https://<static-web-app-name>.azurestaticapps.net `
+  -DbHost <mysql-server-name>.mysql.database.azure.com `
+  -DbUsername <mysql-admin-user> `
+  -DbPassword <mysql-password> `
+  -RedisHost <redis-name>.redis.cache.windows.net `
+  -RedisPassword <redis-access-key>
+```
+
+## Ports locaux Docker
+
+Les ports attendus en local sont:
+
+- Frontend: `http://127.0.0.1:4173`
+- Backend API via nginx: `http://127.0.0.1:8000`
+- MySQL local: `127.0.0.1:3307`
+- Redis local: `127.0.0.1:6379`
+- SonarQube local: `http://127.0.0.1:9000`
+
+Si des conteneurs d'un ancien projet `yazoo_v2` occupent les ports, les arreter avant de lancer la stack courante:
+
+```powershell
+docker compose -p yazoo_v2 down
+docker compose up -d --build
 ```
 
 ## Commandes Git locales
