@@ -5,6 +5,10 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
 jobs:
   tests:
     runs-on: ubuntu-latest
@@ -21,7 +25,7 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - name: Backend dependencies
         working-directory: backend
-        run: composer install --no-interaction --prefer-dist
+        run: composer install --no-interaction --prefer-dist --no-progress
       - name: Backend tests
         working-directory: backend
         run: php artisan test
@@ -61,7 +65,14 @@ jobs:
           az webapp config appsettings set \
             --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
             --name "${{ secrets.AZURE_WEBAPP_NAME }}" \
-            --settings WEBSITES_PORT=8080 YAZOO_RUN_MIGRATIONS=true YAZOO_RUNTIME_OPTIMIZE=true
+            --settings WEBSITES_PORT=8080 WEBSITES_CONTAINER_START_TIME_LIMIT=1800 WEBSITE_HEALTHCHECK_MAXPINGFAILURES=3 YAZOO_RUN_MIGRATIONS=true YAZOO_RUNTIME_OPTIMIZE=true YAZOO_IMAGE_TAG="${{ github.sha }}"
+          az webapp config set \
+            --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
+            --name "${{ secrets.AZURE_WEBAPP_NAME }}" \
+            --generic-configurations '{"healthCheckPath":"/health/ready"}'
+          az webapp restart \
+            --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
+            --name "${{ secrets.AZURE_WEBAPP_NAME }}"
       - uses: actions/setup-node@v4
         with:
           node-version: "22"

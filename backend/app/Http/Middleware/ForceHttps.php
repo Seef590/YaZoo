@@ -25,6 +25,10 @@ class ForceHttps
 
     private function shouldForceHttps(Request $request): bool
     {
+        if ($request->is('up', 'health', 'health/live', 'health/ready')) {
+            return false;
+        }
+
         if (! app()->isProduction() && ! (bool) config('app.force_https')) {
             return false;
         }

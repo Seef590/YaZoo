@@ -38,8 +38,12 @@
 Configurer ces valeurs dans App Service > Configuration > Application settings.
 
 - `WEBSITES_PORT=8080`
+- `WEBSITES_CONTAINER_START_TIME_LIMIT=1800`
+- `WEBSITE_HEALTHCHECK_MAXPINGFAILURES=3`
 - `YAZOO_RUN_MIGRATIONS=true`
 - `YAZOO_RUNTIME_OPTIMIZE=true`
+- `YAZOO_RUN_SCHEDULER=false`
+- `YAZOO_RUN_QUEUE_WORKER=false`
 - `APP_NAME=YaZoo`
 - `APP_ENV=production`
 - `APP_KEY=<php artisan key:generate --show>`
@@ -86,7 +90,10 @@ az group create --name <resource-group> --location <region>
 az acr create --resource-group <resource-group> --name <acr-name> --sku Basic
 az appservice plan create --resource-group <resource-group> --name <plan-name> --is-linux --sku B1
 az webapp create --resource-group <resource-group> --plan <plan-name> --name <azure-webapp-name> --deployment-container-image-name <acr-login-server>/yazoo-api:latest
-az webapp config appsettings set --resource-group <resource-group> --name <azure-webapp-name> --settings WEBSITES_PORT=8080 YAZOO_RUN_MIGRATIONS=true YAZOO_RUNTIME_OPTIMIZE=true
+az webapp identity assign --resource-group <resource-group> --name <azure-webapp-name>
+az role assignment create --assignee <webapp-principal-id> --scope <acr-resource-id> --role AcrPull
+az webapp config set --resource-group <resource-group> --name <azure-webapp-name> --generic-configurations '{"healthCheckPath":"/health/ready","acrUseManagedIdentityCreds":true}'
+az webapp config appsettings set --resource-group <resource-group> --name <azure-webapp-name> --settings WEBSITES_PORT=8080 WEBSITES_CONTAINER_START_TIME_LIMIT=1800 WEBSITE_HEALTHCHECK_MAXPINGFAILURES=3 YAZOO_RUN_MIGRATIONS=true YAZOO_RUNTIME_OPTIMIZE=true
 az staticwebapp create --resource-group <resource-group> --name <static-web-app-name> --source https://github.com/<owner>/<repo> --branch main --app-location frontend --output-location dist --login-with-github
 ```
 
