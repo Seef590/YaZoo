@@ -268,7 +268,7 @@ function renderMediaPreview(mediaPreviewUrl, mediaPreviewKind) {
       <video
         src={mediaPreviewUrl}
         controls
-        className="h-[150px] w-full object-cover sm:h-[210px] lg:h-[240px]"
+        className="h-64 w-full object-cover sm:h-80 md:h-96 lg:h-[28rem]"
       />
     )
   }
@@ -277,7 +277,7 @@ function renderMediaPreview(mediaPreviewUrl, mediaPreviewKind) {
     <img
       src={mediaPreviewUrl}
       alt="Apercu story"
-      className="h-[150px] w-full object-cover sm:h-[210px] lg:h-[240px]"
+      className="h-64 w-full object-cover sm:h-80 md:h-96 lg:h-[28rem]"
     />
   )
 }

@@ -244,7 +244,7 @@ function renderPostMediaPreview(mediaPreviewUrl, mediaPreviewKind) {
       <video
         src={mediaPreviewUrl}
         controls
-        className="max-h-72 w-full rounded-[20px] object-cover"
+        className="h-64 w-full rounded-[20px] object-cover sm:h-80 md:h-96 lg:h-[28rem]"
       />
     )
   }
@@ -253,7 +253,7 @@ function renderPostMediaPreview(mediaPreviewUrl, mediaPreviewKind) {
     <img
       src={mediaPreviewUrl}
       alt="Apercu du media"
-      className="max-h-72 w-full rounded-[20px] object-cover"
+      className="h-64 w-full rounded-[20px] object-cover sm:h-80 md:h-96 lg:h-[28rem]"
     />
   )
 }

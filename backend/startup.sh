@@ -1,8 +1,9 @@
 #!/bin/sh
 set -e
 
-mkdir -p /var/lib/nginx/tmp /var/log/nginx /run/nginx
-chown -R www-data:www-data /var/lib/nginx /var/log/nginx /run/nginx storage bootstrap/cache
+mkdir -p /var/lib/nginx/tmp /var/log/nginx /run/nginx storage/app/public
+chown -R nginx:nginx /var/lib/nginx /var/log/nginx /run/nginx
+chown -R www-data:www-data storage bootstrap/cache
 cp /var/www/html/nginx.conf /etc/nginx/http.d/default.conf
 
 if [ "${YAZOO_RUN_MIGRATIONS:-true}" = "true" ]; then
