@@ -1,9 +1,22 @@
 #!/bin/sh
 set -e
 
-mkdir -p /var/lib/nginx/tmp /var/log/nginx /run/nginx storage/app/public
+mkdir -p /var/lib/nginx/tmp /var/log/nginx /run/nginx storage/app
+
+if [ -d /home/site ]; then
+    mkdir -p /home/site/yazoo-storage/app/public
+    rm -rf storage/app/public
+    ln -s /home/site/yazoo-storage/app/public storage/app/public
+else
+    mkdir -p storage/app/public
+fi
+
 chown -R nginx:nginx /var/lib/nginx /var/log/nginx /run/nginx
 chown -R www-data:www-data storage bootstrap/cache
+
+if [ -d /home/site/yazoo-storage ]; then
+    chown -R www-data:www-data /home/site/yazoo-storage
+fi
 cp /var/www/html/nginx.conf /etc/nginx/http.d/default.conf
 
 if [ "${YAZOO_RUN_MIGRATIONS:-true}" = "true" ]; then
