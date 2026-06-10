@@ -2,12 +2,17 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
 
+import { getAnimalsRequest } from '../api/animals'
+import { getCommunitiesRequest } from '../api/communities'
 import {
   createCommentRequest,
   createPostRequest,
   getPostsRequest,
   toggleLikeRequest,
 } from '../api/posts'
+import { getProductsRequest } from '../api/products'
+import { getProfileRequest } from '../api/profile'
+import { getReservationsRequest } from '../api/reservations'
 import {
   createStoryRequest,
   deleteStoryRequest,
@@ -22,6 +27,7 @@ import Avatar from '../components/ui/Avatar'
 import ScrollTopButton from '../components/ui/ScrollTopButton'
 import { useAuth } from '../hooks/useAuth'
 import { getErrorMessage } from '../utils/getErrorMessage'
+import { normalizeProfileMediaPayload } from '../utils/media'
 
 function FeedPage() {
   const location = useLocation()
@@ -30,6 +36,13 @@ function FeedPage() {
   const [posts, setPosts] = useState([])
   const [storyGroups, setStoryGroups] = useState([])
   const [errorMessage, setErrorMessage] = useState('')
+  const [profileSummary, setProfileSummary] = useState(null)
+  const [marketplaceHighlights, setMarketplaceHighlights] = useState([])
+  const [communityHighlights, setCommunityHighlights] = useState([])
+  const [reservationSummary, setReservationSummary] = useState({
+    buyer: 0,
+    seller: 0,
+  })
   const [storyErrorMessage, setStoryErrorMessage] = useState('')
   const [storySuccessMessage, setStorySuccessMessage] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -53,6 +66,62 @@ function FeedPage() {
       setIsLoading(false)
     }
   }, [])
+
+  const loadSidebarData = useCallback(async () => {
+    if (!user?.id) {
+      setProfileSummary(null)
+      setMarketplaceHighlights([])
+      setCommunityHighlights([])
+      setReservationSummary({ buyer: 0, seller: 0 })
+      return
+    }
+
+    const [
+      profileResult,
+      animalsResult,
+      productsResult,
+      communitiesResult,
+      reservationsResult,
+    ] = await Promise.allSettled([
+      getProfileRequest(user.id),
+      getAnimalsRequest(),
+      getProductsRequest(),
+      getCommunitiesRequest(),
+      getReservationsRequest(),
+    ])
+
+    if (profileResult.status === 'fulfilled') {
+      setProfileSummary(
+        normalizeProfileMediaPayload(profileResult.value.data.data),
+      )
+    }
+
+    const animals = animalsResult.status === 'fulfilled'
+      ? animalsResult.value.data.data ?? []
+      : []
+    const products = productsResult.status === 'fulfilled'
+      ? productsResult.value.data.data ?? []
+      : []
+    const communities = communitiesResult.status === 'fulfilled'
+      ? communitiesResult.value.data.data ?? []
+      : []
+    const reservations = reservationsResult.status === 'fulfilled'
+      ? reservationsResult.value.data
+      : {}
+
+    setMarketplaceHighlights(
+      buildMarketplaceHighlights(animals, products, user.id),
+    )
+    setCommunityHighlights(
+      communities
+        .filter((community) => community.isMember || community.isAdmin)
+        .slice(0, 3),
+    )
+    setReservationSummary({
+      buyer: reservations.buyerReservations?.length ?? 0,
+      seller: reservations.sellerReservations?.length ?? 0,
+    })
+  }, [user?.id])
 
   const loadStories = useCallback(async ({ silent = false } = {}) => {
     if (!silent) {
@@ -78,7 +147,8 @@ function FeedPage() {
   useEffect(() => {
     void loadPosts()
     void loadStories()
-  }, [loadPosts, loadStories])
+    void loadSidebarData()
+  }, [loadPosts, loadSidebarData, loadStories])
 
   useEffect(() => {
     if (!location.state?.openStoryComposer) {
@@ -270,6 +340,21 @@ function FeedPage() {
     [storyGroups],
   )
   const storyViewerKey = getStoryViewerKey(activeStoryIndex, viewerStories)
+  const ownPosts = useMemo(
+    () =>
+      posts.filter((post) => String(post.author?.id) === String(user?.id)),
+    [posts, user?.id],
+  )
+  const sidebarProfile = profileSummary ?? user ?? {}
+  const sidebarName = sidebarProfile.name ?? user?.name ?? 'Utilisateur'
+  const sidebarAvatar =
+    sidebarProfile.avatar ?? user?.avatar ?? user?.cover_photo ?? ''
+  const sidebarCity = sidebarProfile.city ?? user?.city ?? ''
+  const sidebarCountry = sidebarProfile.country ?? user?.country ?? ''
+  const sidebarLocation = [sidebarCity, sidebarCountry].filter(Boolean).join(', ')
+  const sidebarPostsCount = profileSummary?.postsCount ?? ownPosts.length
+  const sidebarFollowersCount = profileSummary?.followersCount ?? 0
+  const sidebarFollowingCount = profileSummary?.followingCount ?? 0
 
   return (
     <section className="space-y-6">
@@ -376,30 +461,37 @@ function FeedPage() {
           <article className="rounded-[28px] border border-white/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.82))] p-5 shadow-[0_18px_42px_rgba(124,58,237,0.08)]">
             <div className="flex items-center gap-3">
               <Avatar
-                name={user?.name ?? 'Nom Prenom'}
-                src={user?.avatar ?? ''}
+                name={sidebarName}
+                src={sidebarAvatar}
                 size="md"
               />
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold text-stone-950">
-                  {user?.name ?? 'Nom Prenom'}
+                  {sidebarName}
                 </p>
                 <p className="truncate text-xs text-stone-500">
-                  @{(user?.name ?? 'username').toLowerCase().replace(/\s+/g, '')} - Casablanca
+                  @{sidebarName.toLowerCase().replace(/\s+/g, '')}
+                  {sidebarLocation ? ` - ${sidebarLocation}` : ''}
                 </p>
               </div>
             </div>
             <div className="mt-4 grid grid-cols-3 gap-2 text-center text-xs text-stone-600">
               <div className="rounded-xl bg-violet-50 px-2 py-2">
-                <p className="font-semibold text-stone-900">12</p>
+                <p className="font-semibold text-stone-900">
+                  {sidebarFollowingCount}
+                </p>
                 <p>Abonnements</p>
               </div>
               <div className="rounded-xl bg-violet-50 px-2 py-2">
-                <p className="font-semibold text-stone-900">45</p>
+                <p className="font-semibold text-stone-900">
+                  {sidebarFollowersCount}
+                </p>
                 <p>Abonnes</p>
               </div>
               <div className="rounded-xl bg-violet-50 px-2 py-2">
-                <p className="font-semibold text-stone-900">{posts.length}</p>
+                <p className="font-semibold text-stone-900">
+                  {sidebarPostsCount}
+                </p>
                 <p>Posts</p>
               </div>
             </div>
@@ -423,23 +515,100 @@ function FeedPage() {
 
           <article className="rounded-[28px] border border-white/80 bg-white/95 p-5 shadow-[0_18px_42px_rgba(124,58,237,0.08)]">
             <p className="text-xs uppercase tracking-[0.18em] text-violet-700">
-              Temoignages
+              Mes publications
             </p>
-            <p className="mt-3 text-sm text-stone-700">
-              "Enfin une app dediee aux animaux !"
-            </p>
-            <p className="mt-2 text-sm text-stone-700">
-              "J ai adopte mon chat en 2 jours."
-            </p>
+            {ownPosts.slice(0, 3).map((post) => (
+              <button
+                key={post.id}
+                type="button"
+                onClick={() => navigate('/profile')}
+                className="mt-3 block w-full rounded-[18px] bg-violet-50/70 px-3 py-3 text-left text-sm text-stone-700 transition hover:bg-violet-100"
+              >
+                <span className="line-clamp-2">
+                  {post.content || 'Publication avec media'}
+                </span>
+              </button>
+            ))}
+            {ownPosts.length === 0 ? (
+              <p className="mt-3 text-sm leading-6 text-stone-600">
+                Vos prochains posts apparaitront ici automatiquement.
+              </p>
+            ) : null}
           </article>
 
           <article className="rounded-[28px] border border-white/80 bg-white/95 p-5 shadow-[0_18px_42px_rgba(124,58,237,0.08)]">
             <p className="text-xs uppercase tracking-[0.18em] text-violet-700">
-              Boutiques
+              Marketplace
             </p>
-            <p className="mt-3 text-sm text-stone-700">
-              Croquettes Premium - 120 MAD - Casablanca
+            {marketplaceHighlights.map((item) => (
+              <button
+                key={`${item.kind}-${item.id}`}
+                type="button"
+                onClick={() => navigate(item.href)}
+                className="mt-3 block w-full rounded-[18px] bg-violet-50/70 px-3 py-3 text-left transition hover:bg-violet-100"
+              >
+                <p className="truncate text-sm font-medium text-stone-900">
+                  {item.title}
+                </p>
+                <p className="mt-1 text-xs text-stone-500">
+                  {[item.priceLabel, item.location].filter(Boolean).join(' - ')}
+                </p>
+              </button>
+            ))}
+            {marketplaceHighlights.length === 0 ? (
+              <p className="mt-3 text-sm leading-6 text-stone-600">
+                Vos annonces animaux et produits s'afficheront ici apres publication.
+              </p>
+            ) : null}
+          </article>
+
+          <article className="rounded-[28px] border border-white/80 bg-white/95 p-5 shadow-[0_18px_42px_rgba(124,58,237,0.08)]">
+            <p className="text-xs uppercase tracking-[0.18em] text-violet-700">
+              Activite
             </p>
+            <div className="mt-3 grid grid-cols-2 gap-2 text-center text-xs text-stone-600">
+              <button
+                type="button"
+                onClick={() => navigate('/reservations')}
+                className="rounded-xl bg-violet-50 px-2 py-3 transition hover:bg-violet-100"
+              >
+                <p className="font-semibold text-stone-900">
+                  {reservationSummary.buyer}
+                </p>
+                <p>Achats</p>
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/reservations')}
+                className="rounded-xl bg-violet-50 px-2 py-3 transition hover:bg-violet-100"
+              >
+                <p className="font-semibold text-stone-900">
+                  {reservationSummary.seller}
+                </p>
+                <p>Ventes</p>
+              </button>
+            </div>
+            {communityHighlights.map((community) => (
+              <button
+                key={community.id}
+                type="button"
+                onClick={() => navigate('/communities')}
+                className="mt-3 block w-full rounded-[18px] bg-violet-50/70 px-3 py-3 text-left transition hover:bg-violet-100"
+              >
+                <p className="truncate text-sm font-medium text-stone-900">
+                  {community.name}
+                </p>
+                <p className="mt-1 text-xs text-stone-500">
+                  {community.membersCount ?? 0} membre
+                  {(community.membersCount ?? 0) > 1 ? 's' : ''}
+                </p>
+              </button>
+            ))}
+            {communityHighlights.length === 0 ? (
+              <p className="mt-3 text-sm leading-6 text-stone-600">
+                Les communautes que vous rejoignez s'afficheront ici.
+              </p>
+            ) : null}
           </article>
         </aside>
       </div>
@@ -669,6 +838,36 @@ StoryCard.propTypes = {
   storyGroup: PropTypes.object,
   onOpen: PropTypes.func,
   onAddStory: PropTypes.func,
+}
+
+function buildMarketplaceHighlights(animals, products, userId) {
+  const ownAnimals = animals
+    .filter((animal) => String(animal.author?.id) === String(userId) || animal.isOwner)
+    .map((animal) => ({
+      id: animal.id,
+      kind: 'animal',
+      title: animal.name,
+      priceLabel: animal.isForAdoption ? 'Adoption' : `${animal.price ?? 0} MAD`,
+      location: animal.location,
+      createdAt: animal.createdAt,
+      href: `/marketplace/animals/${animal.id}`,
+    }))
+
+  const ownProducts = products
+    .filter((product) => String(product.author?.id) === String(userId) || product.isOwner)
+    .map((product) => ({
+      id: product.id,
+      kind: 'product',
+      title: product.name,
+      priceLabel: `${product.price ?? 0} MAD`,
+      location: product.location,
+      createdAt: product.createdAt,
+      href: `/marketplace/products/${product.id}`,
+    }))
+
+  return [...ownAnimals, ...ownProducts]
+    .sort((first, second) => new Date(second.createdAt ?? 0) - new Date(first.createdAt ?? 0))
+    .slice(0, 3)
 }
 
 export default FeedPage
