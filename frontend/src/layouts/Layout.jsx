@@ -202,7 +202,7 @@ function Layout() {
 
         <DesktopNav items={navigationItems} />
 
-        <main className="mt-4 rounded-[30px] border border-white/55 bg-[linear-gradient(180deg,_rgba(255,255,255,0.6),_rgba(248,241,255,0.42),_rgba(255,255,255,0.28))] p-4 shadow-[0_24px_70px_rgba(124,58,237,0.1)] backdrop-blur-2xl transition-colors dark:border-violet-300/12 dark:bg-[linear-gradient(180deg,_rgba(24,16,38,0.66),_rgba(35,19,58,0.48),_rgba(12,8,20,0.5))] dark:shadow-[0_30px_80px_rgba(0,0,0,0.34)] sm:rounded-[34px] sm:p-5">
+        <main className="mt-4 rounded-[30px] border border-white/55 bg-[linear-gradient(180deg,_rgba(255,255,255,0.6),_rgba(248,241,255,0.42),_rgba(255,255,255,0.28))] p-4 shadow-[0_24px_70px_rgba(124,58,237,0.1)] backdrop-blur-2xl transition-colors dark:border-violet-300/14 dark:bg-[linear-gradient(180deg,_rgba(5,3,10,0.9),_rgba(24,11,43,0.82),_rgba(8,5,13,0.88))] dark:shadow-[0_30px_80px_rgba(0,0,0,0.44)] sm:rounded-[34px] sm:p-5">
           <Outlet />
           <Footer mode="app" className="mt-8" />
         </main>

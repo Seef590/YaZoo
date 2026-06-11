@@ -41,7 +41,7 @@ function SettingsPage() {
 
   return (
     <section className="space-y-6">
-      <section className="overflow-hidden rounded-[30px] border border-white/80 bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.18),_transparent_30%),linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(246,239,255,0.9))] p-5 shadow-[0_24px_60px_rgba(124,58,237,0.1)] dark:border-violet-300/12 dark:bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.28),_transparent_30%),linear-gradient(135deg,_rgba(24,16,38,0.96),_rgba(36,20,61,0.9))] sm:p-6">
+      <section className="overflow-hidden rounded-[30px] border border-white/80 bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.18),_transparent_30%),linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(246,239,255,0.9))] p-5 shadow-[0_24px_60px_rgba(124,58,237,0.1)] dark:border-violet-300/16 dark:bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.28),_transparent_30%),linear-gradient(135deg,_rgba(5,3,10,0.98),_rgba(30,15,52,0.92))] sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <Avatar name={user?.name ?? 'Utilisateur'} src={user?.avatar || ''} className="h-16 w-16" />
@@ -128,9 +128,9 @@ function SettingsPage() {
 
 function SettingsCard({ title, description, children }) {
   return (
-    <section className="rounded-[28px] border border-white/80 bg-white/92 p-5 shadow-[0_20px_48px_rgba(124,58,237,0.08)] dark:border-violet-300/12 dark:bg-white/8">
-      <h2 className="text-lg font-semibold text-stone-950 dark:text-violet-50">{title}</h2>
-      <p className="mt-1 text-sm leading-6 text-stone-600 dark:text-violet-100/66">{description}</p>
+    <section className="rounded-[28px] border border-white/80 bg-white/92 p-5 shadow-[0_20px_48px_rgba(124,58,237,0.08)] dark:border-violet-300/16 dark:bg-[linear-gradient(135deg,_rgba(5,3,10,0.98),_rgba(30,15,52,0.9))]">
+      <h2 className="text-lg font-semibold text-stone-950 dark:text-white">{title}</h2>
+      <p className="mt-1 text-sm leading-6 text-stone-600 dark:text-violet-100/78">{description}</p>
       <div className="mt-4">{children}</div>
     </section>
   )

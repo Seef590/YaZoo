@@ -46,10 +46,12 @@ body {
 }
 
 :root.dark body {
+  background-color: #08050d;
   background-image:
-    radial-gradient(circle at top left, rgba(168, 85, 247, 0.3), transparent 28%),
-    radial-gradient(circle at top right, rgba(76, 29, 149, 0.36), transparent 24%),
-    linear-gradient(180deg, #08050d 0%, #12091f 48%, #1b1030 100%);
+    radial-gradient(circle at top left, rgba(168, 85, 247, 0.34), transparent 28%),
+    radial-gradient(circle at top right, rgba(76, 29, 149, 0.42), transparent 24%),
+    radial-gradient(circle at bottom left, rgba(109, 40, 217, 0.2), transparent 28%),
+    linear-gradient(180deg, #05030a 0%, #0c0614 42%, #180b2b 100%);
 }
 
 :root.dark .yz-wordmark {
@@ -60,21 +62,28 @@ body {
 :root.dark input,
 :root.dark textarea,
 :root.dark select {
-  border-color: rgba(196, 181, 253, 0.24);
-  background: rgba(255, 255, 255, 0.08);
-  color: #f8f3ff;
+  border-color: rgba(196, 181, 253, 0.3) !important;
+  background:
+    radial-gradient(circle at top left, rgba(124, 58, 237, 0.2), transparent 34%),
+    linear-gradient(135deg, rgba(5, 3, 10, 0.98), rgba(24, 11, 43, 0.96)) !important;
+  color: #fffaff !important;
   caret-color: #d8b4fe;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 14px 32px rgba(0, 0, 0, 0.16);
 }
 
 :root.dark input::placeholder,
 :root.dark textarea::placeholder {
-  color: rgba(226, 214, 255, 0.62);
+  color: rgba(226, 214, 255, 0.58) !important;
 }
 
 :root.dark input[readonly],
 :root.dark textarea[readonly] {
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(248, 243, 255, 0.72);
+  background:
+    radial-gradient(circle at top left, rgba(124, 58, 237, 0.16), transparent 34%),
+    linear-gradient(135deg, rgba(8, 5, 13, 0.98), rgba(18, 9, 31, 0.96)) !important;
+  color: rgba(248, 243, 255, 0.76) !important;
 }
 
 :root.dark [class*='text-black'],
@@ -110,7 +119,27 @@ body {
 :root.dark [class*='bg-stone-100'],
 :root.dark [class*='bg-violet-50'],
 :root.dark [class*='bg-violet-100'] {
-  background-color: rgba(255, 255, 255, 0.08);
+  background-color: rgba(13, 7, 22, 0.92) !important;
+}
+
+:root.dark [class*='bg-white/'],
+:root.dark [class*='bg-violet-50/'],
+:root.dark [class*='bg-violet-100/'],
+:root.dark [class*='bg-stone-50/'],
+:root.dark [class*='bg-stone-100/'] {
+  background:
+    radial-gradient(circle at top left, rgba(124, 58, 237, 0.16), transparent 32%),
+    linear-gradient(135deg, rgba(10, 6, 18, 0.94), rgba(28, 13, 49, 0.88)) !important;
+}
+
+:root.dark [class*='rgba(255,255,255'],
+:root.dark [class*='rgba(248,240,255'],
+:root.dark [class*='rgba(248,241,255'],
+:root.dark [class*='rgba(246,239,255'],
+:root.dark [class*='rgba(244,237,255'] {
+  background:
+    radial-gradient(circle at top left, rgba(124, 58, 237, 0.18), transparent 34%),
+    linear-gradient(135deg, rgba(8, 5, 13, 0.96), rgba(31, 15, 54, 0.9)) !important;
 }
 
 :root.dark [class*='border-white'],
