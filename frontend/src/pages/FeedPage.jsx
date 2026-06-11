@@ -29,6 +29,7 @@ import StoryViewer from '../components/feed/StoryViewer'
 import Avatar from '../components/ui/Avatar'
 import ScrollTopButton from '../components/ui/ScrollTopButton'
 import { useAuth } from '../hooks/useAuth'
+import { asArray, extractDataArray, extractDataObject } from '../utils/apiData'
 import { getErrorMessage } from '../utils/getErrorMessage'
 import { normalizeProfileMediaPayload } from '../utils/media'
 
@@ -62,7 +63,7 @@ function FeedPage() {
     try {
       const response = await getPostsRequest()
 
-      setPosts(response.data.data)
+      setPosts(extractDataArray(response))
       setErrorMessage('')
     } catch (error) {
       setErrorMessage(getErrorMessage(error, 'Impossible de charger le feed.'))
@@ -96,21 +97,21 @@ function FeedPage() {
 
     if (profileResult.status === 'fulfilled') {
       setProfileSummary(
-        normalizeProfileMediaPayload(profileResult.value.data.data),
+        normalizeProfileMediaPayload(extractDataObject(profileResult.value, null)),
       )
     }
 
     const animals = animalsResult.status === 'fulfilled'
-      ? animalsResult.value.data.data ?? []
+      ? extractDataArray(animalsResult.value)
       : []
     const products = productsResult.status === 'fulfilled'
-      ? productsResult.value.data.data ?? []
+      ? extractDataArray(productsResult.value)
       : []
     const communities = communitiesResult.status === 'fulfilled'
-      ? communitiesResult.value.data.data ?? []
+      ? extractDataArray(communitiesResult.value)
       : []
     const reservations = reservationsResult.status === 'fulfilled'
-      ? reservationsResult.value.data
+      ? reservationsResult.value.data ?? {}
       : {}
 
     setMarketplaceHighlights(
@@ -135,7 +136,7 @@ function FeedPage() {
     try {
       const response = await getStoriesRequest()
 
-      setStoryGroups(response.data.data ?? [])
+      setStoryGroups(extractDataArray(response))
       setStoryErrorMessage('')
     } catch (error) {
       setStoryErrorMessage(
@@ -174,7 +175,11 @@ function FeedPage() {
   const handleCreatePost = async (payload) => {
     const response = await createPostRequest(payload)
 
-    setPosts((current) => [response.data.data, ...current])
+    const nextPost = extractDataObject(response, null)
+
+    if (nextPost) {
+      setPosts((current) => [nextPost, ...asArray(current)])
+    }
   }
 
   const handleToggleLike = async (postId, reaction = 'like') => {
@@ -182,7 +187,7 @@ function FeedPage() {
 
     setLikePendingIds((current) => [...current, postId])
     setPosts((current) =>
-      current.map((post) => {
+      asArray(current).map((post) => {
         if (post.id !== postId) {
           return post
         }
@@ -202,13 +207,15 @@ function FeedPage() {
       const response = await toggleLikeRequest(postId, reaction)
 
       setPosts((current) =>
-        current.map((post) => (post.id === postId ? response.data.data : post)),
+        asArray(current).map((post) =>
+          post.id === postId ? extractDataObject(response, post) : post,
+        ),
       )
       setErrorMessage('')
     } catch (error) {
       if (previousPost) {
         setPosts((current) =>
-          current.map((post) => (post.id === postId ? previousPost : post)),
+          asArray(current).map((post) => (post.id === postId ? previousPost : post)),
         )
       }
 
@@ -228,10 +235,14 @@ function FeedPage() {
       parent_id: options.parentId ?? null,
       reaction: options.reaction ?? null,
     })
-    const comment = response.data.data
+    const comment = extractDataObject(response, null)
+
+    if (!comment) {
+      return null
+    }
 
     setPosts((current) =>
-      current.map((post) =>
+      asArray(current).map((post) =>
         post.id === postId
           ? addCommentToPost(post, comment)
           : post,
@@ -243,10 +254,14 @@ function FeedPage() {
 
   const handleReactToComment = async (postId, commentId, reaction) => {
     const response = await reactToCommentRequest(commentId, reaction)
-    const nextComment = response.data.data
+    const nextComment = extractDataObject(response, null)
+
+    if (!nextComment) {
+      return null
+    }
 
     setPosts((current) =>
-      current.map((post) =>
+      asArray(current).map((post) =>
         post.id === postId
           ? updateCommentInPost(post, nextComment)
           : post,
@@ -260,15 +275,17 @@ function FeedPage() {
     const response = await updatePostRequest(postId, payload)
 
     setPosts((current) =>
-      current.map((post) => (post.id === postId ? response.data.data : post)),
+      asArray(current).map((post) =>
+        post.id === postId ? extractDataObject(response, post) : post,
+      ),
     )
 
-    return response.data.data
+    return extractDataObject(response, null)
   }
 
   const handleDeletePost = async (postId) => {
     await deletePostRequest(postId)
-    setPosts((current) => current.filter((post) => post.id !== postId))
+    setPosts((current) => asArray(current).filter((post) => post.id !== postId))
   }
 
   const handleCreateStory = async (payload) => {
@@ -371,19 +388,20 @@ function FeedPage() {
   )
 
   const viewerStories = useMemo(
-    () => storyGroups.map((group) => mapStoryGroupForViewer(group)),
+    () => asArray(storyGroups).map((group) => mapStoryGroupForViewer(group)),
     [storyGroups],
   )
   const searchTerm = searchParams.get('q')?.trim() ?? ''
+  const safePosts = asArray(posts)
   const visiblePosts = useMemo(
-    () => filterPosts(posts, searchTerm),
-    [posts, searchTerm],
+    () => filterPosts(safePosts, searchTerm),
+    [safePosts, searchTerm],
   )
   const storyViewerKey = getStoryViewerKey(activeStoryIndex, viewerStories)
   const ownPosts = useMemo(
     () =>
-      posts.filter((post) => String(post.author?.id) === String(user?.id)),
-    [posts, user?.id],
+      safePosts.filter((post) => String(post.author?.id) === String(user?.id)),
+    [safePosts, user?.id],
   )
   const sidebarProfile = profileSummary ?? user ?? {}
   const sidebarName = sidebarProfile.name ?? user?.name ?? 'Utilisateur'
@@ -476,13 +494,13 @@ function FeedPage() {
             </div>
           ) : null}
 
-          {!isLoading && posts.length === 0 ? (
+          {!isLoading && safePosts.length === 0 ? (
             <div className="rounded-[28px] border border-dashed border-violet-200 bg-white/84 px-5 py-12 text-center text-sm text-stone-500">
               Aucun post pour le moment. Creez le premier contenu YaZoo.
             </div>
           ) : null}
 
-          {!isLoading && posts.length > 0 && visiblePosts.length === 0 ? (
+          {!isLoading && safePosts.length > 0 && visiblePosts.length === 0 ? (
             <div className="rounded-[28px] border border-dashed border-violet-200 bg-white/84 px-5 py-12 text-center text-sm text-stone-500">
               Aucun post ne correspond a votre recherche.
             </div>
@@ -748,8 +766,9 @@ function StoryCard({ storyGroup, onOpen, onAddStory }) {
 }
 
 function buildStoryRowItems(storyGroups, user) {
-  const ownGroup = storyGroups.find((group) => group.isOwn)
-  const otherGroups = storyGroups.filter((group) => !group.isOwn)
+  const safeStoryGroups = asArray(storyGroups)
+  const ownGroup = safeStoryGroups.find((group) => group.isOwn)
+  const otherGroups = safeStoryGroups.filter((group) => !group.isOwn)
 
   const normalizedOwnGroup = ownGroup ?? {
     id: `own-story-${user?.id ?? 'guest'}`,
@@ -874,13 +893,15 @@ function truncateText(text, maxLength) {
 }
 
 function filterPosts(posts, searchTerm) {
+  const safePosts = asArray(posts)
+
   if (!searchTerm) {
-    return posts
+    return safePosts
   }
 
   const normalizedSearch = normalizeSearchText(searchTerm)
 
-  return posts.filter((post) =>
+  return safePosts.filter((post) =>
     [
       post.content,
       post.location,
@@ -916,7 +937,7 @@ StoryCard.propTypes = {
 }
 
 function buildMarketplaceHighlights(animals, products, userId) {
-  const ownAnimals = animals
+  const ownAnimals = asArray(animals)
     .filter((animal) => String(animal.author?.id) === String(userId) || animal.isOwner)
     .map((animal) => ({
       id: animal.id,
@@ -928,7 +949,7 @@ function buildMarketplaceHighlights(animals, products, userId) {
       href: `/marketplace/animals/${animal.id}`,
     }))
 
-  const ownProducts = products
+  const ownProducts = asArray(products)
     .filter((product) => String(product.author?.id) === String(userId) || product.isOwner)
     .map((product) => ({
       id: product.id,

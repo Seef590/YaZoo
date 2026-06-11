@@ -8,6 +8,7 @@ import {
   uniqueUrls,
 } from '../features/marketplace/marketplaceUtils'
 import * as productService from '../services/marketplace/productsMarketplaceService'
+import { asArray } from '../utils/apiData'
 import { getErrorMessage } from '../utils/getErrorMessage'
 
 const cloneProductForm = () => ({
@@ -182,7 +183,7 @@ export function useProductsMarketplace() {
 
     try {
       await productService.deleteProduct(productId)
-      setProducts((current) => current.filter((product) => product.id !== productId))
+      setProducts((current) => asArray(current).filter((product) => product.id !== productId))
       if (editingId === productId) resetForm()
       setSuccessMessage('Produit supprime.')
     } catch (error) {

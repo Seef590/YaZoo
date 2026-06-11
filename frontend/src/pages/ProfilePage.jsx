@@ -15,6 +15,7 @@ import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import ScrollTopButton from '../components/ui/ScrollTopButton'
 import { useAuth } from '../hooks/useAuth'
+import { asArray, extractDataArray, extractDataObject } from '../utils/apiData'
 import { getErrorMessage } from '../utils/getErrorMessage'
 import { normalizeAuthUserMedia, normalizeProfileMediaPayload } from '../utils/media'
 
@@ -56,9 +57,9 @@ function ProfilePage() {
 
       try {
         const response = await getProfileRequest(user.id)
-        const data = normalizeProfileMediaPayload(response.data.data)
+        const data = normalizeProfileMediaPayload(extractDataObject(response, null))
         const postsResponse = await getPostsRequest()
-        const userPosts = (postsResponse.data.data ?? []).filter(
+        const userPosts = extractDataArray(postsResponse).filter(
           (post) => String(post.author?.id) === String(user.id),
         )
 
@@ -203,7 +204,7 @@ function ProfilePage() {
       })
       const mediaVersion = Date.now()
       const data = normalizeProfileMediaPayload({
-        ...response.data.data,
+        ...extractDataObject(response),
         mediaVersion,
       })
 
@@ -293,7 +294,7 @@ function ProfilePage() {
 
     setLikePendingIds((current) => [...current, postId])
     setRecentPublications((current) =>
-      current.map((post) => {
+      asArray(current).map((post) => {
         if (post.id !== postId) {
           return post
         }
@@ -318,12 +319,14 @@ function ProfilePage() {
       const response = await toggleLikeRequest(postId, reaction)
 
       setRecentPublications((current) =>
-        current.map((post) => (post.id === postId ? response.data.data : post)),
+        asArray(current).map((post) =>
+          post.id === postId ? extractDataObject(response, post) : post,
+        ),
       )
     } catch (error) {
       if (previousPost) {
         setRecentPublications((current) =>
-          current.map((post) => (post.id === postId ? previousPost : post)),
+          asArray(current).map((post) => (post.id === postId ? previousPost : post)),
         )
       }
 
@@ -342,10 +345,14 @@ function ProfilePage() {
       parent_id: options.parentId ?? null,
       reaction: options.reaction ?? null,
     })
-    const comment = response.data.data
+    const comment = extractDataObject(response, null)
+
+    if (!comment) {
+      return null
+    }
 
     setRecentPublications((current) =>
-      current.map((post) =>
+      asArray(current).map((post) =>
         post.id === postId ? addCommentToPost(post, comment) : post,
       ),
     )
@@ -355,10 +362,14 @@ function ProfilePage() {
 
   const handleReactToComment = async (postId, commentId, reaction) => {
     const response = await reactToCommentRequest(commentId, reaction)
-    const nextComment = response.data.data
+    const nextComment = extractDataObject(response, null)
+
+    if (!nextComment) {
+      return null
+    }
 
     setRecentPublications((current) =>
-      current.map((post) =>
+      asArray(current).map((post) =>
         post.id === postId ? updateCommentInPost(post, nextComment) : post,
       ),
     )
@@ -370,15 +381,17 @@ function ProfilePage() {
     const response = await updatePostRequest(postId, payload)
 
     setRecentPublications((current) =>
-      current.map((post) => (post.id === postId ? response.data.data : post)),
+      asArray(current).map((post) =>
+        post.id === postId ? extractDataObject(response, post) : post,
+      ),
     )
 
-    return response.data.data
+    return extractDataObject(response, null)
   }
 
   const handleDeletePost = async (postId) => {
     await deletePostRequest(postId)
-    setRecentPublications((current) => current.filter((post) => post.id !== postId))
+    setRecentPublications((current) => asArray(current).filter((post) => post.id !== postId))
     setProfile((current) =>
       current
         ? {
@@ -697,13 +710,15 @@ function StatCard({ label, value }) {
 }
 
 function filterPublications(publications, searchTerm) {
+  const safePublications = asArray(publications)
+
   if (!searchTerm) {
-    return publications
+    return safePublications
   }
 
   const normalizedSearch = normalizeSearchText(searchTerm)
 
-  return publications.filter((post) =>
+  return safePublications.filter((post) =>
     [
       post.content,
       post.location,

@@ -5,11 +5,12 @@ import {
   updateProductRequest,
 } from '../../api/products'
 import { cleanFilters } from '../../features/marketplace/marketplaceUtils'
+import { extractDataArray } from '../../utils/apiData'
 
 export async function fetchProducts(filters = {}) {
   const response = await getProductsRequest(cleanFilters(filters))
 
-  return response.data.data ?? []
+  return extractDataArray(response)
 }
 
 export function createProduct(payload) {

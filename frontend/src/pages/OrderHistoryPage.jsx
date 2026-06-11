@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 
 import { getOrdersHistoryRequest } from '../api/reservations'
 import Avatar from '../components/ui/Avatar'
+import { asArray } from '../utils/apiData'
 import { formatDate } from '../utils/formatDate'
 import { getErrorMessage } from '../utils/getErrorMessage'
 
@@ -24,8 +25,8 @@ function OrderHistoryPage() {
         const response = await getOrdersHistoryRequest()
 
         if (!cancelled) {
-          setBuyerHistory(response.data.buyerHistory ?? [])
-          setSellerHistory(response.data.sellerHistory ?? [])
+          setBuyerHistory(asArray(response.data.buyerHistory))
+          setSellerHistory(asArray(response.data.sellerHistory))
           setErrorMessage('')
         }
       } catch (error) {
@@ -362,13 +363,15 @@ function formatPrice(value) {
 }
 
 function filterOrders(orders, searchTerm) {
+  const safeOrders = asArray(orders)
+
   if (!searchTerm) {
-    return orders
+    return safeOrders
   }
 
   const normalizedSearch = normalizeSearchText(searchTerm)
 
-  return orders.filter((order) => {
+  return safeOrders.filter((order) => {
     const counterpart = order.isBuyer ? order.seller : order.buyer
 
     return [

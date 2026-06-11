@@ -8,6 +8,7 @@ import {
 } from '../api/notifications'
 import Button from '../components/ui/Button'
 import { useNotifications } from '../hooks/useNotifications'
+import { asArray, extractDataArray, extractDataObject } from '../utils/apiData'
 import { formatDate } from '../utils/formatDate'
 import { getErrorMessage } from '../utils/getErrorMessage'
 
@@ -24,15 +25,16 @@ function NotificationsPage() {
   const [processingIds, setProcessingIds] = useState([])
   const [isMarkingAll, setIsMarkingAll] = useState(false)
 
-  const unreadCount = notifications.filter((notification) => !notification.isRead).length
-  const readCount = notifications.length - unreadCount
-  const visibleNotifications = filterNotifications(notifications, queryFromUrl)
+  const safeNotifications = asArray(notifications)
+  const unreadCount = safeNotifications.filter((notification) => !notification.isRead).length
+  const readCount = safeNotifications.length - unreadCount
+  const visibleNotifications = filterNotifications(safeNotifications, queryFromUrl)
 
   const fetchNotifications = async () => {
     try {
       const response = await getNotificationsRequest()
 
-      setNotifications(response.data.data)
+      setNotifications(extractDataArray(response))
       setErrorMessage('')
     } catch (error) {
       setErrorMessage(
@@ -71,10 +73,14 @@ function NotificationsPage() {
 
     try {
       const response = await markNotificationReadRequest(notificationId)
-      const updatedNotification = response.data.data
+      const updatedNotification = extractDataObject(response, null)
+
+      if (!updatedNotification) {
+        return
+      }
 
       setNotifications((current) =>
-        current.map((notification) =>
+        asArray(current).map((notification) =>
           notification.id === updatedNotification.id
             ? updatedNotification
             : notification,
@@ -104,7 +110,7 @@ function NotificationsPage() {
       const response = await markAllNotificationsReadRequest()
 
       setNotifications((current) =>
-        current.map((notification) => ({
+        asArray(current).map((notification) => ({
           ...notification,
           isRead: true,
         })),
@@ -352,7 +358,11 @@ function formatNotificationType(type) {
 }
 
 function upsertNotification(currentNotifications, nextNotification) {
-  const remainingNotifications = currentNotifications.filter(
+  if (!nextNotification?.id) {
+    return asArray(currentNotifications)
+  }
+
+  const remainingNotifications = asArray(currentNotifications).filter(
     (notification) => notification.id !== nextNotification.id,
   )
 
@@ -364,13 +374,15 @@ function upsertNotification(currentNotifications, nextNotification) {
 }
 
 function filterNotifications(notifications, searchTerm) {
+  const safeNotifications = asArray(notifications)
+
   if (!searchTerm) {
-    return notifications
+    return safeNotifications
   }
 
   const normalizedSearch = normalizeSearchText(searchTerm)
 
-  return notifications.filter((notification) =>
+  return safeNotifications.filter((notification) =>
     [
       notification.title,
       notification.body,

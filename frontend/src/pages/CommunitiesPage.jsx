@@ -15,6 +15,7 @@ import {
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import CollapsiblePanel from '../components/ui/CollapsiblePanel'
+import { asArray, extractDataArray, extractDataObject } from '../utils/apiData'
 import { formatDate } from '../utils/formatDate'
 import { getErrorMessage } from '../utils/getErrorMessage'
 
@@ -49,7 +50,7 @@ function CommunitiesPage() {
     try {
       const response = await getCommunitiesRequest(term ? { q: term } : {})
 
-      setCommunities(response.data.data)
+      setCommunities(extractDataArray(response))
       setErrorMessage('')
     } catch (error) {
       setErrorMessage(
@@ -69,7 +70,7 @@ function CommunitiesPage() {
         const response = await getCommunitiesRequest(queryFromUrl ? { q: queryFromUrl } : {})
 
         if (!cancelled) {
-          setCommunities(response.data.data)
+          setCommunities(extractDataArray(response))
           setErrorMessage('')
         }
       } catch (error) {
@@ -93,9 +94,10 @@ function CommunitiesPage() {
   }, [queryFromUrl])
 
   const heroStats = useMemo(() => {
-    const privateCount = communities.filter((community) => community.isPrivate).length
-    const joinedCount = communities.filter((community) => community.isMember).length
-    const pendingCount = communities.reduce(
+    const safeCommunities = asArray(communities)
+    const privateCount = safeCommunities.filter((community) => community.isPrivate).length
+    const joinedCount = safeCommunities.filter((community) => community.isMember).length
+    const pendingCount = safeCommunities.reduce(
       (sum, community) => sum + (community.pendingRequestsCount ?? 0),
       0,
     )
@@ -141,8 +143,12 @@ function CommunitiesPage() {
   }
 
   const replaceCommunity = (updatedCommunity) => {
+    if (!updatedCommunity?.id) {
+      return
+    }
+
     setCommunities((current) =>
-      current.map((community) =>
+      asArray(current).map((community) =>
         community.id === updatedCommunity.id ? updatedCommunity : community,
       ),
     )
@@ -165,7 +171,7 @@ function CommunitiesPage() {
 
       setMembershipRequestsByCommunityId((current) => ({
         ...current,
-        [communityId]: response.data.data,
+        [communityId]: extractDataArray(response),
       }))
       setErrorMessage('')
     } catch (error) {
@@ -239,7 +245,7 @@ function CommunitiesPage() {
 
     try {
       const response = await joinCommunityRequest(communityId)
-      replaceCommunity(response.data.data)
+      replaceCommunity(extractDataObject(response, null))
       setSuccessMessage(response.data.message)
     } catch (error) {
       setErrorMessage(
@@ -254,7 +260,7 @@ function CommunitiesPage() {
 
     try {
       const response = await leaveCommunityRequest(communityId)
-      replaceCommunity(response.data.data)
+      replaceCommunity(extractDataObject(response, null))
       setSuccessMessage(response.data.message)
     } catch (error) {
       setErrorMessage(
@@ -275,7 +281,7 @@ function CommunitiesPage() {
       )
 
       replaceCommunity(response.data.community)
-      removeMembershipRequest(communityId, response.data.data.id)
+      removeMembershipRequest(communityId, extractDataObject(response, null)?.id)
       setSuccessMessage(response.data.message)
     } catch (error) {
       setErrorMessage(
@@ -300,7 +306,7 @@ function CommunitiesPage() {
       )
 
       replaceCommunity(response.data.community)
-      removeMembershipRequest(communityId, response.data.data.id)
+      removeMembershipRequest(communityId, extractDataObject(response, null)?.id)
       setSuccessMessage(response.data.message)
     } catch (error) {
       setErrorMessage(
@@ -314,6 +320,7 @@ function CommunitiesPage() {
   }
 
   const submitLabel = getCommunitySubmitLabel(isSubmitting, editingId)
+  const safeCommunities = asArray(communities)
 
   return (
     <section className="space-y-6">
@@ -334,7 +341,7 @@ function CommunitiesPage() {
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
-            <HeroStatCard label="Communautes" value={communities.length} />
+            <HeroStatCard label="Communautes" value={asArray(communities).length} />
             <HeroStatCard label="Privees" value={heroStats.privateCount} />
             <HeroStatCard label="Mes groupes" value={heroStats.joinedCount} />
           </div>
@@ -456,8 +463,8 @@ function CommunitiesPage() {
                   Groupes disponibles
                 </h2>
                 <p className="mt-1 text-sm text-stone-500">
-                  {communities.length} communaute{communities.length > 1 ? 's' : ''} trouvee
-                  {communities.length > 1 ? 's' : ''} et {heroStats.pendingCount} demande
+                  {safeCommunities.length} communaute{safeCommunities.length > 1 ? 's' : ''} trouvee
+                  {safeCommunities.length > 1 ? 's' : ''} et {heroStats.pendingCount} demande
                   {heroStats.pendingCount > 1 ? 's' : ''} en attente.
                 </p>
               </div>
@@ -471,13 +478,13 @@ function CommunitiesPage() {
             <StateBox>Chargement des communautes...</StateBox>
           ) : null}
 
-          {!isLoading && communities.length === 0 ? (
+          {!isLoading && safeCommunities.length === 0 ? (
             <StateBox>Aucune communaute ne correspond a votre recherche.</StateBox>
           ) : null}
 
-          {!isLoading && communities.length > 0 ? (
+          {!isLoading && safeCommunities.length > 0 ? (
             <div className="grid gap-4 lg:grid-cols-2">
-              {communities.map((community) => (
+              {safeCommunities.map((community) => (
                 <CommunityCard
                   key={community.id}
                   community={community}

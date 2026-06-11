@@ -8,6 +8,7 @@ import {
   uniqueUrls,
 } from '../features/marketplace/marketplaceUtils'
 import * as animalService from '../services/marketplace/animalsMarketplaceService'
+import { asArray } from '../utils/apiData'
 import { getErrorMessage } from '../utils/getErrorMessage'
 
 const cloneAnimalForm = () => ({
@@ -188,7 +189,7 @@ export function useAnimalsMarketplace() {
 
     try {
       await animalService.deleteAnimal(animalId)
-      setAnimals((current) => current.filter((animal) => animal.id !== animalId))
+      setAnimals((current) => asArray(current).filter((animal) => animal.id !== animalId))
       if (editingId === animalId) resetForm()
       setSuccessMessage('Annonce animal supprimee.')
     } catch (error) {

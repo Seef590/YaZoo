@@ -5,11 +5,12 @@ import {
   updateAnimalRequest,
 } from '../../api/animals'
 import { cleanFilters } from '../../features/marketplace/marketplaceUtils'
+import { extractDataArray } from '../../utils/apiData'
 
 export async function fetchAnimals(filters = {}) {
   const response = await getAnimalsRequest(cleanFilters(filters))
 
-  return response.data.data ?? []
+  return extractDataArray(response)
 }
 
 export function createAnimal(payload) {

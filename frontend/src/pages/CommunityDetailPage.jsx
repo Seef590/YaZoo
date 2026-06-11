@@ -21,6 +21,7 @@ import PostCard from '../components/feed/PostCard'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import { useAuth } from '../hooks/useAuth'
+import { asArray, extractDataArray, extractDataObject } from '../utils/apiData'
 import { formatDate } from '../utils/formatDate'
 import { getErrorMessage } from '../utils/getErrorMessage'
 
@@ -39,7 +40,7 @@ function CommunityDetailPage() {
   const loadCommunity = useCallback(async () => {
     try {
       const response = await getCommunityRequest(communityId)
-      setCommunity(response.data.data)
+      setCommunity(extractDataObject(response, null))
       setErrorMessage('')
     } catch (error) {
       setErrorMessage(getErrorMessage(error, 'Impossible de charger ce groupe.'))
@@ -53,7 +54,7 @@ function CommunityDetailPage() {
 
     try {
       const response = await getPostsRequest({ community_id: communityId })
-      setPosts(response.data.data ?? [])
+      setPosts(extractDataArray(response))
       setErrorMessage('')
     } catch (error) {
       setErrorMessage(getErrorMessage(error, 'Impossible de charger les posts du groupe.'))
@@ -75,7 +76,7 @@ function CommunityDetailPage() {
 
     try {
       const response = await joinCommunityRequest(community.id)
-      setCommunity(response.data.data)
+      setCommunity(extractDataObject(response, community))
       setSuccessMessage(response.data.message)
     } catch (error) {
       setErrorMessage(getErrorMessage(error, "Impossible de rejoindre ce groupe."))
@@ -91,7 +92,7 @@ function CommunityDetailPage() {
 
     try {
       const response = await leaveCommunityRequest(community.id)
-      setCommunity(response.data.data)
+      setCommunity(extractDataObject(response, community))
       setSuccessMessage(response.data.message)
     } catch (error) {
       setErrorMessage(getErrorMessage(error, "Impossible de quitter ce groupe."))
@@ -126,7 +127,11 @@ function CommunityDetailPage() {
       visibility: community.isPrivate ? 'followers' : 'public',
     })
 
-    setPosts((current) => [response.data.data, ...current])
+    const nextPost = extractDataObject(response, null)
+
+    if (nextPost) {
+      setPosts((current) => [nextPost, ...asArray(current)])
+    }
   }
 
   const handleToggleLike = async (postId, reaction = 'like') => {
@@ -135,7 +140,9 @@ function CommunityDetailPage() {
     try {
       const response = await toggleLikeRequest(postId, reaction)
       setPosts((current) =>
-        current.map((post) => (post.id === postId ? response.data.data : post)),
+        asArray(current).map((post) =>
+          post.id === postId ? extractDataObject(response, post) : post,
+        ),
       )
     } finally {
       setLikePendingIds((current) => current.filter((id) => id !== postId))
@@ -148,10 +155,14 @@ function CommunityDetailPage() {
       parent_id: options.parentId ?? null,
       reaction: options.reaction ?? null,
     })
-    const comment = response.data.data
+    const comment = extractDataObject(response, null)
+
+    if (!comment) {
+      return null
+    }
 
     setPosts((current) =>
-      current.map((post) =>
+      asArray(current).map((post) =>
         post.id === postId ? addCommentToPost(post, comment) : post,
       ),
     )
@@ -161,10 +172,14 @@ function CommunityDetailPage() {
 
   const handleReactToComment = async (postId, commentId, reaction) => {
     const response = await reactToCommentRequest(commentId, reaction)
-    const nextComment = response.data.data
+    const nextComment = extractDataObject(response, null)
+
+    if (!nextComment) {
+      return null
+    }
 
     setPosts((current) =>
-      current.map((post) =>
+      asArray(current).map((post) =>
         post.id === postId ? updateCommentInPost(post, nextComment) : post,
       ),
     )
@@ -176,15 +191,17 @@ function CommunityDetailPage() {
     const response = await updatePostRequest(postId, payload)
 
     setPosts((current) =>
-      current.map((post) => (post.id === postId ? response.data.data : post)),
+      asArray(current).map((post) =>
+        post.id === postId ? extractDataObject(response, post) : post,
+      ),
     )
 
-    return response.data.data
+    return extractDataObject(response, null)
   }
 
   const handleDeletePost = async (postId) => {
     await deletePostRequest(postId)
-    setPosts((current) => current.filter((post) => post.id !== postId))
+    setPosts((current) => asArray(current).filter((post) => post.id !== postId))
   }
 
   if (isLoading) {
@@ -200,6 +217,7 @@ function CommunityDetailPage() {
         backgroundImage: `linear-gradient(rgba(10,8,18,0.3),rgba(10,8,18,0.36)), url(${community.imageUrl})`,
       }
     : undefined
+  const safePosts = asArray(posts)
 
   return (
     <section className="space-y-5">
@@ -271,13 +289,13 @@ function CommunityDetailPage() {
 
           {isPostsLoading ? <StateBox>Chargement des publications du groupe...</StateBox> : null}
 
-          {!isPostsLoading && posts.length === 0 ? (
+          {!isPostsLoading && safePosts.length === 0 ? (
             <StateBox>Aucune publication dans ce groupe pour le moment.</StateBox>
           ) : null}
 
-          {!isPostsLoading && posts.length > 0 ? (
+          {!isPostsLoading && safePosts.length > 0 ? (
             <div className="space-y-5">
-              {posts.map((post) => (
+              {safePosts.map((post) => (
                 <PostCard
                   key={post.id}
                   post={post}

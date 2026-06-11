@@ -11,6 +11,7 @@ import {
 } from '../api/reservations'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
+import { asArray } from '../utils/apiData'
 import { formatDate } from '../utils/formatDate'
 import { getErrorMessage } from '../utils/getErrorMessage'
 
@@ -30,8 +31,8 @@ function ReservationsPage() {
     try {
       const response = await getReservationsRequest()
 
-      setBuyerReservations(response.data.buyerReservations ?? [])
-      setSellerReservations(response.data.sellerReservations ?? [])
+      setBuyerReservations(asArray(response.data.buyerReservations))
+      setSellerReservations(asArray(response.data.sellerReservations))
       setErrorMessage('')
     } catch (error) {
       setErrorMessage(
@@ -635,7 +636,7 @@ function filterReservations(reservations, searchTerm) {
 
   const normalizedSearch = normalizeSearchText(searchTerm)
 
-  return reservations.filter((reservation) => {
+  return asArray(reservations).filter((reservation) => {
     const counterpart = reservation.isBuyer ? reservation.seller : reservation.buyer
 
     return [

@@ -12,6 +12,7 @@ import Button from '../components/ui/Button'
 import { useAuth } from '../hooks/useAuth'
 import { useNotifications } from '../hooks/useNotifications'
 import { subscribeToPrivateChannel } from '../lib/realtime'
+import { asArray, extractDataArray, extractDataObject } from '../utils/apiData'
 import { formatDate } from '../utils/formatDate'
 import { getErrorMessage } from '../utils/getErrorMessage'
 
@@ -38,11 +39,12 @@ function MessagesPage() {
   const [isMessageSubmitting, setIsMessageSubmitting] = useState(false)
   const { refreshUnreadCount, latestNotification } = useNotifications()
 
-  const unreadMessages = conversations.reduce(
+  const safeConversations = asArray(conversations)
+  const unreadMessages = safeConversations.reduce(
     (sum, conversation) => sum + (conversation.unreadCount ?? 0),
     0,
   )
-  const visibleConversations = filterConversations(conversations, queryFromUrl)
+  const visibleConversations = filterConversations(safeConversations, queryFromUrl)
 
   const loadConversations = useCallback(
     async ({ silent = false } = {}) => {
@@ -53,7 +55,7 @@ function MessagesPage() {
       try {
         const response = await getConversationsRequest()
 
-        setConversations(sortConversations(response.data.data))
+        setConversations(sortConversations(extractDataArray(response)))
 
         if (!silent) {
           setErrorMessage('')
@@ -85,7 +87,11 @@ function MessagesPage() {
 
       try {
         const response = await getConversationRequest(conversationId)
-        const conversation = response.data.data
+        const conversation = extractDataObject(response, null)
+
+        if (!conversation) {
+          return
+        }
 
         setSelectedConversation(conversation)
         setConversations((current) => upsertConversation(current, conversation))
@@ -272,7 +278,11 @@ function MessagesPage() {
 
     try {
       const response = await createConversationRequest(conversationForm)
-      const conversation = response.data.data
+      const conversation = extractDataObject(response, null)
+
+      if (!conversation) {
+        throw new Error('Conversation introuvable.')
+      }
 
       setConversations((current) => upsertConversation(current, conversation))
       setSelectedConversationId(conversation.id)
@@ -334,8 +344,12 @@ function MessagesPage() {
         body: messageBody,
       })
 
-      const message = response.data.data
+      const message = extractDataObject(response, null)
       const conversationSummary = response.data.conversation
+
+      if (!message) {
+        throw new Error('Message introuvable.')
+      }
 
       setSelectedConversation((current) => {
         if (!current) {
@@ -702,7 +716,7 @@ function StateBox({ children }) {
 }
 
 function sortConversations(items) {
-  return [...items].sort(
+  return [...asArray(items)].sort(
     (firstConversation, secondConversation) =>
       new Date(secondConversation.updatedAt ?? 0).getTime() -
       new Date(firstConversation.updatedAt ?? 0).getTime(),
@@ -710,7 +724,11 @@ function sortConversations(items) {
 }
 
 function upsertConversation(currentConversations, nextConversation) {
-  const remainingConversations = currentConversations.filter(
+  if (!nextConversation?.id) {
+    return sortConversations(currentConversations)
+  }
+
+  const remainingConversations = asArray(currentConversations).filter(
     (conversation) => conversation.id !== nextConversation.id,
   )
 
@@ -718,21 +736,25 @@ function upsertConversation(currentConversations, nextConversation) {
 }
 
 function appendUniqueMessage(messages, nextMessage) {
-  if (messages.some((message) => message.id === nextMessage.id)) {
-    return messages
+  const safeMessages = asArray(messages)
+
+  if (!nextMessage?.id || safeMessages.some((message) => message.id === nextMessage.id)) {
+    return safeMessages
   }
 
-  return [...messages, nextMessage]
+  return [...safeMessages, nextMessage]
 }
 
 function filterConversations(conversations, searchTerm) {
+  const safeConversations = asArray(conversations)
+
   if (!searchTerm) {
-    return conversations
+    return safeConversations
   }
 
   const normalizedSearch = normalizeSearchText(searchTerm)
 
-  return conversations.filter((conversation) =>
+  return safeConversations.filter((conversation) =>
     [
       conversation.participant?.name,
       conversation.participant?.email,
