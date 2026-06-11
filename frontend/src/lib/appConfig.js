@@ -27,11 +27,21 @@ function getDefaultApiUrl() {
     return 'http://localhost:8000/api'
   }
 
+  if (globalThis.location.hostname === 'yazoo.azurewebsites.net') {
+    return 'https://yazoo-api.azurewebsites.net/api'
+  }
+
   return `${globalThis.location.protocol}//${globalThis.location.hostname}:8000/api`
 }
 
 export function getApiBaseUrl() {
-  return trimTrailingSlash(import.meta.env.VITE_API_URL ?? getDefaultApiUrl())
+  const configuredUrl = import.meta.env.VITE_API_URL
+
+  return trimTrailingSlash(
+    typeof configuredUrl === 'string' && configuredUrl.trim()
+      ? configuredUrl
+      : getDefaultApiUrl(),
+  )
 }
 
 export function getBackendBaseUrl() {

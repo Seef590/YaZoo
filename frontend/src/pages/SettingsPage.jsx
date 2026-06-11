@@ -4,12 +4,40 @@ import PropTypes from 'prop-types'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import LanguageSwitcher from '../components/ui/LanguageSwitcher'
+import { updateProfileRequest } from '../api/profile'
 import { useAuth } from '../hooks/useAuth'
+import { useI18n } from '../hooks/useI18n'
 import { useTheme } from '../hooks/useTheme'
 
 function SettingsPage() {
-  const { logout, user } = useAuth()
+  const { logout, setUser, user } = useAuth()
+  const { setLocale, t } = useI18n()
   const { theme, resolvedTheme, setTheme } = useTheme()
+
+  const handleLocaleChange = async (nextLocale) => {
+    setLocale(nextLocale)
+
+    if (!user?.id) {
+      return
+    }
+
+    setUser((currentUser) => (
+      currentUser ? { ...currentUser, preferredLocale: nextLocale } : currentUser
+    ))
+
+    try {
+      await updateProfileRequest(user.id, {
+        name: user.name ?? 'Utilisateur',
+        phone: user.phone ?? '',
+        country: user.country ?? '',
+        city: user.city ?? '',
+        bio: user.bio ?? '',
+        preferred_locale: nextLocale,
+      })
+    } catch {
+      // Keep the local preference responsive even if the profile save is temporarily unavailable.
+    }
+  }
 
   return (
     <section className="space-y-6">
@@ -19,13 +47,13 @@ function SettingsPage() {
             <Avatar name={user?.name ?? 'Utilisateur'} src={user?.avatar || ''} className="h-16 w-16" />
             <div>
               <p className="text-xs uppercase tracking-[0.22em] text-violet-700 dark:text-violet-200">
-                Parametres
+                {t('common.settings')}
               </p>
               <h1 className="mt-2 text-2xl font-semibold text-stone-950 dark:text-violet-50">
-                Gerer mon experience YaZoo
+                {t('settings.title')}
               </h1>
               <p className="mt-1 text-sm text-stone-600 dark:text-violet-100/68">
-                Profil, langue, theme, securite et preferences de navigation.
+                {t('settings.description')}
               </p>
             </div>
           </div>
@@ -34,25 +62,27 @@ function SettingsPage() {
             to="/profile"
             className="rounded-full border border-violet-100 bg-white/80 px-4 py-2 text-sm font-semibold text-violet-900 transition hover:bg-violet-50 dark:border-violet-300/16 dark:bg-white/8 dark:text-violet-50 dark:hover:bg-white/12"
           >
-            Modifier mon profil
+            {t('settings.editProfile')}
           </Link>
         </div>
       </section>
 
       <div className="grid gap-5 lg:grid-cols-2">
-        <SettingsCard title="Langue" description="Choisissez la langue d'affichage du site.">
-          <LanguageSwitcher />
+        <SettingsCard title={t('common.language')} description={t('settings.languageDescription')}>
+          <LanguageSwitcher onLocaleChange={handleLocaleChange} />
         </SettingsCard>
 
         <SettingsCard
-          title="Mode d'affichage"
-          description={`Mode actuel : ${resolvedTheme === 'dark' ? 'nuit' : 'jour'}. Le mode auto suit le navigateur.`}
+          title={t('settings.themeTitle')}
+          description={t('settings.themeDescription', {
+            mode: resolvedTheme === 'dark' ? t('common.dark') : t('common.light'),
+          })}
         >
           <div className="flex flex-wrap gap-2">
             {[
-              ['system', 'Auto navigateur'],
-              ['light', 'Mode clair'],
-              ['dark', 'Mode nuit'],
+              ['system', t('common.system')],
+              ['light', t('common.light')],
+              ['dark', t('common.dark')],
             ].map(([value, label]) => (
               <button
                 key={value}
@@ -70,24 +100,24 @@ function SettingsPage() {
           </div>
         </SettingsCard>
 
-        <SettingsCard title="Compte" description="Acces rapide aux informations publiques et a la session.">
+        <SettingsCard title={t('settings.accountTitle')} description={t('settings.accountDescription')}>
           <div className="grid gap-3 text-sm text-stone-600 dark:text-violet-100/70">
-            <p>Nom : <span className="font-semibold text-stone-950 dark:text-violet-50">{user?.name ?? 'Utilisateur'}</span></p>
-            <p>Email : <span className="font-semibold text-stone-950 dark:text-violet-50">{user?.email ?? 'Non renseigne'}</span></p>
-            <p>Ville : <span className="font-semibold text-stone-950 dark:text-violet-50">{user?.city ?? 'Non renseignee'}</span></p>
+            <p>{t('common.name')} : <span className="font-semibold text-stone-950 dark:text-violet-50">{user?.name ?? t('common.user')}</span></p>
+            <p>Email : <span className="font-semibold text-stone-950 dark:text-violet-50">{user?.email ?? t('common.notProvided')}</span></p>
+            <p>{t('common.city')} : <span className="font-semibold text-stone-950 dark:text-violet-50">{user?.city ?? t('common.notProvided')}</span></p>
           </div>
         </SettingsCard>
 
-        <SettingsCard title="Securite" description="Controlez votre session active.">
+        <SettingsCard title={t('settings.securityTitle')} description={t('settings.securityDescription')}>
           <div className="flex flex-wrap gap-3">
             <Button type="button" variant="secondary" onClick={logout}>
-              Se deconnecter
+              {t('common.logout')}
             </Button>
             <Link
               to="/contact"
               className="rounded-full border border-violet-100 bg-white/80 px-4 py-2 text-sm font-semibold text-violet-900 transition hover:bg-violet-50 dark:border-violet-300/16 dark:bg-white/8 dark:text-violet-50"
             >
-              Contacter le support
+              {t('settings.contactSupport')}
             </Link>
           </div>
         </SettingsCard>

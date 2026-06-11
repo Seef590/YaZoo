@@ -1,7 +1,6 @@
 import { Suspense, lazy } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 
-import FloatingPreferences from './components/ui/FloatingPreferences'
 import { useAuth } from './hooks/useAuth'
 
 const AdminModerationPage = lazy(() => import('./pages/AdminModerationPage'))
@@ -73,7 +72,6 @@ function App() {
           element={<Navigate to={isAuthenticated ? '/feed' : '/'} replace />}
         />
       </Routes>
-      <FloatingPreferences />
     </Suspense>
   )
 }

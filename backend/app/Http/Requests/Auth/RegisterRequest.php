@@ -33,7 +33,7 @@ class RegisterRequest extends FormRequest
             'country' => ['nullable', 'string', 'max:100'],
             'city' => ['nullable', 'string', 'max:100'],
             'device_name' => ['nullable', 'string', 'max:120'],
-            'preferred_locale' => ['nullable', 'string', 'in:fr,ar'],
+            'preferred_locale' => ['nullable', 'string', 'in:fr,en,ar,de'],
         ];
     }
 

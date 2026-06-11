@@ -57,6 +57,73 @@ body {
   text-shadow: 0 8px 22px rgba(168, 85, 247, 0.42);
 }
 
+:root.dark input,
+:root.dark textarea,
+:root.dark select {
+  border-color: rgba(196, 181, 253, 0.24);
+  background: rgba(255, 255, 255, 0.08);
+  color: #f8f3ff;
+  caret-color: #d8b4fe;
+}
+
+:root.dark input::placeholder,
+:root.dark textarea::placeholder {
+  color: rgba(226, 214, 255, 0.62);
+}
+
+:root.dark input[readonly],
+:root.dark textarea[readonly] {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(248, 243, 255, 0.72);
+}
+
+:root.dark [class*='text-black'],
+:root.dark [class*='text-stone-950'],
+:root.dark [class*='text-stone-900'],
+:root.dark [class*='text-slate-950'],
+:root.dark [class*='text-slate-900'],
+:root.dark [class*='text-gray-950'],
+:root.dark [class*='text-gray-900'] {
+  color: #f8f3ff;
+}
+
+:root.dark [class*='text-stone-700'],
+:root.dark [class*='text-stone-600'],
+:root.dark [class*='text-slate-700'],
+:root.dark [class*='text-slate-600'],
+:root.dark [class*='text-gray-700'],
+:root.dark [class*='text-gray-600'] {
+  color: rgba(235, 226, 255, 0.82);
+}
+
+:root.dark [class*='text-stone-500'],
+:root.dark [class*='text-stone-400'],
+:root.dark [class*='text-slate-500'],
+:root.dark [class*='text-slate-400'],
+:root.dark [class*='text-gray-500'],
+:root.dark [class*='text-gray-400'] {
+  color: rgba(221, 214, 254, 0.7);
+}
+
+:root.dark [class*='bg-white'],
+:root.dark [class*='bg-stone-50'],
+:root.dark [class*='bg-stone-100'],
+:root.dark [class*='bg-violet-50'],
+:root.dark [class*='bg-violet-100'] {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+:root.dark [class*='border-white'],
+:root.dark [class*='border-stone-'],
+:root.dark [class*='border-violet-100'],
+:root.dark [class*='border-violet-200'] {
+  border-color: rgba(196, 181, 253, 0.18);
+}
+
+:root.dark [class*='shadow-['] {
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+}
+
 body::selection,
 body ::selection {
   background: rgba(168, 85, 247, 0.22);

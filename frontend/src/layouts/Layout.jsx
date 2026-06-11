@@ -6,12 +6,14 @@ import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import Footer from '../components/ui/Footer'
 import { useAuth } from '../hooks/useAuth'
+import { useI18n } from '../hooks/useI18n'
 import { useNotifications } from '../hooks/useNotifications'
 
 function Layout() {
   const navigate = useNavigate()
   const location = useLocation()
   const { isAuthenticated, isBootstrapping, logout, user } = useAuth()
+  const { t } = useI18n()
   const { unreadCount, realtimeStatus, isRealtimeEnabled } = useNotifications()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [globalSearch, setGlobalSearch] = useState('')
@@ -107,24 +109,26 @@ function Layout() {
   }
 
   const navigationItems = [
-    { to: '/feed', label: 'Feed' },
-    { to: '/profile', label: 'Profil' },
-    { to: '/marketplace', label: 'Animaux & Produits' },
-    { to: '/communities', label: 'Communautes' },
-    { to: '/messages', label: 'Messages' },
-    { to: '/reservations', label: 'Reservations' },
-    { to: '/orders/history', label: 'Historique' },
-    { to: '/settings', label: 'Parametres' },
+    { to: '/feed', label: t('common.feed') },
+    { to: '/profile', label: t('common.profile') },
+    { to: '/marketplace', label: t('common.marketplace') },
+    { to: '/communities', label: t('common.communities') },
+    { to: '/messages', label: t('common.messages') },
+    { to: '/reservations', label: t('common.reservations') },
+    { to: '/orders/history', label: t('common.history') },
+    { to: '/settings', label: t('common.settings') },
     {
       to: '/notifications',
-      label: unreadCount > 0 ? `Notifications (${unreadCount})` : 'Notifications',
+      label: unreadCount > 0
+        ? `${t('common.notifications')} (${unreadCount})`
+        : t('common.notifications'),
     },
   ]
 
   if (user?.isAdmin) {
     navigationItems.push(
-      { to: '/admin/moderation', label: 'Admin contenus' },
-      { to: '/admin/orders', label: 'Admin commandes' },
+      { to: '/admin/moderation', label: t('common.adminContent') },
+      { to: '/admin/orders', label: t('common.adminOrders') },
     )
   }
 

@@ -37,6 +37,10 @@ const messages = {
       communities: 'Communautes',
       messages: 'Messages',
       notifications: 'Notifications',
+      settings: 'Parametres',
+      marketplace: 'Animaux & Produits',
+      adminContent: 'Admin contenus',
+      adminOrders: 'Admin commandes',
       language: 'Langue',
       french: 'Francais',
       english: 'Anglais',
@@ -202,6 +206,19 @@ const messages = {
       unread: 'Non lus',
       opened: 'Ouverte',
       toOpen: 'A ouvrir',
+    },
+    settings: {
+      title: 'Gerer mon experience YaZoo',
+      description: 'Profil, langue, theme, securite et preferences de navigation.',
+      editProfile: 'Modifier mon profil',
+      languageDescription: "Choisissez la langue d'affichage du site.",
+      themeTitle: "Mode d'affichage",
+      themeDescription: 'Mode actuel : {mode}. Le mode auto suit le navigateur.',
+      accountTitle: 'Compte',
+      accountDescription: 'Acces rapide aux informations publiques et a la session.',
+      securityTitle: 'Securite',
+      securityDescription: 'Controlez votre session active.',
+      contactSupport: 'Contacter le support',
     },
   },
   ar: {
@@ -434,6 +451,10 @@ const messages = {
       communities: 'Communities',
       messages: 'Messages',
       notifications: 'Notifications',
+      settings: 'Settings',
+      marketplace: 'Animals & Products',
+      adminContent: 'Content admin',
+      adminOrders: 'Orders admin',
       language: 'Language',
       french: 'French',
       english: 'English',
@@ -483,6 +504,19 @@ const messages = {
       rights: 'All rights reserved.',
       copyright: 'Copyright {year} YaZoo. Project developed by Seef590.',
     },
+    settings: {
+      title: 'Manage my YaZoo experience',
+      description: 'Profile, language, theme, security and navigation preferences.',
+      editProfile: 'Edit my profile',
+      languageDescription: 'Choose the site display language.',
+      themeTitle: 'Display mode',
+      themeDescription: 'Current mode: {mode}. Auto mode follows the browser.',
+      accountTitle: 'Account',
+      accountDescription: 'Quick access to public information and your session.',
+      securityTitle: 'Security',
+      securityDescription: 'Control your active session.',
+      contactSupport: 'Contact support',
+    },
   },
   de: {
     common: {
@@ -518,6 +552,10 @@ const messages = {
       communities: 'Communities',
       messages: 'Nachrichten',
       notifications: 'Benachrichtigungen',
+      settings: 'Einstellungen',
+      marketplace: 'Tiere & Produkte',
+      adminContent: 'Inhalte admin',
+      adminOrders: 'Bestellungen admin',
       language: 'Sprache',
       french: 'Franzoesisch',
       arabic: 'Arabisch',
@@ -566,6 +604,19 @@ const messages = {
       rights: 'Alle Rechte vorbehalten.',
       copyright: 'Copyright {year} YaZoo. Projekt entwickelt von Seef590.',
     },
+    settings: {
+      title: 'Meine YaZoo-Erfahrung verwalten',
+      description: 'Profil, Sprache, Design, Sicherheit und Navigation.',
+      editProfile: 'Profil bearbeiten',
+      languageDescription: 'Waehlen Sie die Sprache der Website.',
+      themeTitle: 'Anzeigemodus',
+      themeDescription: 'Aktueller Modus: {mode}. Auto folgt dem Browser.',
+      accountTitle: 'Konto',
+      accountDescription: 'Schneller Zugriff auf oeffentliche Informationen und Sitzung.',
+      securityTitle: 'Sicherheit',
+      securityDescription: 'Aktive Sitzung verwalten.',
+      contactSupport: 'Support kontaktieren',
+    },
   },
 }
 
@@ -602,6 +653,14 @@ export function translate(locale, key, replacements = {}) {
 
   for (const segment of segments) {
     value = value?.[segment]
+  }
+
+  if (typeof value !== 'string' && locale !== 'fr') {
+    value = messages.fr
+
+    for (const segment of segments) {
+      value = value?.[segment]
+    }
   }
 
   if (typeof value !== 'string') {

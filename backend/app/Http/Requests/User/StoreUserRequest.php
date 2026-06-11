@@ -23,7 +23,7 @@ class StoreUserRequest extends FormRequest
             'phone' => ['nullable', 'string', 'max:40', 'unique:users,phone'],
             'country' => ['nullable', 'string', 'max:120'],
             'city' => ['nullable', 'string', 'max:120'],
-            'preferred_locale' => ['nullable', 'string', 'in:fr,en,ar'],
+            'preferred_locale' => ['nullable', 'string', 'in:fr,en,ar,de'],
             'is_admin' => ['sometimes', 'boolean'],
             'password' => ['required', 'confirmed', Password::defaults()],
         ];

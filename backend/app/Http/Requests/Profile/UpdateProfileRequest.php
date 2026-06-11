@@ -41,7 +41,7 @@ class UpdateProfileRequest extends FormRequest
             'country' => ['nullable', 'string', 'max:100'],
             'city' => ['nullable', 'string', 'max:100'],
             'bio' => ['nullable', 'string', 'max:2000'],
-            'preferred_locale' => ['nullable', 'string', 'in:fr,ar'],
+            'preferred_locale' => ['nullable', 'string', 'in:fr,en,ar,de'],
             'avatar' => ['nullable', 'string', 'max:2048'],
             'cover_photo' => ['nullable', 'string', 'max:2048'],
             'avatar_file' => ['nullable', 'file', 'image', 'max:10240'],

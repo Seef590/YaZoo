@@ -54,9 +54,9 @@ function ContactPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.18),_transparent_24%),radial-gradient(circle_at_bottom_right,_rgba(221,214,254,0.42),_transparent_24%),linear-gradient(180deg,_#fffaff_0%,_#f7f1ff_100%)] px-3 py-6 sm:px-4 sm:py-8">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.18),_transparent_24%),radial-gradient(circle_at_bottom_right,_rgba(221,214,254,0.42),_transparent_24%),linear-gradient(180deg,_#fffaff_0%,_#f7f1ff_100%)] px-3 py-6 transition-colors dark:bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.28),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(76,29,149,0.32),_transparent_24%),linear-gradient(180deg,_#08050d_0%,_#12091f_54%,_#1b1030_100%)] sm:px-4 sm:py-8">
       <div className="mx-auto max-w-5xl">
-        <section className="rounded-[30px] border border-white/80 bg-white/94 p-5 shadow-[0_28px_70px_rgba(124,58,237,0.1)] sm:rounded-[34px] sm:p-6">
+        <section className="rounded-[30px] border border-white/80 bg-white/94 p-5 shadow-[0_28px_70px_rgba(124,58,237,0.1)] transition-colors dark:border-violet-300/14 dark:bg-white/8 dark:shadow-[0_30px_80px_rgba(0,0,0,0.32)] sm:rounded-[34px] sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.24em] text-violet-700">Contact</p>
@@ -70,7 +70,7 @@ function ContactPage() {
 
             <Link
               to="/"
-              className="inline-flex items-center rounded-full border border-violet-100 bg-white px-4 py-2 text-sm font-medium text-violet-900 transition hover:-translate-y-0.5 hover:border-violet-200 hover:bg-violet-50"
+              className="inline-flex items-center rounded-full border border-violet-100 bg-white px-4 py-2 text-sm font-medium text-violet-900 transition hover:-translate-y-0.5 hover:border-violet-200 hover:bg-violet-50 dark:border-violet-300/18 dark:bg-white/8 dark:text-violet-50 dark:hover:bg-white/12"
             >
               Retour
             </Link>
@@ -79,7 +79,7 @@ function ContactPage() {
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             <a
               href={`tel:${companyContact.phone}`}
-              className="rounded-[24px] border border-violet-100 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.84))] px-5 py-5 transition hover:-translate-y-0.5 hover:border-violet-200"
+              className="rounded-[24px] border border-violet-100 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.84))] px-5 py-5 transition hover:-translate-y-0.5 hover:border-violet-200 dark:border-violet-300/14 dark:bg-[linear-gradient(180deg,_rgba(255,255,255,0.1),_rgba(168,85,247,0.08))]"
             >
               <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Numero</p>
               <p className="mt-3 text-xl font-semibold text-stone-950">{companyContact.phone}</p>
@@ -87,7 +87,7 @@ function ContactPage() {
 
             <a
               href={`mailto:${companyContact.email}`}
-              className="rounded-[24px] border border-violet-100 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.84))] px-5 py-5 transition hover:-translate-y-0.5 hover:border-violet-200"
+              className="rounded-[24px] border border-violet-100 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.84))] px-5 py-5 transition hover:-translate-y-0.5 hover:border-violet-200 dark:border-violet-300/14 dark:bg-[linear-gradient(180deg,_rgba(255,255,255,0.1),_rgba(168,85,247,0.08))]"
             >
               <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Email</p>
               <p className="mt-3 text-xl font-semibold text-stone-950">{companyContact.email}</p>
@@ -99,19 +99,19 @@ function ContactPage() {
               href={`https://wa.me/${companyContact.whatsapp}`}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center justify-center rounded-full border border-emerald-100 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-800 transition hover:-translate-y-0.5 hover:border-emerald-200 hover:bg-emerald-100"
+              className="inline-flex items-center justify-center rounded-full border border-emerald-100 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-800 transition hover:-translate-y-0.5 hover:border-emerald-200 hover:bg-emerald-100 dark:border-emerald-300/20 dark:bg-emerald-400/12 dark:text-emerald-100 dark:hover:bg-emerald-400/18"
             >
               Ouvrir WhatsApp
             </a>
             <a
               href={`tel:${companyContact.phone}`}
-              className="inline-flex items-center justify-center rounded-full border border-violet-100 bg-white px-4 py-2 text-sm font-semibold text-violet-900 transition hover:-translate-y-0.5 hover:border-violet-200 hover:bg-violet-50"
+              className="inline-flex items-center justify-center rounded-full border border-violet-100 bg-white px-4 py-2 text-sm font-semibold text-violet-900 transition hover:-translate-y-0.5 hover:border-violet-200 hover:bg-violet-50 dark:border-violet-300/18 dark:bg-white/8 dark:text-violet-50 dark:hover:bg-white/12"
             >
               Appeler {companyContact.phone}
             </a>
           </div>
 
-          <section className="mt-5 rounded-[26px] border border-violet-100 bg-violet-50/70 px-5 py-5">
+          <section className="mt-5 rounded-[26px] border border-violet-100 bg-violet-50/70 px-5 py-5 transition-colors dark:border-violet-300/14 dark:bg-white/7">
             <p className="text-xs uppercase tracking-[0.18em] text-violet-700">
               Message direct
             </p>
@@ -136,8 +136,8 @@ function ContactPage() {
                   required
                   className={`w-full rounded-[22px] border px-4 py-3 text-sm outline-none transition ${
                     user?.email
-                      ? 'border-stone-200 bg-white/70 text-stone-500'
-                      : 'border-violet-100 bg-white/90 text-stone-700 focus:border-violet-300'
+                      ? 'border-stone-200 bg-white/70 text-stone-500 dark:border-violet-300/14 dark:bg-white/5 dark:text-violet-100/62'
+                      : 'border-violet-100 bg-white/90 text-stone-700 focus:border-violet-300 dark:border-violet-300/18 dark:bg-white/8 dark:text-violet-50'
                   }`}
                   placeholder="votre@email.com"
                 />
@@ -150,7 +150,7 @@ function ContactPage() {
                 <input
                   value={objet}
                   onChange={(event) => setObjet(event.target.value)}
-                  className="w-full rounded-[22px] border border-violet-100 bg-white/90 px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-300"
+                  className="w-full rounded-[22px] border border-violet-100 bg-white/90 px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-300 dark:border-violet-300/18 dark:bg-white/8 dark:text-violet-50"
                   placeholder="Objet de votre message"
                 />
               </label>
@@ -164,7 +164,7 @@ function ContactPage() {
                   value={message}
                   onChange={(event) => setMessage(event.target.value)}
                   required
-                  className="w-full rounded-[22px] border border-violet-100 bg-white/90 px-4 py-3 text-sm leading-6 text-stone-700 outline-none transition focus:border-violet-300"
+                  className="w-full rounded-[22px] border border-violet-100 bg-white/90 px-4 py-3 text-sm leading-6 text-stone-700 outline-none transition focus:border-violet-300 dark:border-violet-300/18 dark:bg-white/8 dark:text-violet-50"
                   placeholder="Decrivez votre question ou besoin..."
                 />
               </label>

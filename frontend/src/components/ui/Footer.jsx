@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 function Footer({ className = '' }) {
   return (
     <footer
-      className={`rounded-[28px] border border-white/80 bg-white/92 px-4 py-4 shadow-[0_18px_40px_rgba(124,58,237,0.08)] backdrop-blur ${className}`}
+      className={`rounded-[28px] border border-white/80 bg-white/92 px-4 py-4 shadow-[0_18px_40px_rgba(124,58,237,0.08)] backdrop-blur dark:border-violet-300/14 dark:bg-white/8 dark:shadow-[0_24px_70px_rgba(0,0,0,0.24)] ${className}`}
     >
       <div className="flex flex-col items-center justify-center gap-3 text-center sm:flex-row">
         <Link
@@ -12,7 +12,7 @@ function Footer({ className = '' }) {
         >
           Contactez-nous
         </Link>
-        <div className="flex flex-wrap items-center justify-center gap-2 text-xs leading-6 text-stone-500">
+        <div className="flex flex-wrap items-center justify-center gap-2 text-xs leading-6 text-stone-500 dark:text-violet-100/70">
           <img
             src="/yazoo-logo.svg"
             alt=""
@@ -21,7 +21,7 @@ function Footer({ className = '' }) {
           />
           <p>
             <span className="yz-wordmark text-xs font-semibold">YaZoo</span>
-            {' '}© 2026 - Votre plateforme sociale et marketplace animalier.
+            {' '}(c) 2026 - Votre plateforme sociale et marketplace animalier.
             Une experience claire pour publier, echanger, vendre et gerer votre
             activite animale en ligne.
           </p>

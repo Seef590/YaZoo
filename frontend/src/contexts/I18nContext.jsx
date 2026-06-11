@@ -1,8 +1,14 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import PropTypes from 'prop-types'
 
 import { I18nContext } from './i18n-context'
-import { getCurrentLocale, getDirection, setStoredLocale, translate } from '../lib/i18n'
+import {
+  SUPPORTED_LOCALES,
+  getCurrentLocale,
+  getDirection,
+  setStoredLocale,
+  translate,
+} from '../lib/i18n'
 
 export function I18nProvider({ children }) {
   const [locale, setLocaleState] = useState(() => getCurrentLocale())
@@ -15,17 +21,21 @@ export function I18nProvider({ children }) {
     setStoredLocale(locale)
   }, [locale])
 
+  const setLocale = useCallback((nextLocale) => {
+    if (SUPPORTED_LOCALES.includes(nextLocale)) {
+      setLocaleState(nextLocale)
+    }
+  }, [])
+
   const value = useMemo(
     () => ({
       locale,
       dir: getDirection(locale),
       isRtl: locale === 'ar',
-      setLocale: (nextLocale) => {
-        setLocaleState(nextLocale)
-      },
+      setLocale,
       t: (key, replacements = {}) => translate(locale, key, replacements),
     }),
-    [locale],
+    [locale, setLocale],
   )
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>

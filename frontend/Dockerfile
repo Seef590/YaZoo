@@ -3,14 +3,14 @@ FROM node:22-alpine AS build
 WORKDIR /app/frontend
 
 ARG VITE_APP_NAME=YaZoo
-ARG VITE_API_URL
-ARG VITE_STORAGE_URL
+ARG VITE_API_URL=https://yazoo-api.azurewebsites.net/api
+ARG VITE_STORAGE_URL=https://yazoo-api.azurewebsites.net/storage
 ARG VITE_REALTIME_ENABLED=false
 ARG VITE_REVERB_HOST=
 ARG VITE_REVERB_PORT=443
 ARG VITE_REVERB_SCHEME=https
 ARG VITE_MONITORING_ENABLED=false
-ARG VITE_MONITORING_ENDPOINT
+ARG VITE_MONITORING_ENDPOINT=https://yazoo-api.azurewebsites.net/api/monitoring/frontend-error
 ARG VITE_NOTIFICATIONS_POLL_MS=30000
 ARG VITE_BUILD_SOURCEMAPS=false
 

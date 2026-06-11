@@ -10,7 +10,7 @@ export type ApiUser = {
   coverPhoto?: string | null
   isAdmin?: boolean
   isPhoneVerified?: boolean
-  preferredLocale?: 'fr' | 'en' | 'ar'
+  preferredLocale?: 'fr' | 'en' | 'ar' | 'de'
   createdAt?: string
   updatedAt?: string
 }
