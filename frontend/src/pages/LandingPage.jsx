@@ -214,7 +214,7 @@ function LandingPage() {
                 <img
                   src={feature.image}
                   alt={feature.title}
-                  className="h-48 w-full rounded-[20px] object-cover sm:h-56"
+                  className="h-48 w-full rounded-[20px] object-cover sm:h-64 md:h-80 lg:h-96 xl:h-[28rem]"
                   loading="lazy"
                 />
                 <h3 className="mt-4 text-lg font-semibold text-stone-950 dark:text-white">
