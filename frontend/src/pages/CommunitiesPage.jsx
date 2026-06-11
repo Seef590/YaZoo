@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import PropTypes from 'prop-types'
 
 import {
@@ -461,8 +461,8 @@ function CommunitiesPage() {
                   {heroStats.pendingCount > 1 ? 's' : ''} en attente.
                 </p>
               </div>
-              <div className="rounded-full bg-violet-50 px-4 py-2 text-sm font-medium text-violet-700">
-                Violet doux, sans mode night
+              <div className="rounded-full bg-violet-50 px-4 py-2 text-sm font-medium text-violet-700 dark:bg-white/8 dark:text-violet-100">
+                Groupes actifs
               </div>
             </div>
           </div>
@@ -657,6 +657,13 @@ function CommunityCard({
         ) : null}
 
         <div className="grid gap-3 sm:flex sm:flex-wrap">
+          <Link
+            to={`/communities/${community.id}`}
+            className="inline-flex w-full items-center justify-center rounded-full border border-violet-100 bg-white/90 px-4 py-2 text-sm font-semibold text-violet-900 transition hover:bg-violet-50 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-50 dark:hover:bg-white/12 sm:w-auto"
+          >
+            Entrer dans le groupe
+          </Link>
+
           {!community.isMember && community.membershipStatus !== 'pending' ? (
             <Button type="button" onClick={() => onJoin(community.id)} className="w-full sm:w-auto">
               {community.isPrivate ? "Demander l'acces" : 'Rejoindre'}

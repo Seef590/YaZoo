@@ -32,6 +32,14 @@ class PostPolicy
     }
 
     /**
+     * Determine whether the user can update a post.
+     */
+    public function update(User $user, Post $post): bool
+    {
+        return $user->is($post->user) || (bool) $user->is_admin;
+    }
+
+    /**
      * Determine whether the user can delete a post.
      */
     public function delete(User $user, Post $post): bool

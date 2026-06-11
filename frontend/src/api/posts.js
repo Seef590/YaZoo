@@ -1,6 +1,6 @@
 import api from './client'
 
-export const getPostsRequest = () => api.get('/posts')
+export const getPostsRequest = (params = {}) => api.get('/posts', { params })
 
 export const createPostRequest = (payload) => {
   if (!payload.media_file) {
@@ -10,6 +10,12 @@ export const createPostRequest = (payload) => {
   const formData = new FormData()
 
   formData.append('content', payload.content ?? '')
+  if (payload.community_id) {
+    formData.append('community_id', payload.community_id)
+  }
+  if (payload.visibility) {
+    formData.append('visibility', payload.visibility)
+  }
   formData.append('location', payload.location ?? '')
 
   ;(payload.tags ?? []).forEach((tag) => {
@@ -23,6 +29,12 @@ export const createPostRequest = (payload) => {
 
 export const toggleLikeRequest = (postId, reaction = 'like') =>
   api.post(`/posts/${postId}/like`, { reaction })
+
+export const updatePostRequest = (postId, payload) =>
+  api.patch(`/posts/${postId}`, payload)
+
+export const deletePostRequest = (postId) =>
+  api.delete(`/posts/${postId}`)
 
 export const createCommentRequest = (postId, payload) =>
   api.post(`/posts/${postId}/comments`, payload)

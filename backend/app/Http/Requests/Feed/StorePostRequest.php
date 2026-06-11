@@ -4,7 +4,9 @@ namespace App\Http\Requests\Feed;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
+use App\Models\Post;
 
 class StorePostRequest extends FormRequest
 {
@@ -25,10 +27,12 @@ class StorePostRequest extends FormRequest
     {
         return [
             'content' => ['nullable', 'string', 'max:5000'],
+            'community_id' => ['nullable', 'integer', 'exists:communities,id'],
             'location' => ['nullable', 'string', 'max:255'],
             'tags' => ['nullable', 'array', 'max:10'],
             'tags.*' => ['string', 'max:50'],
             'media_file' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,gif,mp4,webm,mov', 'max:51200'],
+            'visibility' => ['nullable', 'string', Rule::in(Post::VISIBILITIES)],
         ];
     }
 
@@ -45,8 +49,10 @@ class StorePostRequest extends FormRequest
 
         $this->merge([
             'content' => trim((string) $this->input('content')),
+            'community_id' => $this->input('community_id') ?: null,
             'location' => trim((string) $this->input('location')),
             'tags' => $tags,
+            'visibility' => $this->input('visibility') ?: Post::VISIBILITY_PUBLIC,
         ]);
     }
 

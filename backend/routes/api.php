@@ -58,6 +58,8 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
         Route::get('/posts', [PostController::class, 'index']);
         Route::middleware('throttle:feed-write')->group(function (): void {
             Route::post('/posts', [PostController::class, 'store']);
+            Route::patch('/posts/{post}', [PostController::class, 'update']);
+            Route::delete('/posts/{post}', [PostController::class, 'destroy']);
             Route::post('/posts/{post}/like', [PostController::class, 'toggleLike']);
             Route::post('/posts/{post}/comments', [CommentController::class, 'store']);
             Route::post('/comments/{comment}/reaction', [CommentController::class, 'react']);

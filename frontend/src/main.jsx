@@ -5,7 +5,9 @@ import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.jsx'
 import { AuthProvider } from './contexts/AuthContext.jsx'
+import { I18nProvider } from './contexts/I18nContext.jsx'
 import { NotificationProvider } from './contexts/NotificationContext.jsx'
+import { ThemeProvider } from './contexts/ThemeContext.jsx'
 import { ToastProvider } from './contexts/ToastContext.jsx'
 import { startFrontendMonitoring } from './lib/monitoring.js'
 
@@ -19,13 +21,17 @@ createRoot(document.getElementById('root')).render(
         v7_relativeSplatPath: true,
       }}
     >
-      <AuthProvider>
-        <ToastProvider>
-          <NotificationProvider>
-            <App />
-          </NotificationProvider>
-        </ToastProvider>
-      </AuthProvider>
+      <I18nProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <ToastProvider>
+              <NotificationProvider>
+                <App />
+              </NotificationProvider>
+            </ToastProvider>
+          </AuthProvider>
+        </ThemeProvider>
+      </I18nProvider>
     </BrowserRouter>
   </StrictMode>,
 )

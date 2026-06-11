@@ -11,6 +11,12 @@
   --yz-ink: #2f1b45;
 }
 
+:root.dark {
+  color-scheme: dark;
+  --yz-surface: #10091a;
+  --yz-ink: #f7efff;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -37,6 +43,18 @@ body {
   transition:
     background-color 180ms ease,
     color 180ms ease;
+}
+
+:root.dark body {
+  background-image:
+    radial-gradient(circle at top left, rgba(168, 85, 247, 0.3), transparent 28%),
+    radial-gradient(circle at top right, rgba(76, 29, 149, 0.36), transparent 24%),
+    linear-gradient(180deg, #08050d 0%, #12091f 48%, #1b1030 100%);
+}
+
+:root.dark .yz-wordmark {
+  color: #c4b5fd;
+  text-shadow: 0 8px 22px rgba(168, 85, 247, 0.42);
 }
 
 body::selection,

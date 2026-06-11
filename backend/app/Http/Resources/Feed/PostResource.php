@@ -30,6 +30,7 @@ class PostResource extends JsonResource
 
         return [
             'id' => $this->id,
+            'communityId' => $this->community_id,
             'content' => $this->content,
             'imageUrl' => $resolvedMediaKind === 'image'
                 ? MediaStorage::resolveUrl($resolvedMediaPath)
@@ -38,6 +39,7 @@ class PostResource extends JsonResource
             'mediaKind' => $resolvedMediaKind,
             'location' => $this->location,
             'tags' => $this->tags ?? [],
+            'visibility' => $this->visibility ?? Post::VISIBILITY_PUBLIC,
             'createdAt' => $this->created_at?->toISOString(),
             'author' => [
                 'id' => $this->user?->id,
@@ -46,6 +48,11 @@ class PostResource extends JsonResource
                 'city' => $this->user?->city,
                 'country' => $this->user?->country,
             ],
+            'community' => $this->whenLoaded('community', fn () => [
+                'id' => $this->community?->id,
+                'name' => $this->community?->name,
+                'isPrivate' => (bool) $this->community?->is_private,
+            ]),
             'likes' => $this->likes_count ?? 0,
             'liked' => (bool) ($this->liked_by_user ?? false),
             'userReaction' => $viewerLike?->reaction,

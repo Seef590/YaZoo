@@ -3,9 +3,11 @@ import { useSearchParams } from 'react-router-dom'
 
 import {
   createCommentRequest,
+  deletePostRequest,
   getPostsRequest,
   reactToCommentRequest,
   toggleLikeRequest,
+  updatePostRequest,
 } from '../api/posts'
 import { getProfileRequest, updateProfileRequest } from '../api/profile'
 import PostCard from '../components/feed/PostCard'
@@ -364,6 +366,29 @@ function ProfilePage() {
     return nextComment
   }
 
+  const handleUpdatePost = async (postId, payload) => {
+    const response = await updatePostRequest(postId, payload)
+
+    setRecentPublications((current) =>
+      current.map((post) => (post.id === postId ? response.data.data : post)),
+    )
+
+    return response.data.data
+  }
+
+  const handleDeletePost = async (postId) => {
+    await deletePostRequest(postId)
+    setRecentPublications((current) => current.filter((post) => post.id !== postId))
+    setProfile((current) =>
+      current
+        ? {
+            ...current,
+            postsCount: Math.max(0, (current.postsCount ?? 1) - 1),
+          }
+        : current,
+    )
+  }
+
   return (
     <section className="space-y-6">
       <section className="overflow-hidden rounded-[30px] border border-white/80 bg-white/92 shadow-[0_24px_60px_rgba(124,58,237,0.08)] sm:rounded-[32px]">
@@ -475,7 +500,10 @@ function ProfilePage() {
               onCreateComment={handleCreateComment}
               onReactToComment={handleReactToComment}
               onToggleLike={handleToggleLike}
+              onUpdatePost={handleUpdatePost}
+              onDeletePost={handleDeletePost}
               isLikePending={likePendingIds.includes(post.id)}
+              currentUserId={user?.id}
             />
           ))}
         </div>

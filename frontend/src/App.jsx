@@ -1,6 +1,7 @@
 import { Suspense, lazy } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 
+import FloatingPreferences from './components/ui/FloatingPreferences'
 import { useAuth } from './hooks/useAuth'
 
 const AdminModerationPage = lazy(() => import('./pages/AdminModerationPage'))
@@ -8,6 +9,7 @@ const AdminOrdersDashboardPage = lazy(() => import('./pages/AdminOrdersDashboard
 const AnimalDetailPage = lazy(() => import('./pages/AnimalDetailPage'))
 const AnimalsMarketplacePage = lazy(() => import('./pages/AnimalsMarketplacePage'))
 const CommunitiesPage = lazy(() => import('./pages/CommunitiesPage'))
+const CommunityDetailPage = lazy(() => import('./pages/CommunityDetailPage'))
 const ContactPage = lazy(() => import('./pages/ContactPage'))
 const FeedbackPage = lazy(() => import('./pages/FeedbackPage'))
 const FeedPage = lazy(() => import('./pages/FeedPage'))
@@ -23,6 +25,7 @@ const ProductsMarketplacePage = lazy(() => import('./pages/ProductsMarketplacePa
 const ProfilePage = lazy(() => import('./pages/ProfilePage'))
 const RegisterPage = lazy(() => import('./pages/RegisterPage'))
 const ReservationsPage = lazy(() => import('./pages/ReservationsPage'))
+const SettingsPage = lazy(() => import('./pages/SettingsPage'))
 
 function App() {
   const { isAuthenticated } = useAuth()
@@ -60,14 +63,17 @@ function App() {
           />
           <Route path="/marketplace" element={<AnimalsMarketplacePage />} />
           <Route path="/communities" element={<CommunitiesPage />} />
+          <Route path="/communities/:communityId" element={<CommunityDetailPage />} />
           <Route path="/messages" element={<MessagesPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
         </Route>
         <Route
           path="*"
           element={<Navigate to={isAuthenticated ? '/feed' : '/'} replace />}
         />
       </Routes>
+      <FloatingPreferences />
     </Suspense>
   )
 }

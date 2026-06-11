@@ -114,6 +114,7 @@ function Layout() {
     { to: '/messages', label: 'Messages' },
     { to: '/reservations', label: 'Reservations' },
     { to: '/orders/history', label: 'Historique' },
+    { to: '/settings', label: 'Parametres' },
     {
       to: '/notifications',
       label: unreadCount > 0 ? `Notifications (${unreadCount})` : 'Notifications',
@@ -128,15 +129,15 @@ function Layout() {
   }
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.18),_transparent_24%),radial-gradient(circle_at_top_right,_rgba(244,208,255,0.24),_transparent_20%),linear-gradient(180deg,_#fffaff_0%,_#f7f1ff_100%)]">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.18),_transparent_24%),radial-gradient(circle_at_top_right,_rgba(244,208,255,0.24),_transparent_20%),linear-gradient(180deg,_#fffaff_0%,_#f7f1ff_100%)] transition-colors dark:bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.26),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(76,29,149,0.28),_transparent_24%),linear-gradient(180deg,_#08050d_0%,_#12091f_54%,_#1b1030_100%)]">
       <div className="w-full px-3 pb-28 pt-3 sm:px-4 sm:pt-4 lg:px-6 lg:pb-8">
-        <header className="sticky top-3 z-30 rounded-[26px] border border-white/55 bg-[linear-gradient(135deg,_rgba(255,255,255,0.52),_rgba(248,240,255,0.36),_rgba(255,255,255,0.24))] p-3 shadow-[0_20px_48px_rgba(124,58,237,0.1)] backdrop-blur-2xl sm:p-4">
+        <header className="sticky top-3 z-30 rounded-[26px] border border-white/55 bg-[linear-gradient(135deg,_rgba(255,255,255,0.52),_rgba(248,240,255,0.36),_rgba(255,255,255,0.24))] p-3 shadow-[0_20px_48px_rgba(124,58,237,0.1)] backdrop-blur-2xl transition-colors dark:border-violet-300/15 dark:bg-[linear-gradient(135deg,_rgba(24,16,38,0.82),_rgba(49,24,83,0.54),_rgba(12,8,20,0.72))] dark:shadow-[0_24px_60px_rgba(0,0,0,0.38)] sm:p-4">
           <div className="flex items-center gap-3">
             <NavLink to="/feed" className="flex min-w-0 items-center gap-3">
               <img src="/yazoo-logo.svg" alt="Logo YaZoo" className="h-12 w-12 shrink-0 object-contain" />
               <div className="min-w-0">
                 <p className="yz-wordmark truncate text-base">YaZoo</p>
-                <p className="truncate text-xs text-stone-700">Reseau social animalier</p>
+                <p className="truncate text-xs text-stone-700 dark:text-violet-100/78">Reseau social animalier</p>
               </div>
             </NavLink>
 
@@ -165,13 +166,13 @@ function Layout() {
                 <InlinePill tone={realtimeIndicator.tone}>{realtimeIndicator.label}</InlinePill>
               </div>
 
-              <div className="hidden lg:flex items-center gap-2 rounded-full border border-white/50 bg-white/35 px-3 py-1.5">
+              <div className="hidden lg:flex items-center gap-2 rounded-full border border-white/50 bg-white/35 px-3 py-1.5 dark:border-violet-300/15 dark:bg-white/8">
                 <Avatar
                   name={user?.name ?? 'Utilisateur'}
                   src={user?.avatar || ''}
                   className="h-7 w-7 border border-white/80 text-[10px]"
                 />
-                <span className="max-w-[120px] truncate text-xs font-medium text-stone-700">
+                <span className="max-w-[120px] truncate text-xs font-medium text-stone-700 dark:text-violet-50">
                   {user?.name ?? 'Utilisateur'}
                 </span>
               </div>
@@ -197,7 +198,7 @@ function Layout() {
 
         <DesktopNav items={navigationItems} />
 
-        <main className="mt-4 rounded-[30px] border border-white/55 bg-[linear-gradient(180deg,_rgba(255,255,255,0.6),_rgba(248,241,255,0.42),_rgba(255,255,255,0.28))] p-4 shadow-[0_24px_70px_rgba(124,58,237,0.1)] backdrop-blur-2xl sm:rounded-[34px] sm:p-5">
+        <main className="mt-4 rounded-[30px] border border-white/55 bg-[linear-gradient(180deg,_rgba(255,255,255,0.6),_rgba(248,241,255,0.42),_rgba(255,255,255,0.28))] p-4 shadow-[0_24px_70px_rgba(124,58,237,0.1)] backdrop-blur-2xl transition-colors dark:border-violet-300/12 dark:bg-[linear-gradient(180deg,_rgba(24,16,38,0.66),_rgba(35,19,58,0.48),_rgba(12,8,20,0.5))] dark:shadow-[0_30px_80px_rgba(0,0,0,0.34)] sm:rounded-[34px] sm:p-5">
           <Outlet />
           <Footer mode="app" className="mt-8" />
         </main>
@@ -220,7 +221,7 @@ function Layout() {
 
 function DesktopNav({ items }) {
   return (
-    <nav className="mt-3 hidden overflow-x-auto rounded-[24px] border border-white/55 bg-[linear-gradient(135deg,_rgba(255,255,255,0.44),_rgba(248,240,255,0.32),_rgba(255,255,255,0.2))] p-2 shadow-[0_16px_36px_rgba(124,58,237,0.08)] backdrop-blur-2xl lg:block">
+    <nav className="mt-3 hidden overflow-x-auto rounded-[24px] border border-white/55 bg-[linear-gradient(135deg,_rgba(255,255,255,0.44),_rgba(248,240,255,0.32),_rgba(255,255,255,0.2))] p-2 shadow-[0_16px_36px_rgba(124,58,237,0.08)] backdrop-blur-2xl transition-colors dark:border-violet-300/12 dark:bg-[linear-gradient(135deg,_rgba(24,16,38,0.64),_rgba(49,24,83,0.34),_rgba(12,8,20,0.56))] lg:block">
       <div className="mx-auto flex min-w-max items-center justify-center gap-2">
         {items.map((item) => (
           <NavLink
@@ -230,7 +231,7 @@ function DesktopNav({ items }) {
               `whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition ${
                 isActive
                   ? 'bg-[linear-gradient(135deg,#7c3aed,#a855f7,#c4b5fd)] text-white shadow-[0_12px_24px_rgba(124,58,237,0.18)]'
-                  : 'text-stone-600 hover:bg-white/55 hover:text-violet-900'
+                  : 'text-stone-600 hover:bg-white/55 hover:text-violet-900 dark:text-violet-100/78 dark:hover:bg-white/10 dark:hover:text-white'
               }`
             }
           >
@@ -251,7 +252,7 @@ function SearchInput({ value, onChange }) {
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder="Rechercher..."
-        className="w-full rounded-full border border-white/55 bg-white/70 px-4 py-2 text-sm text-stone-700 outline-none transition focus:border-violet-300 focus:bg-white"
+        className="w-full rounded-full border border-white/55 bg-white/70 px-4 py-2 text-sm text-stone-700 outline-none transition focus:border-violet-300 focus:bg-white dark:border-violet-300/14 dark:bg-white/10 dark:text-violet-50 dark:placeholder:text-violet-100/45 dark:focus:bg-white/14"
       />
     </label>
   )
@@ -396,7 +397,7 @@ function DesktopActionLink({ to, icon, label, className = '' }) {
 
 function MobileBottomDock({ user, onCreateStory }) {
   return (
-    <nav className="fixed bottom-3 left-1/2 z-30 flex w-[calc(100%-1rem)] max-w-md -translate-x-1/2 items-center justify-between rounded-[24px] border border-white/55 bg-[linear-gradient(135deg,_rgba(255,255,255,0.46),_rgba(248,240,255,0.32),_rgba(255,255,255,0.18))] px-1.5 py-1.5 pb-[max(0.375rem,env(safe-area-inset-bottom))] shadow-[0_20px_44px_rgba(124,58,237,0.14)] backdrop-blur-2xl lg:hidden">
+    <nav className="fixed bottom-3 left-1/2 z-30 flex w-[calc(100%-1rem)] max-w-md -translate-x-1/2 items-center justify-between rounded-[24px] border border-white/55 bg-[linear-gradient(135deg,_rgba(255,255,255,0.46),_rgba(248,240,255,0.32),_rgba(255,255,255,0.18))] px-1.5 py-1.5 pb-[max(0.375rem,env(safe-area-inset-bottom))] shadow-[0_20px_44px_rgba(124,58,237,0.14)] backdrop-blur-2xl dark:border-violet-300/16 dark:bg-[linear-gradient(135deg,_rgba(24,16,38,0.84),_rgba(49,24,83,0.58),_rgba(12,8,20,0.72))] lg:hidden">
       <MobileDockLink to="/feed" label="Feed" icon="home" />
       <MobileDockLink to="/marketplace" label="Marche" icon="search" />
       <MobileDockStoryButton onClick={onCreateStory} />

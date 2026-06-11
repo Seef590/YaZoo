@@ -4,8 +4,10 @@ function LanguageSwitcher({ className = '', compact = false }) {
   const { locale, setLocale, t } = useI18n()
 
   const options = [
-    { value: 'fr', label: t('common.french') },
-    { value: 'ar', label: t('common.arabic') },
+    { value: 'fr', label: t('common.french'), shortLabel: 'FR' },
+    { value: 'en', label: t('common.english'), shortLabel: 'EN' },
+    { value: 'ar', label: t('common.arabic'), shortLabel: 'AR' },
+    { value: 'de', label: t('common.german'), shortLabel: 'DE' },
   ]
 
   return (
@@ -30,10 +32,11 @@ function LanguageSwitcher({ className = '', compact = false }) {
             className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
               active
                 ? 'bg-[linear-gradient(135deg,#7c3aed,#a855f7,#c4b5fd)] text-white shadow-[0_10px_20px_rgba(124,58,237,0.14)]'
-                : 'text-stone-600 hover:bg-violet-50 hover:text-violet-900'
+                : 'text-stone-600 hover:bg-violet-50 hover:text-violet-900 dark:text-violet-100 dark:hover:bg-violet-400/15 dark:hover:text-white'
             }`}
+            title={option.label}
           >
-            {option.label}
+            {compact ? option.shortLabel : option.label}
           </button>
         )
       })}

@@ -12,6 +12,18 @@ class Post extends Model
 {
     use HasFactory;
 
+    public const VISIBILITY_PUBLIC = 'public';
+
+    public const VISIBILITY_FOLLOWERS = 'followers';
+
+    public const VISIBILITY_PRIVATE = 'private';
+
+    public const VISIBILITIES = [
+        self::VISIBILITY_PUBLIC,
+        self::VISIBILITY_FOLLOWERS,
+        self::VISIBILITY_PRIVATE,
+    ];
+
     /**
      * The attributes that are mass assignable.
      *
@@ -19,11 +31,13 @@ class Post extends Model
      */
     protected $fillable = [
         'content',
+        'community_id',
         'image_path',
         'media_path',
         'media_kind',
         'location',
         'tags',
+        'visibility',
     ];
 
     /**
@@ -44,6 +58,14 @@ class Post extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the community this post belongs to, when posted inside a group.
+     */
+    public function community(): BelongsTo
+    {
+        return $this->belongsTo(Community::class);
     }
 
     /**

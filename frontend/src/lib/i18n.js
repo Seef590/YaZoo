@@ -1,6 +1,6 @@
 export const LOCALE_STORAGE_KEY = 'yazoo-locale'
 
-export const SUPPORTED_LOCALES = ['fr', 'ar']
+export const SUPPORTED_LOCALES = ['fr', 'en', 'ar', 'de']
 
 const messages = {
   fr: {
@@ -39,7 +39,9 @@ const messages = {
       notifications: 'Notifications',
       language: 'Langue',
       french: 'Francais',
+      english: 'Anglais',
       arabic: 'Arabe',
+      german: 'Allemand',
       nextStep: 'Prochaine etape',
       user: 'Utilisateur',
       verifiedPhone: 'Telephone verifie',
@@ -398,6 +400,173 @@ const messages = {
       toOpen: 'بانتظار الفتح',
     },
   },
+  en: {
+    common: {
+      appName: 'YaZoo',
+      tagline: 'Social network and marketplace for pet owners',
+      loadingSession: 'Checking session...',
+      loadingExperience: 'Loading experience...',
+      backHome: 'Back home',
+      login: 'Log in',
+      register: 'Sign up',
+      createAccount: 'Create account',
+      alreadyAccount: 'I already have an account',
+      phone: 'Phone',
+      optionalEmail: 'Optional email',
+      otpCode: 'OTP code',
+      sendCode: 'Get code',
+      resendCode: 'Resend code',
+      verifyAndLogin: 'Verify and enter',
+      verifyAndRegister: 'Verify and create account',
+      name: 'Name',
+      country: 'Country',
+      city: 'City',
+      bio: 'Bio',
+      save: 'Save',
+      cancel: 'Cancel',
+      logout: 'Log out',
+      profile: 'Profile',
+      feed: 'Feed',
+      reservations: 'Reservations',
+      history: 'History',
+      animals: 'Animals',
+      products: 'Products',
+      communities: 'Communities',
+      messages: 'Messages',
+      notifications: 'Notifications',
+      language: 'Language',
+      french: 'French',
+      english: 'English',
+      arabic: 'Arabic',
+      german: 'German',
+      nextStep: 'Next step',
+      user: 'User',
+      verifiedPhone: 'Verified phone',
+      notProvided: 'Not provided',
+      notAvailable: 'Unavailable',
+      loading: 'Loading...',
+      total: 'Total',
+      submitReview: 'Submit review',
+      rating: 'Rating',
+      comment: 'Comment',
+      reviewPlaceholder: 'Describe your experience clearly and helpfully.',
+      noReviewYet: 'No reviews yet.',
+      reviewSent: 'Review sent.',
+      smsDebug: 'Test code',
+      chooseLanguage: 'Choose language',
+      startConversation: 'Start conversation',
+      contactLabel: 'Recipient phone or email',
+      theme: 'Theme',
+      light: 'Light',
+      dark: 'Dark',
+      system: 'System',
+    },
+    layout: {
+      logoLabel: 'YaZoo logo',
+      adminGlobal: 'Global admin',
+      unread: '{count} unread notification{suffix}',
+      accountAdmin: 'Admin account',
+      accountMember: 'YaZoo member',
+      menuOpen: 'Open menu',
+      menuClose: 'Close menu',
+      shellNote:
+        'Feed, marketplace, communities, messaging and notifications are active.',
+    },
+    footer: {
+      about:
+        'A platform to share, sell, book and chat around the pet world.',
+      navigation: 'Navigation',
+      author: 'Author',
+      authorText:
+        'Project developed and integrated for YaZoo with visual direction, mobile experience and full-stack architecture.',
+      projectGithub: 'Project GitHub',
+      rights: 'All rights reserved.',
+      copyright: 'Copyright {year} YaZoo. Project developed by Seef590.',
+    },
+  },
+  de: {
+    common: {
+      appName: 'YaZoo',
+      tagline: 'Soziales Netzwerk und Marktplatz fuer Tierhalter',
+      loadingSession: 'Sitzung wird geprueft...',
+      loadingExperience: 'Erlebnis wird geladen...',
+      backHome: 'Zur Startseite',
+      login: 'Anmelden',
+      register: 'Registrieren',
+      createAccount: 'Konto erstellen',
+      alreadyAccount: 'Ich habe bereits ein Konto',
+      phone: 'Telefon',
+      optionalEmail: 'Optionale E-Mail',
+      otpCode: 'OTP-Code',
+      sendCode: 'Code erhalten',
+      resendCode: 'Code erneut senden',
+      verifyAndLogin: 'Pruefen und anmelden',
+      verifyAndRegister: 'Pruefen und Konto erstellen',
+      name: 'Name',
+      country: 'Land',
+      city: 'Stadt',
+      bio: 'Bio',
+      save: 'Speichern',
+      cancel: 'Abbrechen',
+      logout: 'Abmelden',
+      profile: 'Profil',
+      feed: 'Feed',
+      reservations: 'Reservierungen',
+      history: 'Verlauf',
+      animals: 'Tiere',
+      products: 'Produkte',
+      communities: 'Communities',
+      messages: 'Nachrichten',
+      notifications: 'Benachrichtigungen',
+      language: 'Sprache',
+      french: 'Franzoesisch',
+      arabic: 'Arabisch',
+      german: 'Deutsch',
+      nextStep: 'Naechster Schritt',
+      user: 'Nutzer',
+      verifiedPhone: 'Verifiziertes Telefon',
+      notProvided: 'Nicht angegeben',
+      notAvailable: 'Nicht verfuegbar',
+      loading: 'Wird geladen...',
+      total: 'Gesamt',
+      submitReview: 'Bewertung senden',
+      rating: 'Bewertung',
+      comment: 'Kommentar',
+      reviewPlaceholder: 'Beschreiben Sie Ihre Erfahrung klar und hilfreich.',
+      noReviewYet: 'Noch keine Bewertungen.',
+      reviewSent: 'Bewertung gesendet.',
+      smsDebug: 'Testcode',
+      chooseLanguage: 'Sprache waehlen',
+      startConversation: 'Konversation starten',
+      contactLabel: 'Telefon oder E-Mail des Empfaengers',
+      theme: 'Design',
+      light: 'Hell',
+      dark: 'Dunkel',
+      system: 'System',
+    },
+    layout: {
+      logoLabel: 'YaZoo Logo',
+      adminGlobal: 'Globaler Admin',
+      unread: '{count} ungelesene Benachrichtigung{suffix}',
+      accountAdmin: 'Administratorkonto',
+      accountMember: 'YaZoo Mitglied',
+      menuOpen: 'Menue oeffnen',
+      menuClose: 'Menue schliessen',
+      shellNote:
+        'Feed, Marktplatz, Communities, Nachrichten und Benachrichtigungen sind aktiv.',
+    },
+    footer: {
+      about:
+        'Eine Plattform zum Teilen, Verkaufen, Reservieren und Diskutieren rund um Tiere.',
+      navigation: 'Navigation',
+      author: 'Autor',
+      authorText:
+        'Projekt fuer YaZoo mit visueller Richtung, mobiler Erfahrung und Full-Stack-Architektur.',
+      projectGithub: 'Projekt auf GitHub',
+      rights: 'Alle Rechte vorbehalten.',
+      copyright: 'Copyright {year} YaZoo. Projekt entwickelt von Seef590.',
+    },
+  },
 }
 
 export function getStoredLocale() {
@@ -445,5 +614,17 @@ export function translate(locale, key, replacements = {}) {
 }
 
 export function getDateLocale(locale) {
-  return locale === 'ar' ? 'ar-MA' : 'fr-FR'
+  if (locale === 'ar') {
+    return 'ar-MA'
+  }
+
+  if (locale === 'de') {
+    return 'de-DE'
+  }
+
+  if (locale === 'en') {
+    return 'en-US'
+  }
+
+  return 'fr-FR'
 }

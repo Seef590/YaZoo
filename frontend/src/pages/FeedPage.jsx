@@ -7,9 +7,11 @@ import { getCommunitiesRequest } from '../api/communities'
 import {
   createCommentRequest,
   createPostRequest,
+  deletePostRequest,
   getPostsRequest,
   reactToCommentRequest,
   toggleLikeRequest,
+  updatePostRequest,
 } from '../api/posts'
 import { getProductsRequest } from '../api/products'
 import { getProfileRequest } from '../api/profile'
@@ -254,6 +256,21 @@ function FeedPage() {
     return nextComment
   }
 
+  const handleUpdatePost = async (postId, payload) => {
+    const response = await updatePostRequest(postId, payload)
+
+    setPosts((current) =>
+      current.map((post) => (post.id === postId ? response.data.data : post)),
+    )
+
+    return response.data.data
+  }
+
+  const handleDeletePost = async (postId) => {
+    await deletePostRequest(postId)
+    setPosts((current) => current.filter((post) => post.id !== postId))
+  }
+
   const handleCreateStory = async (payload) => {
     setIsStorySubmitting(true)
     setStoryErrorMessage('')
@@ -480,7 +497,10 @@ function FeedPage() {
                   onCreateComment={handleCreateComment}
                   onReactToComment={handleReactToComment}
                   onToggleLike={handleToggleLike}
+                  onUpdatePost={handleUpdatePost}
+                  onDeletePost={handleDeletePost}
                   isLikePending={likePendingIds.includes(post.id)}
+                  currentUserId={user?.id}
                 />
               ))}
             </div>
