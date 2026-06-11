@@ -52,11 +52,12 @@ class ConversationController extends Controller
      */
     public function store(StoreConversationRequest $request): JsonResponse
     {
-        $recipient = $this->resolveRecipient((string) $request->validated('recipient_contact'));
+        $validated = $request->validated();
+        $recipient = $this->resolveRecipient($validated);
 
-        [$conversation, $statusCode] = DB::transaction(function () use ($request, $recipient): array {
+        [$conversation, $statusCode] = DB::transaction(function () use ($request, $recipient, $validated): array {
             [$conversation, $wasCreated] = $this->findOrCreateConversation($request->user(), $recipient);
-            $body = trim((string) $request->validated('body', ''));
+            $body = trim((string) ($validated['body'] ?? ''));
 
             if ($body !== '') {
                 $message = $conversation->messages()->create([
@@ -217,8 +218,18 @@ class ConversationController extends Controller
         }
     }
 
-    protected function resolveRecipient(string $contact): User
+    /**
+     * Resolve the conversation recipient from either a private user id or a public contact.
+     *
+     * @param  array{recipient_id?: int|string|null, recipient_contact?: string|null}  $validated
+     */
+    protected function resolveRecipient(array $validated): User
     {
+        if (! empty($validated['recipient_id'])) {
+            return User::query()->whereKey($validated['recipient_id'])->firstOrFail();
+        }
+
+        $contact = (string) ($validated['recipient_contact'] ?? '');
         $phone = PhoneNumber::normalize($contact);
 
         return User::query()

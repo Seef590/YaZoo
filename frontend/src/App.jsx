@@ -43,6 +43,7 @@ function App() {
         <Route element={<Layout />}>
           <Route path="/feed" element={<FeedPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/profile/:userId" element={<ProfilePage />} />
           <Route path="/admin/moderation" element={<AdminModerationPage />} />
           <Route path="/admin/orders" element={<AdminOrdersDashboardPage />} />
           <Route path="/reservations" element={<ReservationsPage />} />

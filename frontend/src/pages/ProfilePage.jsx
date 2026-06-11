@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
 import {
   createCommentRequest,
@@ -10,6 +10,7 @@ import {
   updatePostRequest,
 } from '../api/posts'
 import { getProfileRequest, updateProfileRequest } from '../api/profile'
+import { createConversationRequest } from '../api/messages'
 import PostCard from '../components/feed/PostCard'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
@@ -21,6 +22,8 @@ import { normalizeAuthUserMedia, normalizeProfileMediaPayload } from '../utils/m
 
 function ProfilePage() {
   const { setUser, user } = useAuth()
+  const navigate = useNavigate()
+  const { userId: routeUserId } = useParams()
   const [searchParams] = useSearchParams()
   const [profile, setProfile] = useState(null)
   const [form, setForm] = useState({
@@ -42,25 +45,30 @@ function ProfilePage() {
   const [likePendingIds, setLikePendingIds] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isMessageStarting, setIsMessageStarting] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const editSectionRef = useRef(null)
   const nameInputRef = useRef(null)
+  const requestedProfileId =
+    routeUserId ?? searchParams.get('userId') ?? searchParams.get('id') ?? user?.id
+  const isOwnProfile =
+    Boolean(user?.id) && String(requestedProfileId ?? user.id) === String(user.id)
 
   useEffect(() => {
     let cancelled = false
 
     const fetchProfile = async () => {
-      if (!user?.id) {
+      if (!user?.id || !requestedProfileId) {
         setIsLoading(false)
         return
       }
 
       try {
-        const response = await getProfileRequest(user.id)
+        const response = await getProfileRequest(requestedProfileId)
         const data = normalizeProfileMediaPayload(extractDataObject(response, null))
         const postsResponse = await getPostsRequest()
         const userPosts = extractDataArray(postsResponse).filter(
-          (post) => String(post.author?.id) === String(user.id),
+          (post) => String(post.author?.id) === String(requestedProfileId),
         )
 
         if (!cancelled) {
@@ -98,7 +106,7 @@ function ProfilePage() {
     return () => {
       cancelled = true
     }
-  }, [user?.id])
+  }, [requestedProfileId, user?.id])
 
   useEffect(() => {
     return () => {
@@ -190,6 +198,10 @@ function ProfilePage() {
 
   const handleSubmit = async (event) => {
     event.preventDefault()
+    if (!isOwnProfile) {
+      return
+    }
+
     setSuccessMessage('')
     setErrorMessage('')
     setIsSubmitting(true)
@@ -256,6 +268,10 @@ function ProfilePage() {
   )
 
   const handleEditToggle = () => {
+    if (!isOwnProfile) {
+      return
+    }
+
     if (isEditOpen) {
       setIsEditOpen(false)
       return
@@ -265,7 +281,7 @@ function ProfilePage() {
   }
 
   const handleShareProfile = async () => {
-    const profileUrl = `${globalThis.location.origin}/profile`
+    const profileUrl = `${globalThis.location.origin}/profile/${profile?.id ?? requestedProfileId ?? user?.id}`
 
     if (navigator.share) {
       try {
@@ -286,6 +302,35 @@ function ProfilePage() {
       setErrorMessage('')
     } catch {
       setErrorMessage('Impossible de partager le profil pour le moment.')
+    }
+  }
+
+  const handleStartConversation = async () => {
+    if (!profile?.id || isOwnProfile) {
+      return
+    }
+
+    setIsMessageStarting(true)
+    setErrorMessage('')
+    setSuccessMessage('')
+
+    try {
+      const response = await createConversationRequest({
+        recipient_id: profile.id,
+      })
+      const conversation = extractDataObject(response, null)
+
+      if (!conversation?.id) {
+        throw new Error('Conversation introuvable.')
+      }
+
+      navigate(`/messages?conversation=${conversation.id}`)
+    } catch (error) {
+      setErrorMessage(
+        getErrorMessage(error, 'Impossible de demarrer la conversation.'),
+      )
+    } finally {
+      setIsMessageStarting(false)
     }
   }
 
@@ -450,14 +495,25 @@ function ProfilePage() {
             </div>
 
             <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap">
-              <Button
-                type="button"
-                variant={isEditOpen ? 'ghost' : 'secondary'}
-                onClick={handleEditToggle}
-                className="w-full sm:w-auto"
-              >
-                {isEditOpen ? 'Fermer' : 'Modifier'}
-              </Button>
+              {isOwnProfile ? (
+                <Button
+                  type="button"
+                  variant={isEditOpen ? 'ghost' : 'secondary'}
+                  onClick={handleEditToggle}
+                  className="w-full sm:w-auto"
+                >
+                  {isEditOpen ? 'Fermer' : 'Modifier'}
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  onClick={handleStartConversation}
+                  disabled={isMessageStarting}
+                  className="w-full sm:w-auto"
+                >
+                  {isMessageStarting ? 'Ouverture...' : 'Envoyer un message'}
+                </Button>
+              )}
               <button
                 type="button"
                 onClick={handleShareProfile}
@@ -522,7 +578,7 @@ function ProfilePage() {
         </div>
       </section>
 
-      {isEditOpen ? (
+      {isOwnProfile && isEditOpen ? (
         <form
           ref={editSectionRef}
           onSubmit={handleSubmit}

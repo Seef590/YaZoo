@@ -25,8 +25,20 @@ class StoreConversationRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'recipient_id' => [
+                'nullable',
+                'required_without:recipient_contact',
+                'integer',
+                'exists:users,id',
+                function (string $attribute, mixed $value, Closure $fail): void {
+                    if ((int) $value === (int) $this->user()?->id) {
+                        $fail('Vous ne pouvez pas vous envoyer un message.');
+                    }
+                },
+            ],
             'recipient_contact' => [
-                'required',
+                'nullable',
+                'required_without:recipient_id',
                 'string',
                 'max:255',
                 function (string $attribute, mixed $value, Closure $fail): void {
@@ -63,6 +75,7 @@ class StoreConversationRequest extends FormRequest
             ?? $this->input('recipient_email');
 
         $this->merge([
+            'recipient_id' => $this->input('recipient_id'),
             'recipient_contact' => is_string($contact) ? trim($contact) : $contact,
         ]);
     }

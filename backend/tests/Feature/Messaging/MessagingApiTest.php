@@ -52,6 +52,37 @@ class MessagingApiTest extends TestCase
         $this->assertSame(NewMessageNotification::class, $recipient->notifications()->first()->type);
     }
 
+    public function test_authenticated_user_can_open_conversation_from_profile_user_id(): void
+    {
+        $sender = User::factory()->create();
+        $recipient = User::factory()->create([
+            'name' => 'Profil consulte',
+            'email' => 'profile@example.com',
+        ]);
+
+        Sanctum::actingAs($sender, ['*']);
+
+        $response = $this->postJson('/api/conversations', [
+            'recipient_id' => $recipient->id,
+        ]);
+
+        $conversationId = $response->json('data.id');
+
+        $response
+            ->assertCreated()
+            ->assertJsonPath('data.participant.id', $recipient->id)
+            ->assertJsonPath('data.participant.email', 'profile@example.com')
+            ->assertJsonCount(0, 'data.messages');
+
+        $this->assertDatabaseHas('conversations', [
+            'id' => $conversationId,
+        ]);
+
+        $this->assertDatabaseMissing('messages', [
+            'conversation_id' => $conversationId,
+        ]);
+    }
+
     public function test_authenticated_user_can_list_and_open_conversations(): void
     {
         $viewer = User::factory()->create();
