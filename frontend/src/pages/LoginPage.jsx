@@ -39,9 +39,14 @@ function LoginPage() {
     event.preventDefault()
     setErrorMessage('')
     setIsSubmitting(true)
+    const formData = new FormData(event.currentTarget)
+    const payload = {
+      email: String(formData.get('email') ?? email).trim(),
+      password: String(formData.get('password') ?? password),
+    }
 
     try {
-      await login({ email, password })
+      await login(payload)
     } catch (error) {
       setErrorMessage(
         getErrorMessage(error, 'Impossible de se connecter pour le moment.'),
@@ -107,6 +112,7 @@ function LoginPage() {
             <Field
               label="Email"
               type="email"
+              name="email"
               value={email}
               onChange={setEmail}
               placeholder="vous@exemple.com"
@@ -114,6 +120,7 @@ function LoginPage() {
             />
             <PasswordField
               label="Mot de passe"
+              name="password"
               value={password}
               onChange={setPassword}
               placeholder="********"

@@ -53,9 +53,21 @@ function RegisterPage() {
     event.preventDefault()
     setErrorMessage('')
     setIsSubmitting(true)
+    const formData = new FormData(event.currentTarget)
+    const payload = {
+      name: String(formData.get('name') ?? form.name).trim(),
+      email: String(formData.get('email') ?? form.email).trim(),
+      password: String(formData.get('password') ?? form.password),
+      password_confirmation: String(
+        formData.get('password_confirmation') ?? form.password_confirmation,
+      ),
+      phone: String(formData.get('phone') ?? form.phone).trim(),
+      country: String(formData.get('country') ?? form.country).trim(),
+      city: String(formData.get('city') ?? form.city).trim(),
+    }
 
     try {
-      await register(form)
+      await register(payload)
     } catch (error) {
       setErrorMessage(
         getErrorMessage(error, "Impossible de creer le compte pour le moment."),
@@ -119,6 +131,7 @@ function RegisterPage() {
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <Field
               label="Nom"
+              name="name"
               value={form.name}
               onChange={handleChange('name')}
               placeholder="Votre nom"
@@ -127,6 +140,7 @@ function RegisterPage() {
             <Field
               label="Email"
               type="email"
+              name="email"
               value={form.email}
               onChange={handleChange('email')}
               placeholder="vous@exemple.com"
@@ -135,6 +149,7 @@ function RegisterPage() {
             <div className="grid gap-4 md:grid-cols-2">
               <PasswordField
                 label="Mot de passe"
+                name="password"
                 value={form.password}
                 onChange={handleChange('password')}
                 placeholder="********"
@@ -142,6 +157,7 @@ function RegisterPage() {
               />
               <PasswordField
                 label="Confirmation"
+                name="password_confirmation"
                 value={form.password_confirmation}
                 onChange={handleChange('password_confirmation')}
                 placeholder="********"
@@ -151,6 +167,7 @@ function RegisterPage() {
             <div className="grid gap-4 md:grid-cols-3">
               <Field
                 label="Telephone"
+                name="phone"
                 value={form.phone}
                 onChange={handleChange('phone')}
                 placeholder="+212..."
@@ -158,6 +175,7 @@ function RegisterPage() {
               />
               <Field
                 label="Pays"
+                name="country"
                 value={form.country}
                 onChange={handleChange('country')}
                 placeholder="Maroc"
@@ -165,6 +183,7 @@ function RegisterPage() {
               />
               <Field
                 label="Ville"
+                name="city"
                 value={form.city}
                 onChange={handleChange('city')}
                 placeholder="Casablanca"
