@@ -20,6 +20,11 @@ import {
   getStoriesRequest,
   markStoryViewedRequest,
 } from './stories'
+import {
+  createCommentRequest,
+  reactToCommentRequest,
+  toggleLikeRequest,
+} from './posts'
 
 vi.mock('./client', () => ({
   default: {
@@ -95,5 +100,23 @@ describe('api request wrappers', () => {
     expect(formData.get('media_file')).toBe(media)
     expect(formData.has('location')).toBe(false)
     expect(formData.has('ignored')).toBe(false)
+  })
+
+  it('appelle les endpoints feed avec reactions et commentaires', () => {
+    toggleLikeRequest(12, 'love')
+    createCommentRequest(12, {
+      body: 'Merci',
+      parent_id: 4,
+      reaction: 'happy',
+    })
+    reactToCommentRequest(4, 'wow')
+
+    expect(api.post).toHaveBeenCalledWith('/posts/12/like', { reaction: 'love' })
+    expect(api.post).toHaveBeenCalledWith('/posts/12/comments', {
+      body: 'Merci',
+      parent_id: 4,
+      reaction: 'happy',
+    })
+    expect(api.post).toHaveBeenCalledWith('/comments/4/reaction', { reaction: 'wow' })
   })
 })

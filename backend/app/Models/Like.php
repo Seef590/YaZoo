@@ -17,6 +17,7 @@ class Like extends Model
      * @var list<string>
      */
     protected $fillable = [
+        'reaction',
         'user_id',
     ];
 

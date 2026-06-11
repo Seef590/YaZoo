@@ -6,14 +6,23 @@ import Avatar from '../ui/Avatar'
 import Button from '../ui/Button'
 import CommentList from './CommentList'
 
+const POST_REACTIONS = [
+  { key: 'like', label: 'J’aime', icon: '👍' },
+  { key: 'love', label: 'J’adore', icon: '❤️' },
+  { key: 'happy', label: 'Content', icon: '😊' },
+  { key: 'wow', label: 'Wow', icon: '😮' },
+]
+
 function PostCard({
   post,
   onCreateComment,
+  onReactToComment,
   onToggleLike,
   isLikePending = false,
 }) {
   const [showComments, setShowComments] = useState(false)
   const [commentBody, setCommentBody] = useState('')
+  const [commentReaction, setCommentReaction] = useState('')
   const [commentError, setCommentError] = useState('')
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
   const mediaUrl = post.mediaUrl ?? post.imageUrl ?? null
@@ -34,8 +43,11 @@ function PostCard({
     setIsSubmittingComment(true)
 
     try {
-      await onCreateComment(post.id, commentBody.trim())
+      await onCreateComment(post.id, commentBody.trim(), {
+        reaction: commentReaction || null,
+      })
       setCommentBody('')
+      setCommentReaction('')
       setShowComments(true)
     } catch (error) {
       setCommentError(
@@ -64,7 +76,7 @@ function PostCard({
               </div>
 
               <div className="flex flex-wrap gap-2">
-                {post.tags.map((tag) => (
+                {(post.tags ?? []).map((tag) => (
                   <span
                     key={tag}
                     className="rounded-full border border-violet-100 bg-[linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.82))] px-3 py-1 text-xs font-medium text-violet-800 transition hover:border-violet-200 hover:bg-violet-50"
@@ -102,14 +114,26 @@ function PostCard({
             ) : null}
 
             <div className="mt-5 flex flex-wrap gap-3">
-              <Button
-                type="button"
-                variant={post.liked ? 'primary' : 'secondary'}
-                onClick={() => onToggleLike(post.id)}
-                disabled={isLikePending}
-              >
-                {post.liked ? 'Retirer le like' : 'Liker'} | {post.likes}
-              </Button>
+              <div className="flex flex-wrap items-center gap-2">
+                {POST_REACTIONS.map((reaction) => (
+                  <button
+                    key={reaction.key}
+                    type="button"
+                    onClick={() => onToggleLike(post.id, reaction.key)}
+                    disabled={isLikePending}
+                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold transition hover:-translate-y-0.5 disabled:cursor-wait disabled:opacity-60 ${
+                      post.userReaction === reaction.key
+                        ? 'border-violet-300 bg-violet-600 text-white shadow-[0_12px_26px_rgba(124,58,237,0.18)]'
+                        : 'border-violet-100 bg-white/86 text-violet-900 hover:bg-violet-50'
+                    }`}
+                    aria-label={`${reaction.label} ce post`}
+                    title={reaction.label}
+                  >
+                    <span aria-hidden="true">{reaction.icon}</span>
+                    <span>{reaction.key === 'like' ? post.likes : getReactionCount(post.reactions, reaction.key)}</span>
+                  </button>
+                ))}
+              </div>
 
               <Button
                 type="button"
@@ -117,8 +141,12 @@ function PostCard({
                 onClick={() => setShowComments((current) => !current)}
               >
                 {showComments ? 'Masquer' : 'Commentaires'} |{' '}
-                {post.commentsCount ?? post.comments.length}
+                {post.commentsCount ?? post.comments?.length ?? 0}
               </Button>
+
+              <span className="inline-flex items-center rounded-full border border-violet-100 bg-white/70 px-4 py-2 text-sm font-semibold text-stone-600">
+                Partages | {post.sharesCount ?? 0}
+              </span>
             </div>
           </div>
         </div>
@@ -126,6 +154,28 @@ function PostCard({
         {showComments ? (
           <div className="mt-5 rounded-[26px] border border-violet-100 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.82))] p-4">
             <form onSubmit={handleSubmitComment} className="mb-4 space-y-3">
+              <div className="flex flex-wrap gap-2">
+                {POST_REACTIONS.slice(1).map((reaction) => (
+                  <button
+                    key={`comment-reaction-${reaction.key}`}
+                    type="button"
+                    onClick={() =>
+                      setCommentReaction((current) =>
+                        current === reaction.key ? '' : reaction.key,
+                      )
+                    }
+                    className={`rounded-full border px-3 py-1.5 text-sm transition ${
+                      commentReaction === reaction.key
+                        ? 'border-violet-300 bg-violet-600 text-white'
+                        : 'border-violet-100 bg-white text-violet-900 hover:bg-violet-50'
+                    }`}
+                    aria-label={`Ajouter la reaction ${reaction.label}`}
+                    title={reaction.label}
+                  >
+                    {reaction.icon}
+                  </button>
+                ))}
+              </div>
               <textarea
                 value={commentBody}
                 onChange={(event) => setCommentBody(event.target.value)}
@@ -147,12 +197,22 @@ function PostCard({
               </div>
             </form>
 
-            <CommentList comments={post.comments} />
+            <CommentList
+              comments={post.comments ?? []}
+              postId={post.id}
+              reactions={POST_REACTIONS}
+              onCreateReply={onCreateComment}
+              onReactToComment={onReactToComment}
+            />
           </div>
         ) : null}
       </div>
     </article>
   )
+}
+
+function getReactionCount(reactions = [], reactionKey) {
+  return reactions.find((reaction) => reaction.reaction === reactionKey)?.count ?? 0
 }
 
 export default PostCard

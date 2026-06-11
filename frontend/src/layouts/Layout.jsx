@@ -58,8 +58,13 @@ function Layout() {
 
   useEffect(() => {
     const query = new URLSearchParams(location.search).get('q') ?? ''
+    const timeoutId = globalThis.setTimeout(() => {
+      setGlobalSearch(query)
+    }, 0)
 
-    setGlobalSearch(query)
+    return () => {
+      globalThis.clearTimeout(timeoutId)
+    }
   }, [location.search])
 
   if (isBootstrapping) {

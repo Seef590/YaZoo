@@ -1,13 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
-import { getPostsRequest } from '../api/posts'
+import {
+  createCommentRequest,
+  getPostsRequest,
+  reactToCommentRequest,
+  toggleLikeRequest,
+} from '../api/posts'
 import { getProfileRequest, updateProfileRequest } from '../api/profile'
+import PostCard from '../components/feed/PostCard'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import ScrollTopButton from '../components/ui/ScrollTopButton'
 import { useAuth } from '../hooks/useAuth'
-import { formatDate } from '../utils/formatDate'
 import { getErrorMessage } from '../utils/getErrorMessage'
 import { normalizeAuthUserMedia, normalizeProfileMediaPayload } from '../utils/media'
 
@@ -31,6 +36,7 @@ function ProfilePage() {
   const [errorMessage, setErrorMessage] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
   const [recentPublications, setRecentPublications] = useState([])
+  const [likePendingIds, setLikePendingIds] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
@@ -280,11 +286,89 @@ function ProfilePage() {
     }
   }
 
+  const handleToggleLike = async (postId, reaction = 'like') => {
+    let previousPost = null
+
+    setLikePendingIds((current) => [...current, postId])
+    setRecentPublications((current) =>
+      current.map((post) => {
+        if (post.id !== postId) {
+          return post
+        }
+
+        previousPost = post
+
+        return {
+          ...post,
+          liked: post.userReaction === reaction ? false : true,
+          userReaction: post.userReaction === reaction ? null : reaction,
+          likes:
+            post.userReaction === reaction
+              ? Math.max(0, post.likes - 1)
+              : post.liked
+                ? post.likes
+                : post.likes + 1,
+        }
+      }),
+    )
+
+    try {
+      const response = await toggleLikeRequest(postId, reaction)
+
+      setRecentPublications((current) =>
+        current.map((post) => (post.id === postId ? response.data.data : post)),
+      )
+    } catch (error) {
+      if (previousPost) {
+        setRecentPublications((current) =>
+          current.map((post) => (post.id === postId ? previousPost : post)),
+        )
+      }
+
+      setErrorMessage(
+        getErrorMessage(error, 'Impossible de mettre a jour le like.'),
+      )
+      throw error
+    } finally {
+      setLikePendingIds((current) => current.filter((id) => id !== postId))
+    }
+  }
+
+  const handleCreateComment = async (postId, body, options = {}) => {
+    const response = await createCommentRequest(postId, {
+      body,
+      parent_id: options.parentId ?? null,
+      reaction: options.reaction ?? null,
+    })
+    const comment = response.data.data
+
+    setRecentPublications((current) =>
+      current.map((post) =>
+        post.id === postId ? addCommentToPost(post, comment) : post,
+      ),
+    )
+
+    return comment
+  }
+
+  const handleReactToComment = async (postId, commentId, reaction) => {
+    const response = await reactToCommentRequest(commentId, reaction)
+    const nextComment = response.data.data
+
+    setRecentPublications((current) =>
+      current.map((post) =>
+        post.id === postId ? updateCommentInPost(post, nextComment) : post,
+      ),
+    )
+
+    return nextComment
+  }
+
   return (
     <section className="space-y-6">
       <section className="overflow-hidden rounded-[30px] border border-white/80 bg-white/92 shadow-[0_24px_60px_rgba(124,58,237,0.08)] sm:rounded-[32px]">
         <div
-          className="relative h-56 bg-cover bg-center sm:h-64"
+          className="relative h-56 bg-cover bg-center sm:h-64 md:h-80 lg:h-96 xl:h-[28rem]"
           style={{
             backgroundImage: coverImage
               ? `linear-gradient(rgba(15,23,42,0.34),rgba(15,23,42,0.16)), url(${coverImage})`
@@ -384,62 +468,16 @@ function ProfilePage() {
             </div>
           ) : null}
 
-          {visibleRecentPublications.map((post) => {
-            const postMediaUrl = post.mediaUrl ?? post.imageUrl ?? ''
-            const postMediaKind = post.mediaKind ?? (post.imageUrl ? 'image' : null)
-
-            return (
-            <article
+          {visibleRecentPublications.map((post) => (
+            <PostCard
               key={post.id}
-              className="overflow-hidden rounded-[24px] border border-violet-100 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.82))] p-4"
-            >
-              <div className="flex items-center gap-3">
-                <Avatar
-                  name={post.author?.name ?? profile?.name ?? user?.name ?? 'Utilisateur'}
-                  src={post.author?.avatar ?? avatarSrc}
-                  size="sm"
-                  className="border border-white"
-                />
-                <div>
-                  <p className="text-sm font-semibold text-stone-900">
-                    {post.author?.name ?? profile?.name ?? user?.name ?? 'Utilisateur'}
-                  </p>
-                  <p className="text-xs text-stone-500">
-                    {[post.location, post.createdAt ? formatDate(post.createdAt) : null]
-                      .filter(Boolean)
-                      .join(' - ')}
-                  </p>
-                </div>
-              </div>
-
-              <p className="mt-3 text-sm text-stone-700">{post.content}</p>
-
-              {postMediaUrl ? (
-                <div className="mt-3 overflow-hidden rounded-[20px] bg-stone-100">
-                  {postMediaKind === 'video' ? (
-                    <video
-                      src={postMediaUrl}
-                      controls
-                      className="h-80 w-full object-cover sm:h-96 lg:h-[28rem]"
-                    />
-                  ) : (
-                    <img
-                      src={postMediaUrl}
-                      alt="Media de publication"
-                      className="h-80 w-full object-cover sm:h-96 lg:h-[28rem]"
-                    />
-                  )}
-                </div>
-              ) : null}
-
-              <div className="mt-3 flex gap-4 text-sm text-stone-500">
-                <span>{post.likesCount ?? post.likes ?? 0} likes</span>
-                <span>{post.commentsCount ?? 0} commentaires</span>
-                <span>{post.sharesCount ?? 0} partages</span>
-              </div>
-            </article>
-            )
-          })}
+              post={post}
+              onCreateComment={handleCreateComment}
+              onReactToComment={handleReactToComment}
+              onToggleLike={handleToggleLike}
+              isLikePending={likePendingIds.includes(post.id)}
+            />
+          ))}
         </div>
       </section>
 
@@ -653,6 +691,49 @@ function normalizeSearchText(value) {
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
+}
+
+function addCommentToPost(post, comment) {
+  const isReply = Boolean(comment.parentId)
+
+  if (!isReply) {
+    return {
+      ...post,
+      comments: [...(post.comments ?? []), comment],
+      commentsCount: (post.commentsCount ?? post.comments?.length ?? 0) + 1,
+    }
+  }
+
+  return {
+    ...post,
+    comments: (post.comments ?? []).map((currentComment) =>
+      currentComment.id === comment.parentId
+        ? {
+            ...currentComment,
+            replies: [...(currentComment.replies ?? []), comment],
+          }
+        : currentComment,
+    ),
+    commentsCount: (post.commentsCount ?? post.comments?.length ?? 0) + 1,
+  }
+}
+
+function updateCommentInPost(post, nextComment) {
+  return {
+    ...post,
+    comments: (post.comments ?? []).map((comment) => {
+      if (comment.id === nextComment.id) {
+        return nextComment
+      }
+
+      return {
+        ...comment,
+        replies: (comment.replies ?? []).map((reply) =>
+          reply.id === nextComment.id ? nextComment : reply,
+        ),
+      }
+    }),
+  }
 }
 
 export default ProfilePage

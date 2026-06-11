@@ -6,7 +6,8 @@ import Footer from '../components/ui/Footer'
 import { useAuth } from '../hooks/useAuth'
 
 const companyContact = {
-  phone: '0606610014',
+  phone: '+212606610014',
+  whatsapp: '212606610014',
   email: 'bough.youssef@gmail.com',
 }
 
@@ -90,6 +91,23 @@ function ContactPage() {
             >
               <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Email</p>
               <p className="mt-3 text-xl font-semibold text-stone-950">{companyContact.email}</p>
+            </a>
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-3">
+            <a
+              href={`https://wa.me/${companyContact.whatsapp}`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center rounded-full border border-emerald-100 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-800 transition hover:-translate-y-0.5 hover:border-emerald-200 hover:bg-emerald-100"
+            >
+              Ouvrir WhatsApp
+            </a>
+            <a
+              href={`tel:${companyContact.phone}`}
+              className="inline-flex items-center justify-center rounded-full border border-violet-100 bg-white px-4 py-2 text-sm font-semibold text-violet-900 transition hover:-translate-y-0.5 hover:border-violet-200 hover:bg-violet-50"
+            >
+              Appeler {companyContact.phone}
             </a>
           </div>
 

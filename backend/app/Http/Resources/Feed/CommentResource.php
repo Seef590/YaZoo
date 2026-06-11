@@ -22,6 +22,8 @@ class CommentResource extends JsonResource
         return [
             'id' => $this->id,
             'body' => $this->body,
+            'parentId' => $this->parent_id,
+            'reaction' => $this->reaction,
             'createdAt' => $this->created_at?->toISOString(),
             'author' => [
                 'id' => $this->user?->id,
@@ -30,6 +32,7 @@ class CommentResource extends JsonResource
                 'city' => $this->user?->city,
                 'country' => $this->user?->country,
             ],
+            'replies' => CommentResource::collection($this->whenLoaded('replies')),
         ];
     }
 }

@@ -8,6 +8,7 @@ import {
   createCommentRequest,
   createPostRequest,
   getPostsRequest,
+  reactToCommentRequest,
   toggleLikeRequest,
 } from '../api/posts'
 import { getProductsRequest } from '../api/products'
@@ -174,7 +175,7 @@ function FeedPage() {
     setPosts((current) => [response.data.data, ...current])
   }
 
-  const handleToggleLike = async (postId) => {
+  const handleToggleLike = async (postId, reaction = 'like') => {
     let previousPost = null
 
     setLikePendingIds((current) => [...current, postId])
@@ -188,14 +189,15 @@ function FeedPage() {
 
         return {
           ...post,
-          liked: !post.liked,
-          likes: post.liked ? Math.max(0, post.likes - 1) : post.likes + 1,
+          liked: post.userReaction === reaction ? false : true,
+          userReaction: post.userReaction === reaction ? null : reaction,
+          likes: post.userReaction === reaction ? Math.max(0, post.likes - 1) : post.liked ? post.likes : post.likes + 1,
         }
       }),
     )
 
     try {
-      const response = await toggleLikeRequest(postId)
+      const response = await toggleLikeRequest(postId, reaction)
 
       setPosts((current) =>
         current.map((post) => (post.id === postId ? response.data.data : post)),
@@ -218,23 +220,38 @@ function FeedPage() {
     }
   }
 
-  const handleCreateComment = async (postId, body) => {
-    const response = await createCommentRequest(postId, { body })
+  const handleCreateComment = async (postId, body, options = {}) => {
+    const response = await createCommentRequest(postId, {
+      body,
+      parent_id: options.parentId ?? null,
+      reaction: options.reaction ?? null,
+    })
     const comment = response.data.data
 
     setPosts((current) =>
       current.map((post) =>
         post.id === postId
-          ? {
-              ...post,
-              comments: [...post.comments, comment],
-              commentsCount: (post.commentsCount ?? post.comments.length) + 1,
-            }
+          ? addCommentToPost(post, comment)
           : post,
       ),
     )
 
     return comment
+  }
+
+  const handleReactToComment = async (postId, commentId, reaction) => {
+    const response = await reactToCommentRequest(commentId, reaction)
+    const nextComment = response.data.data
+
+    setPosts((current) =>
+      current.map((post) =>
+        post.id === postId
+          ? updateCommentInPost(post, nextComment)
+          : post,
+      ),
+    )
+
+    return nextComment
   }
 
   const handleCreateStory = async (payload) => {
@@ -461,6 +478,7 @@ function FeedPage() {
                   key={post.id}
                   post={post}
                   onCreateComment={handleCreateComment}
+                  onReactToComment={handleReactToComment}
                   onToggleLike={handleToggleLike}
                   isLikePending={likePendingIds.includes(post.id)}
                 />
@@ -905,6 +923,49 @@ function buildMarketplaceHighlights(animals, products, userId) {
   return [...ownAnimals, ...ownProducts]
     .sort((first, second) => new Date(second.createdAt ?? 0) - new Date(first.createdAt ?? 0))
     .slice(0, 3)
+}
+
+function addCommentToPost(post, comment) {
+  const isReply = Boolean(comment.parentId)
+
+  if (!isReply) {
+    return {
+      ...post,
+      comments: [...(post.comments ?? []), comment],
+      commentsCount: (post.commentsCount ?? post.comments?.length ?? 0) + 1,
+    }
+  }
+
+  return {
+    ...post,
+    comments: (post.comments ?? []).map((currentComment) =>
+      currentComment.id === comment.parentId
+        ? {
+            ...currentComment,
+            replies: [...(currentComment.replies ?? []), comment],
+          }
+        : currentComment,
+    ),
+    commentsCount: (post.commentsCount ?? post.comments?.length ?? 0) + 1,
+  }
+}
+
+function updateCommentInPost(post, nextComment) {
+  return {
+    ...post,
+    comments: (post.comments ?? []).map((comment) => {
+      if (comment.id === nextComment.id) {
+        return nextComment
+      }
+
+      return {
+        ...comment,
+        replies: (comment.replies ?? []).map((reply) =>
+          reply.id === nextComment.id ? nextComment : reply,
+        ),
+      }
+    }),
+  }
 }
 
 export default FeedPage

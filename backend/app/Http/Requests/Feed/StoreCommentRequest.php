@@ -24,6 +24,8 @@ class StoreCommentRequest extends FormRequest
     {
         return [
             'body' => ['required', 'string', 'max:1000'],
+            'parent_id' => ['nullable', 'integer', 'exists:comments,id'],
+            'reaction' => ['nullable', 'string', 'max:24'],
         ];
     }
 
@@ -34,6 +36,7 @@ class StoreCommentRequest extends FormRequest
     {
         $this->merge([
             'body' => trim((string) $this->input('body')),
+            'reaction' => $this->input('reaction') ? trim((string) $this->input('reaction')) : null,
         ]);
     }
 }

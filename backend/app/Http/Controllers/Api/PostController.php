@@ -23,11 +23,16 @@ class PostController extends Controller
 
         $posts = Post::query()
             ->with([
+                'likes:id,user_id,likeable_id,likeable_type,reaction',
                 'user:id,name,avatar,city,country',
                 'comments' => fn ($query) => $query
+                    ->whereNull('parent_id')
                     ->latest()
                     ->limit(3)
-                    ->with('user:id,name,avatar,city,country'),
+                    ->with([
+                        'user:id,name,avatar,city,country',
+                        'replies.user:id,name,avatar,city,country',
+                    ]),
             ])
             ->withCount([
                 'likes',
@@ -88,10 +93,19 @@ class PostController extends Controller
             ->where('user_id', $request->user()->id)
             ->first();
 
-        if ($existingLike) {
+        $reaction = $request->validate([
+            'reaction' => ['nullable', 'string', 'max:24'],
+        ])['reaction'] ?? 'like';
+
+        if ($existingLike && $existingLike->reaction === $reaction) {
             $existingLike->delete();
+        } elseif ($existingLike) {
+            $existingLike->update([
+                'reaction' => $reaction,
+            ]);
         } else {
             $post->likes()->create([
+                'reaction' => $reaction,
                 'user_id' => $request->user()->id,
             ]);
 
@@ -114,11 +128,16 @@ class PostController extends Controller
     protected function loadFeedRelations(Post $post, int $userId): void
     {
         $post->load([
+            'likes:id,user_id,likeable_id,likeable_type,reaction',
             'user:id,name,avatar,city,country',
             'comments' => fn ($query) => $query
+                ->whereNull('parent_id')
                 ->latest()
                 ->limit(3)
-                ->with('user:id,name,avatar,city,country'),
+                ->with([
+                    'user:id,name,avatar,city,country',
+                    'replies.user:id,name,avatar,city,country',
+                ]),
         ])->loadCount([
             'likes',
             'comments',

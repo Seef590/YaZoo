@@ -21,7 +21,11 @@ export const createPostRequest = (payload) => {
   return api.post('/posts', formData)
 }
 
-export const toggleLikeRequest = (postId) => api.post(`/posts/${postId}/like`)
+export const toggleLikeRequest = (postId, reaction = 'like') =>
+  api.post(`/posts/${postId}/like`, { reaction })
 
 export const createCommentRequest = (postId, payload) =>
   api.post(`/posts/${postId}/comments`, payload)
+
+export const reactToCommentRequest = (commentId, reaction) =>
+  api.post(`/comments/${commentId}/reaction`, { reaction })

@@ -21,6 +21,12 @@ class PostResource extends JsonResource
     {
         $resolvedMediaPath = $this->media_path ?: $this->image_path;
         $resolvedMediaKind = $this->media_kind ?: ($resolvedMediaPath ? 'image' : null);
+        $viewerId = $request->user()?->id;
+        $likes = $this->whenLoaded('likes');
+        $likeCollection = $likes instanceof \Illuminate\Support\Collection ? $likes : collect();
+        $viewerLike = $viewerId
+            ? $likeCollection->firstWhere('user_id', $viewerId)
+            : null;
 
         return [
             'id' => $this->id,
@@ -42,6 +48,14 @@ class PostResource extends JsonResource
             ],
             'likes' => $this->likes_count ?? 0,
             'liked' => (bool) ($this->liked_by_user ?? false),
+            'userReaction' => $viewerLike?->reaction,
+            'reactions' => $likeCollection
+                ->groupBy(fn ($like) => $like->reaction ?: 'like')
+                ->map(fn ($items, $reaction) => [
+                    'reaction' => $reaction,
+                    'count' => $items->count(),
+                ])
+                ->values(),
             'commentsCount' => $this->comments_count ?? 0,
             'comments' => CommentResource::collection($this->whenLoaded('comments')),
         ];

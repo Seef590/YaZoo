@@ -46,6 +46,8 @@ class FeedApiTest extends TestCase
             ->assertJsonPath('data.0.content', 'Premier post YaZoo')
             ->assertJsonPath('data.0.likes', 1)
             ->assertJsonPath('data.0.liked', true)
+            ->assertJsonPath('data.0.userReaction', 'like')
+            ->assertJsonPath('data.0.reactions.0.reaction', 'like')
             ->assertJsonPath('data.0.commentsCount', 1)
             ->assertJsonPath('data.0.tags.0', 'chiens');
     }
@@ -123,12 +125,17 @@ class FeedApiTest extends TestCase
 
         Sanctum::actingAs($user, ['*']);
 
-        $this->postJson("/api/posts/{$post->id}/like")
+        $this->postJson("/api/posts/{$post->id}/like", [
+            'reaction' => 'love',
+        ])
             ->assertOk()
             ->assertJsonPath('data.liked', true)
+            ->assertJsonPath('data.userReaction', 'love')
             ->assertJsonPath('data.likes', 1);
 
-        $this->postJson("/api/posts/{$post->id}/like")
+        $this->postJson("/api/posts/{$post->id}/like", [
+            'reaction' => 'love',
+        ])
             ->assertOk()
             ->assertJsonPath('data.liked', false)
             ->assertJsonPath('data.likes', 0);
@@ -162,18 +169,51 @@ class FeedApiTest extends TestCase
 
         $response = $this->postJson("/api/posts/{$post->id}/comments", [
             'body' => 'Voici un commentaire utile.',
+            'reaction' => 'happy',
         ]);
 
         $response
             ->assertCreated()
             ->assertJsonPath('data.body', 'Voici un commentaire utile.')
+            ->assertJsonPath('data.reaction', 'happy')
             ->assertJsonPath('data.author.name', 'Comment User');
 
         $this->assertDatabaseHas('comments', [
             'post_id' => $post->id,
             'user_id' => $user->id,
             'body' => 'Voici un commentaire utile.',
+            'reaction' => 'happy',
         ]);
+    }
+
+    public function test_authenticated_user_can_reply_to_comment_and_react(): void
+    {
+        $user = User::factory()->create();
+        $post = Post::factory()->create();
+        $comment = Comment::factory()->create([
+            'post_id' => $post->id,
+        ]);
+
+        Sanctum::actingAs($user, ['*']);
+
+        $replyResponse = $this->postJson("/api/posts/{$post->id}/comments", [
+            'body' => 'Merci pour le conseil.',
+            'parent_id' => $comment->id,
+            'reaction' => 'love',
+        ]);
+
+        $replyResponse
+            ->assertCreated()
+            ->assertJsonPath('data.parentId', $comment->id)
+            ->assertJsonPath('data.reaction', 'love');
+
+        $replyId = $replyResponse->json('data.id');
+
+        $this->postJson("/api/comments/{$replyId}/reaction", [
+            'reaction' => 'wow',
+        ])
+            ->assertOk()
+            ->assertJsonPath('data.reaction', 'wow');
     }
 
     public function test_commenting_another_users_post_creates_a_notification(): void

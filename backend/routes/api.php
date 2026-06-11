@@ -60,6 +60,7 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
             Route::post('/posts', [PostController::class, 'store']);
             Route::post('/posts/{post}/like', [PostController::class, 'toggleLike']);
             Route::post('/posts/{post}/comments', [CommentController::class, 'store']);
+            Route::post('/comments/{comment}/reaction', [CommentController::class, 'react']);
         });
 
         Route::get('/stories', [StoryController::class, 'index']);

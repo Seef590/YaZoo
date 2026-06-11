@@ -6,6 +6,11 @@ import { loginRequest, logoutRequest, meRequest } from '../api/auth'
 import { AuthProvider } from './AuthContext.jsx'
 import { useAuth } from '../hooks/useAuth'
 
+vi.mock('../api/client', () => ({
+  AUTH_SESSION_EXPIRED_EVENT: 'yazoo:auth-session-expired',
+  ensureCsrfCookie: vi.fn().mockResolvedValue({}),
+}))
+
 vi.mock('../api/auth', () => ({
   loginRequest: vi.fn(),
   logoutRequest: vi.fn(),
