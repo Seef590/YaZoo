@@ -462,13 +462,15 @@ function ProfilePage() {
     <section className="space-y-6">
       <section className="overflow-hidden rounded-[30px] border border-white/80 bg-white/92 shadow-[0_24px_60px_rgba(124,58,237,0.08)] sm:rounded-[32px] dark:border-violet-300/12 dark:bg-white/8">
         <div
-          className="relative h-56 bg-cover bg-center sm:h-64 md:h-80 lg:h-96 xl:h-[28rem]"
-          style={{
-            backgroundImage: coverImage
-              ? `url(${coverImage})`
-              : 'linear-gradient(135deg, #5b21b6 0%, #8b5cf6 45%, #ddd6fe 100%)',
-          }}
+          className="relative h-56 bg-[linear-gradient(135deg,#5b21b6_0%,#8b5cf6_45%,#ddd6fe_100%)] sm:h-64 md:h-80 lg:h-96 xl:h-[28rem]"
         >
+          {coverImage ? (
+            <img
+              src={coverImage}
+              alt="Photo de couverture du profil"
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          ) : null}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.22),_transparent_28%)]" />
           <div className="absolute bottom-5 right-5 z-10 rounded-full bg-white/18 px-4 py-2 text-xs font-medium uppercase tracking-[0.18em] text-white backdrop-blur">
             Profil YaZoo

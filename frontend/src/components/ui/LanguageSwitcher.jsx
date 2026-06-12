@@ -12,7 +12,7 @@ function LanguageSwitcher({ className = '', compact = false, onLocaleChange }) {
 
   return (
     <div
-      className={`inline-flex items-center gap-1 rounded-full border border-white/50 bg-white/32 p-1 shadow-[0_10px_24px_rgba(124,58,237,0.08)] backdrop-blur-xl dark:border-violet-300/18 dark:bg-white/8 ${className}`}
+      className={`flex max-w-full flex-wrap items-center gap-1 rounded-[22px] border border-white/50 bg-white/32 p-1 shadow-[0_10px_24px_rgba(124,58,237,0.08)] backdrop-blur-xl dark:border-violet-300/18 dark:bg-white/8 sm:inline-flex sm:rounded-full ${className}`}
       aria-label={t('common.chooseLanguage')}
     >
       {!compact ? (
