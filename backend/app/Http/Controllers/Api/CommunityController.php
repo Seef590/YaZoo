@@ -12,6 +12,7 @@ use App\Models\Community;
 use App\Models\CommunityMember;
 use App\Notifications\CommunityRequestApprovedNotification;
 use App\Notifications\CommunityRequestRejectedNotification;
+use App\Support\MediaStorage;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -61,7 +62,9 @@ class CommunityController extends Controller
     {
         $this->authorize('create', Community::class);
 
-        $community = $request->user()->createdCommunities()->create($request->validated());
+        $community = $request->user()->createdCommunities()->create(
+            $this->validatedCommunityData($request)
+        );
 
         $community->memberships()->create([
             'user_id' => $request->user()->id,
@@ -82,7 +85,13 @@ class CommunityController extends Controller
     public function update(UpdateCommunityRequest $request, Community $community): CommunityResource
     {
         $this->authorize('update', $community);
-        $community->update($request->validated());
+        $oldImageUrl = $community->image_url;
+        $community->update($this->validatedCommunityData($request));
+
+        if ($request->hasFile('image_file')) {
+            MediaStorage::deleteStoredFiles([$oldImageUrl]);
+        }
+
         $this->loadCommunityState($community, $request->user()->id);
 
         return CommunityResource::make($community);
@@ -243,6 +252,24 @@ class CommunityController extends Controller
             'approvedMemberships as members_count',
             'pendingMemberships as pending_requests_count',
         ]);
+    }
+
+    /**
+     * Extract validated community fields and store an uploaded local media file when present.
+     */
+    protected function validatedCommunityData(StoreCommunityRequest|UpdateCommunityRequest $request): array
+    {
+        $data = $request->validated();
+        unset($data['image_file']);
+
+        if ($request->hasFile('image_file')) {
+            $data['image_url'] = MediaStorage::storeUploadedFile(
+                $request->file('image_file'),
+                'communities'
+            );
+        }
+
+        return $data;
     }
 
     /**

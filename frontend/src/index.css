@@ -78,6 +78,12 @@ body {
   color: rgba(226, 214, 255, 0.58) !important;
 }
 
+:root.dark select option,
+:root.dark select optgroup {
+  background: #ffffff !important;
+  color: #111827 !important;
+}
+
 :root.dark input[readonly],
 :root.dark textarea[readonly] {
   background:

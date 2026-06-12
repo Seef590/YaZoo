@@ -465,7 +465,7 @@ function ProfilePage() {
           className="relative h-56 bg-cover bg-center sm:h-64 md:h-80 lg:h-96 xl:h-[28rem]"
           style={{
             backgroundImage: coverImage
-              ? `linear-gradient(rgba(15,8,30,0.12),rgba(15,8,30,0.04)), url(${coverImage})`
+              ? `url(${coverImage})`
               : 'linear-gradient(135deg, #5b21b6 0%, #8b5cf6 45%, #ddd6fe 100%)',
           }}
         >
@@ -704,7 +704,7 @@ function ProfilePage() {
                     className="mt-4 h-40 rounded-[24px] bg-cover bg-center"
                     style={{
                       backgroundImage: coverPreview
-                        ? `linear-gradient(rgba(15,23,42,0.22),rgba(15,23,42,0.12)), url(${coverPreview})`
+                        ? `url(${coverPreview})`
                         : 'linear-gradient(135deg, #5b21b6 0%, #8b5cf6 45%, #ddd6fe 100%)',
                     }}
                   />

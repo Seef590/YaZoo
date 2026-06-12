@@ -22,6 +22,7 @@ import { getErrorMessage } from '../utils/getErrorMessage'
 const defaultForm = {
   name: '',
   description: '',
+  image_file: null,
   image_url: '',
   is_private: false,
 }
@@ -32,6 +33,7 @@ function CommunitiesPage() {
   const [communities, setCommunities] = useState([])
   const [search, setSearch] = useState(queryFromUrl)
   const [form, setForm] = useState(defaultForm)
+  const [communityMediaPreview, setCommunityMediaPreview] = useState('')
   const [editingId, setEditingId] = useState(null)
   const [errorMessage, setErrorMessage] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
@@ -45,6 +47,14 @@ function CommunitiesPage() {
   const [processingMembershipIds, setProcessingMembershipIds] = useState([])
   const [isFiltersOpen, setIsFiltersOpen] = useState(false)
   const activeFiltersCount = search.trim() ? 1 : 0
+
+  useEffect(() => {
+    return () => {
+      if (communityMediaPreview.startsWith('blob:')) {
+        URL.revokeObjectURL(communityMediaPreview)
+      }
+    }
+  }, [communityMediaPreview])
 
   const fetchCommunities = async (term = search) => {
     try {
@@ -137,8 +147,30 @@ function CommunitiesPage() {
     }))
   }
 
+  const handleCommunityMediaChange = (event) => {
+    const file = event.target.files?.[0] ?? null
+
+    setForm((current) => ({
+      ...current,
+      image_file: file,
+      image_url: file ? '' : current.image_url,
+    }))
+
+    setCommunityMediaPreview(file ? URL.createObjectURL(file) : '')
+  }
+
+  const handleClearCommunityMedia = () => {
+    setForm((current) => ({
+      ...current,
+      image_file: null,
+      image_url: '',
+    }))
+    setCommunityMediaPreview('')
+  }
+
   const resetForm = () => {
     setForm(defaultForm)
+    setCommunityMediaPreview('')
     setEditingId(null)
   }
 
@@ -208,11 +240,13 @@ function CommunitiesPage() {
     setIsSubmitting(true)
 
     try {
+      const payload = buildCommunityPayload(form)
+
       if (editingId) {
-        await updateCommunityRequest(editingId, form)
+        await updateCommunityRequest(editingId, payload)
         setSuccessMessage('Communaute mise a jour.')
       } else {
-        await createCommunityRequest(form)
+        await createCommunityRequest(payload)
         setSuccessMessage('Communaute creee avec succes.')
       }
 
@@ -232,9 +266,11 @@ function CommunitiesPage() {
     setForm({
       name: community.name ?? '',
       description: community.description ?? '',
+      image_file: null,
       image_url: community.imageUrl ?? '',
       is_private: community.isPrivate ?? false,
     })
+    setCommunityMediaPreview(community.imageUrl ?? '')
     setSuccessMessage('')
     setErrorMessage('')
   }
@@ -414,11 +450,57 @@ function CommunitiesPage() {
 
           <div className="grid gap-4">
             <Field label="Nom" value={form.name} onChange={handleFormChange('name')} />
-            <Field
-              label="Image URL"
-              value={form.image_url}
-              onChange={handleFormChange('image_url')}
-            />
+            <label className="block">
+              <span className="mb-2 block text-sm font-medium text-stone-700">
+                Photo ou video du groupe
+              </span>
+              <div className="rounded-[24px] border border-dashed border-violet-200 bg-[linear-gradient(135deg,_rgba(248,245,255,0.98),_rgba(255,255,255,0.94))] p-3">
+                {communityMediaPreview ? (
+                  <div className="overflow-hidden rounded-[18px] bg-violet-100/70">
+                    {isVideoMedia(form.image_file?.type || communityMediaPreview) ? (
+                      <video
+                        src={communityMediaPreview}
+                        className="h-44 w-full object-cover"
+                        controls
+                      />
+                    ) : (
+                      <img
+                        src={communityMediaPreview}
+                        alt="Apercu de la communaute"
+                        className="h-44 w-full object-cover"
+                      />
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex h-36 items-center justify-center rounded-[18px] bg-violet-50/80 px-4 text-center text-sm text-violet-700">
+                    Ajoutez une image de couverture depuis votre appareil.
+                  </div>
+                )}
+
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <label className="inline-flex cursor-pointer items-center justify-center rounded-full bg-[linear-gradient(135deg,#7c3aed,#c084fc)] px-4 py-2 text-sm font-semibold text-white shadow-[0_16px_30px_rgba(124,58,237,0.24)]">
+                    Telecharger une image
+                    <input
+                      accept="image/*,video/mp4,video/webm,video/quicktime"
+                      className="hidden"
+                      type="file"
+                      onChange={handleCommunityMediaChange}
+                    />
+                  </label>
+                  {communityMediaPreview ? (
+                    <Button type="button" variant="ghost" onClick={handleClearCommunityMedia}>
+                      Retirer
+                    </Button>
+                  ) : null}
+                </div>
+
+                {form.image_file ? (
+                  <p className="mt-2 text-xs text-stone-500">
+                    Fichier selectionne: {form.image_file.name}
+                  </p>
+                ) : null}
+              </div>
+            </label>
           </div>
 
           <label className="mt-4 block">
@@ -527,11 +609,19 @@ function CommunityCard({
     <article className="overflow-hidden rounded-[28px] border border-white/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.99),_rgba(246,239,255,0.9))] shadow-[0_18px_42px_rgba(124,58,237,0.08)]">
       <div className="h-40 bg-violet-100/70 sm:h-52 md:h-64 lg:h-72">
         {community.imageUrl ? (
-          <img
-            src={community.imageUrl}
-            alt={community.name}
-            className="h-full w-full object-cover"
-          />
+          isVideoMedia(community.imageUrl) ? (
+            <video
+              src={community.imageUrl}
+              className="h-full w-full object-cover"
+              controls
+            />
+          ) : (
+            <img
+              src={community.imageUrl}
+              alt={community.name}
+              className="h-full w-full object-cover"
+            />
+          )
         ) : (
           <div className="flex h-full items-center justify-center bg-[linear-gradient(135deg,_rgba(124,58,237,0.14),_rgba(216,180,254,0.22),_rgba(255,255,255,0.92))] text-sm font-medium text-violet-700">
             Espace communaute YaZoo
@@ -703,6 +793,34 @@ function getCommunitySubmitLabel(isSubmitting, editingId) {
   }
 
   return 'Creer la communaute'
+}
+
+function buildCommunityPayload(form) {
+  if (!form.image_file) {
+    return {
+      name: form.name,
+      description: form.description,
+      image_url: form.image_url,
+      is_private: form.is_private,
+    }
+  }
+
+  const formData = new FormData()
+  formData.append('name', form.name)
+  formData.append('description', form.description ?? '')
+  formData.append('is_private', form.is_private ? '1' : '0')
+  formData.append('image_file', form.image_file)
+
+  return formData
+}
+
+function isVideoMedia(value = '') {
+  const mediaValue = String(value).toLowerCase()
+
+  return (
+    mediaValue.startsWith('video/') ||
+    /\.(mp4|webm|mov|quicktime)(\?|#|$)/i.test(mediaValue)
+  )
 }
 
 function getCommunityStatusLabel(community) {

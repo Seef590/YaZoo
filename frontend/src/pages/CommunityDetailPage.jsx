@@ -220,7 +220,7 @@ function CommunityDetailPage() {
     return <StateBox>{errorMessage || 'Groupe introuvable.'}</StateBox>
   }
 
-  const coverStyle = community.imageUrl
+  const coverStyle = community.imageUrl && !isVideoMedia(community.imageUrl)
     ? {
         backgroundImage: `linear-gradient(rgba(10,8,18,0.3),rgba(10,8,18,0.36)), url(${community.imageUrl})`,
       }
@@ -559,6 +559,10 @@ function updateCommentInPost(post, nextComment) {
       }
     }),
   }
+}
+
+function isVideoMedia(value = '') {
+  return /\.(mp4|webm|mov|quicktime)(\?|#|$)/i.test(String(value).toLowerCase())
 }
 
 export default CommunityDetailPage
