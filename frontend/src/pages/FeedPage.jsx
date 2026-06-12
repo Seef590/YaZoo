@@ -419,11 +419,8 @@ function FeedPage() {
       <section className="overflow-hidden rounded-[30px] border border-white/80 bg-white/88 p-4 shadow-[0_20px_48px_rgba(124,58,237,0.08)] backdrop-blur">
         <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-violet-700">
-              Stories
-            </p>
-            <p className="mt-1 text-sm text-stone-500">
-              Un clin d oeil a votre design feed, en version integree dans l app.
+            <p className="text-xs uppercase tracking-[0.18em] text-violet-700 dark:text-violet-200">
+              Partage rapide
             </p>
           </div>
           <button

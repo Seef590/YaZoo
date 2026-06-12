@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { Link, Navigate } from 'react-router-dom'
+import { Link, Navigate, useSearchParams } from 'react-router-dom'
 
-import { getGoogleAuthUrl } from '../api/auth'
+import { getGoogleAuthUrl, isGoogleAuthEnabled } from '../api/auth'
 import Button from '../components/ui/Button'
 import Footer from '../components/ui/Footer'
 import PasswordField from '../components/ui/PasswordField'
@@ -16,6 +16,7 @@ const onboardingNotes = [
 
 function RegisterPage() {
   const { isAuthenticated, isBootstrapping, register } = useAuth()
+  const [searchParams] = useSearchParams()
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -27,11 +28,13 @@ function RegisterPage() {
   })
   const [errorMessage, setErrorMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const googleAuthEnabled = isGoogleAuthEnabled()
+  const authError = searchParams.get('auth_error')
 
   if (isBootstrapping) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[linear-gradient(180deg,_#fffaff_0%,_#f6efff_100%)] px-4 py-10">
-        <p className="text-sm text-stone-600">
+      <main className="flex min-h-screen items-center justify-center bg-[linear-gradient(180deg,_#fffaff_0%,_#f6efff_100%)] px-4 py-10 dark:bg-[radial-gradient(circle_at_top_left,_rgba(124,58,237,0.28),_transparent_28%),linear-gradient(180deg,_#090011_0%,_#13071f_56%,_#08000f_100%)]">
+        <p className="text-sm text-stone-600 dark:text-violet-100">
           Verification de la session...
         </p>
       </main>
@@ -78,14 +81,19 @@ function RegisterPage() {
   }
 
   const handleGoogleRegister = () => {
+    if (!googleAuthEnabled) {
+      setErrorMessage('Inscription Google indisponible pour le moment.')
+      return
+    }
+
     globalThis.location.assign(getGoogleAuthUrl())
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.18),_transparent_24%),radial-gradient(circle_at_bottom_right,_rgba(221,214,254,0.42),_transparent_24%),linear-gradient(180deg,_#fffaff_0%,_#f7f1ff_100%)] px-3 py-6 sm:px-4 sm:py-8">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.18),_transparent_24%),radial-gradient(circle_at_bottom_right,_rgba(221,214,254,0.42),_transparent_24%),linear-gradient(180deg,_#fffaff_0%,_#f7f1ff_100%)] px-3 py-6 text-stone-950 sm:px-4 sm:py-8 dark:bg-[radial-gradient(circle_at_top_left,_rgba(124,58,237,0.34),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(88,28,135,0.28),_transparent_28%),linear-gradient(180deg,_#090011_0%,_#13071f_55%,_#08000f_100%)] dark:text-violet-50">
       <div className="mx-auto max-w-6xl">
         <div className="grid min-h-[calc(100vh-3rem)] w-full gap-5 sm:min-h-[calc(100vh-4rem)] sm:gap-6 lg:grid-cols-[1.02fr_0.98fr] lg:items-center">
-        <section className="order-2 rounded-[30px] border border-white/80 bg-[linear-gradient(135deg,_rgba(124,58,237,0.94),_rgba(168,85,247,0.88),_rgba(237,233,254,0.82))] p-5 text-white shadow-[0_28px_70px_rgba(124,58,237,0.18)] sm:rounded-[34px] sm:p-6 lg:order-2">
+        <section className="order-2 rounded-[30px] border border-white/80 bg-[linear-gradient(135deg,_rgba(124,58,237,0.94),_rgba(168,85,247,0.88),_rgba(237,233,254,0.82))] p-5 text-white shadow-[0_28px_70px_rgba(124,58,237,0.18)] sm:rounded-[34px] sm:p-6 lg:order-2 dark:border-violet-300/12 dark:bg-[linear-gradient(135deg,_rgba(88,28,135,0.92),_rgba(37,12,61,0.96),_rgba(8,0,15,0.98))]">
           <Link
             to="/"
             className="inline-flex items-center rounded-full border border-white/30 bg-white/16 px-4 py-2 text-sm font-medium text-white transition hover:-translate-y-0.5 hover:bg-white/24"
@@ -116,14 +124,14 @@ function RegisterPage() {
           </div>
         </section>
 
-        <section className="order-1 rounded-[30px] border border-white/80 bg-white/94 p-5 shadow-[0_28px_70px_rgba(124,58,237,0.1)] sm:rounded-[34px] sm:p-6 lg:order-1">
-          <p className="text-xs uppercase tracking-[0.24em] text-violet-700">
+        <section className="order-1 rounded-[30px] border border-white/80 bg-white/94 p-5 shadow-[0_28px_70px_rgba(124,58,237,0.1)] sm:rounded-[34px] sm:p-6 lg:order-1 dark:border-violet-300/12 dark:bg-[linear-gradient(180deg,_rgba(30,16,49,0.96),_rgba(17,6,31,0.98))]">
+          <p className="text-xs uppercase tracking-[0.24em] text-violet-700 dark:text-violet-300">
             Inscription
           </p>
-          <h2 className="mt-3 text-2xl font-semibold text-stone-950 sm:text-3xl">
+          <h2 className="mt-3 text-2xl font-semibold text-stone-950 sm:text-3xl dark:text-violet-50">
             Ouvrir mon espace YaZoo
           </h2>
-          <p className="mt-2 text-sm text-stone-500">
+          <p className="mt-2 text-sm text-stone-500 dark:text-violet-100/70">
             Creez votre compte en quelques instants et accedez directement a un
             espace pret a accueillir vos publications, annonces et contacts.
           </p>
@@ -191,8 +199,14 @@ function RegisterPage() {
               />
             </div>
 
+            {authError === 'google_not_configured' ? (
+              <p className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-300/20 dark:bg-amber-500/12 dark:text-amber-100">
+                Inscription Google indisponible : les identifiants OAuth ne sont pas configures.
+              </p>
+            ) : null}
+
             {errorMessage ? (
-              <p className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+              <p className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-300/20 dark:bg-rose-500/12 dark:text-rose-100">
                 {errorMessage}
               </p>
             ) : null}
@@ -203,25 +217,26 @@ function RegisterPage() {
           </form>
 
           <div className="my-5 flex items-center gap-3">
-            <div className="h-px flex-1 bg-violet-100" />
-            <span className="text-xs uppercase tracking-[0.16em] text-stone-400">
+            <div className="h-px flex-1 bg-violet-100 dark:bg-violet-300/14" />
+            <span className="text-xs uppercase tracking-[0.16em] text-stone-400 dark:text-violet-100/50">
               ou
             </span>
-            <div className="h-px flex-1 bg-violet-100" />
+            <div className="h-px flex-1 bg-violet-100 dark:bg-violet-300/14" />
           </div>
 
           <button
             type="button"
             onClick={handleGoogleRegister}
-            className="inline-flex w-full items-center justify-center gap-3 rounded-full border border-violet-100 bg-white px-4 py-3 text-sm font-semibold text-stone-800 shadow-[0_14px_30px_rgba(124,58,237,0.08)] transition hover:-translate-y-0.5 hover:border-violet-200 hover:bg-violet-50/80"
+            disabled={!googleAuthEnabled}
+            className="inline-flex w-full items-center justify-center gap-3 rounded-full border border-violet-100 bg-white px-4 py-3 text-sm font-semibold text-stone-800 shadow-[0_14px_30px_rgba(124,58,237,0.08)] transition hover:-translate-y-0.5 hover:border-violet-200 hover:bg-violet-50/80 disabled:cursor-not-allowed disabled:opacity-55 dark:border-violet-300/14 dark:bg-[#12051f] dark:text-violet-50 dark:hover:bg-[#180827]"
           >
             <GoogleMark />
             Continuer avec Google
           </button>
 
-          <p className="mt-5 text-sm text-stone-500">
+          <p className="mt-5 text-sm text-stone-500 dark:text-violet-100/70">
             Vous avez deja un compte ?{' '}
-            <Link className="font-medium text-violet-900" to="/login">
+            <Link className="font-medium text-violet-900 dark:text-violet-300" to="/login">
               Se connecter
             </Link>
           </p>
@@ -245,11 +260,11 @@ function GoogleMark() {
 function Field({ label, onChange, ...props }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-sm font-medium text-stone-700">
+      <span className="mb-2 block text-sm font-medium text-stone-700 dark:text-violet-100">
         {label}
       </span>
       <input
-        className="w-full rounded-2xl border border-violet-100 bg-violet-50/55 px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-400 focus:bg-white"
+        className="w-full rounded-2xl border border-violet-100 bg-violet-50/55 px-4 py-3 text-sm text-stone-700 outline-none transition placeholder:text-stone-400 focus:border-violet-400 focus:bg-white dark:border-violet-300/18 dark:bg-[#12051f] dark:text-violet-50 dark:placeholder:text-violet-200/45 dark:focus:bg-[#160827]"
         onChange={(event) => onChange(event.target.value)}
         {...props}
       />

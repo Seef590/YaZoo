@@ -63,6 +63,10 @@ const messages = {
       chooseLanguage: 'Choisir la langue',
       startConversation: 'Demarrer la conversation',
       contactLabel: 'Numero ou email du destinataire',
+      theme: 'Theme',
+      light: 'Clair',
+      dark: 'Sombre',
+      system: 'Systeme',
     },
     layout: {
       logoLabel: 'Logo YaZoo',
@@ -73,7 +77,7 @@ const messages = {
       menuOpen: 'Ouvrir le menu',
       menuClose: 'Fermer le menu',
       shellNote:
-        'Le feed, les marketplaces, les communautes, la messagerie et les notifications sont actives. Le module commandes couvre reservation, livraison, facture, historique et pilotage admin.',
+        'Retrouvez vos publications, annonces, communautes, messages et reservations dans votre espace YaZoo.',
     },
     footer: {
       about:
@@ -81,7 +85,7 @@ const messages = {
       navigation: 'Navigation',
       author: 'Auteur',
       authorText:
-        'Projet developpe et integre pour YaZoo, avec direction visuelle, experience mobile et architecture full-stack.',
+        'YaZoo rassemble profils, publications, annonces, reservations et conversations dans une seule experience.',
       projectGithub: 'GitHub du projet',
       rights: 'Tous droits reserves.',
       copyright: 'Copyright {year} YaZoo. Projet developpe par Seef590.',
@@ -96,11 +100,11 @@ const messages = {
       responsive: 'Responsive',
       style: 'Style',
       heroCardTitle: 'Une entree claire vers toute la plateforme.',
-      heroCardBadge: 'Landing modernisee',
-      featuresTitle: 'Une base produit deja riche, dans une presentation plus attirante.',
+      heroCardBadge: 'Bienvenue sur YaZoo',
+      featuresTitle: 'Tout pour partager, adopter, vendre et reserver autour de vos animaux.',
       featuresText:
-        'La nouvelle direction visuelle met en avant la chaleur, la confiance et la lisibilite, sans perdre le cadre professionnel du projet.',
-      journeyTitle: 'Une experience plus adorable, confortable et amusante.',
+        'Publiez vos moments, trouvez des annonces fiables et discutez avec une communaute qui aime les animaux autant que vous.',
+      journeyTitle: 'Une experience simple pour rester proche de votre communaute.',
       journeyText:
         'La mise en page reprend un esprit plus doux, avec des sections respirantes et des points d entree plus visibles.',
       entryTitle: "Une landing qui ouvre naturellement vers l'inscription ou la connexion.",
@@ -154,7 +158,7 @@ const messages = {
     },
     reservations: {
       intro:
-        'Le module commandes est actif. Vous pouvez suivre la reservation, la livraison, puis generer la facture finale de chaque commande terminee.',
+        'Suivez vos reservations, vos livraisons et vos factures depuis un espace clair.',
       center: 'Centre de commandes',
       centerText: 'Suivez vos achats et vos ventes avec livraison et facture.',
       myPurchases: 'Mes achats ({count})',
@@ -174,7 +178,7 @@ const messages = {
       badge: 'Order history',
       title: 'Un historique commandes plus doux pour relire vos achats et vos ventes archivees.',
       text:
-        'Les cartes, badges et actions de facture reprennent la nouvelle direction visuelle YaZoo tout en gardant les informations essentielles faciles a lire.',
+        'Retrouvez les informations essentielles de chaque commande, avec les factures et les actions utiles toujours accessibles.',
       archives: 'Archives',
       archivesText: 'Consultez vos achats et ventes archives.',
       empty: 'Aucun historique disponible pour cette section.',
@@ -188,7 +192,7 @@ const messages = {
       badge: 'Messagerie',
       title: 'Une boite de reception plus claire, plus douce et plus agreable a suivre.',
       text:
-        'Retrouvez vos conversations privees, demarrez un nouveau contact et suivez vos echanges dans une interface lumineuse.',
+        'Retrouvez vos conversations privees, demarrez un nouveau contact et gardez vos echanges au meme endroit.',
       newContact: 'Nouveau contact',
       newConversation: 'Nouvelle conversation',
       startWithContact: 'Entrez un numero ou un email et un premier message pour demarrer.',
@@ -275,6 +279,10 @@ const messages = {
       chooseLanguage: 'اختيار اللغة',
       startConversation: 'بدء المحادثة',
       contactLabel: 'رقم أو بريد المستلم',
+      theme: 'المظهر',
+      light: 'فاتح',
+      dark: 'داكن',
+      system: 'النظام',
     },
     layout: {
       logoLabel: 'شعار YaZoo',
@@ -285,7 +293,7 @@ const messages = {
       menuOpen: 'فتح القائمة',
       menuClose: 'إغلاق القائمة',
       shellNote:
-        'المنشورات والمتاجر والمجتمعات والرسائل والإشعارات كلها مفعلة. كما أن وحدة الطلبات تغطي الحجز والتوصيل والفاتورة والسجل ولوحة الإدارة.',
+        'اعثر على منشوراتك وإعلاناتك ومجتمعاتك ورسائلك وحجوزاتك داخل مساحة YaZoo الخاصة بك.',
     },
     footer: {
       about:
@@ -491,7 +499,7 @@ const messages = {
       menuOpen: 'Open menu',
       menuClose: 'Close menu',
       shellNote:
-        'Feed, marketplace, communities, messaging and notifications are active.',
+        'Find your posts, listings, communities, messages and reservations in your YaZoo space.',
     },
     footer: {
       about:
@@ -591,7 +599,7 @@ const messages = {
       menuOpen: 'Menue oeffnen',
       menuClose: 'Menue schliessen',
       shellNote:
-        'Feed, Marktplatz, Communities, Nachrichten und Benachrichtigungen sind aktiv.',
+        'Finden Sie Ihre Beitraege, Anzeigen, Communities, Nachrichten und Reservierungen in Ihrem YaZoo-Bereich.',
     },
     footer: {
       about:

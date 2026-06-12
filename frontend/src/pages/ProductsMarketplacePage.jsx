@@ -12,10 +12,10 @@ function ProductsMarketplacePage() {
     <section className="space-y-6">
       <MarketplaceHero
         active="products"
-        title="Mettez vos produits en scene dans une boutique YaZoo plus claire et plus attractive."
-        description="La lecture des annonces devient plus premium, plus lisible et plus rassurante pour aider vos visiteurs a comparer, contacter et passer a l action avec confiance."
+        title="Publiez vos produits et aidez les proprietaires a trouver ce qu il leur faut."
+        description="Des annonces claires facilitent la comparaison, le contact et l achat en confiance."
         imageSrc={companionImage}
-        imageAlt="Scene complice illustrant l univers premium YaZoo."
+        imageAlt="Scene complice autour des animaux sur YaZoo."
         imageClass="mx-auto h-24 w-auto rounded-[20px] object-cover sm:h-28 xl:w-[180px]"
         stats={[
           { label: 'Produits visibles', value: marketplace.products.length },

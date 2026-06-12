@@ -25,6 +25,13 @@ import { asArray, extractDataArray, extractDataObject } from '../utils/apiData'
 import { formatDate } from '../utils/formatDate'
 import { getErrorMessage } from '../utils/getErrorMessage'
 
+const COMMUNITY_TABS = [
+  { key: 'about', label: 'A propos' },
+  { key: 'discussion', label: 'Discussion' },
+  { key: 'members', label: 'Membres' },
+  { key: 'media', label: 'Medias' },
+]
+
 function CommunityDetailPage() {
   const { communityId } = useParams()
   const { user } = useAuth()
@@ -36,6 +43,7 @@ function CommunityDetailPage() {
   const [isPostsLoading, setIsPostsLoading] = useState(true)
   const [isJoining, setIsJoining] = useState(false)
   const [likePendingIds, setLikePendingIds] = useState([])
+  const [activeTab, setActiveTab] = useState('discussion')
 
   const loadCommunity = useCallback(async () => {
     try {
@@ -218,6 +226,9 @@ function CommunityDetailPage() {
       }
     : undefined
   const safePosts = asArray(posts)
+  const mediaPosts = safePosts.filter((post) => post.mediaUrl || post.imageUrl)
+  const canViewDiscussion = !community.isPrivate || community.isMember || community.isAdmin
+  const memberPreview = getUniqueMembers([community.owner, community.isMember ? user : null])
 
   return (
     <section className="space-y-5">
@@ -258,17 +269,19 @@ function CommunityDetailPage() {
 
         <div className="border-t border-violet-100/70 px-5 py-4 dark:border-violet-300/12">
           <div className="flex gap-2 overflow-x-auto">
-            {['A propos', 'Discussion', 'Membres', 'Medias'].map((tab, index) => (
-              <span
-                key={tab}
-                className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold ${
-                  index === 1
+            {COMMUNITY_TABS.map((tab) => (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setActiveTab(tab.key)}
+                className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition ${
+                  activeTab === tab.key
                     ? 'bg-violet-600 text-white'
                     : 'text-stone-600 hover:bg-violet-50 dark:text-violet-100/70 dark:hover:bg-white/10'
                 }`}
               >
-                {tab}
-              </span>
+                {tab.label}
+              </button>
             ))}
           </div>
         </div>
@@ -279,36 +292,95 @@ function CommunityDetailPage() {
 
       <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
         <div className="space-y-5">
-          {community.isMember ? (
-            <CreatePost onCreate={handleCreatePost} />
-          ) : (
-            <section className="rounded-[28px] border border-dashed border-violet-200 bg-white/78 p-5 text-sm text-stone-600 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-100/70">
-              Rejoignez le groupe pour publier, commenter et participer a la discussion.
-            </section>
-          )}
+          {activeTab === 'discussion' ? (
+            <>
+              {!canViewDiscussion ? (
+                <StateBox>Ce groupe est prive. Rejoignez-le pour consulter la discussion.</StateBox>
+              ) : null}
 
-          {isPostsLoading ? <StateBox>Chargement des publications du groupe...</StateBox> : null}
+              {canViewDiscussion && community.isMember ? (
+                <CreatePost onCreate={handleCreatePost} />
+              ) : null}
 
-          {!isPostsLoading && safePosts.length === 0 ? (
-            <StateBox>Aucune publication dans ce groupe pour le moment.</StateBox>
+              {canViewDiscussion && !community.isMember ? (
+                <section className="rounded-[28px] border border-dashed border-violet-200 bg-white/78 p-5 text-sm text-stone-600 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-100/70">
+                  Rejoignez le groupe pour publier et participer a la discussion.
+                </section>
+              ) : null}
+
+              {canViewDiscussion && isPostsLoading ? <StateBox>Chargement des publications du groupe...</StateBox> : null}
+
+              {canViewDiscussion && !isPostsLoading && safePosts.length === 0 ? (
+                <StateBox>Aucune publication dans ce groupe pour le moment.</StateBox>
+              ) : null}
+
+              {canViewDiscussion && !isPostsLoading && safePosts.length > 0 ? (
+                <div className="space-y-5">
+                  {safePosts.map((post) => (
+                    <PostCard
+                      key={post.id}
+                      post={post}
+                      currentUserId={user?.id}
+                      onCreateComment={handleCreateComment}
+                      onDeletePost={handleDeletePost}
+                      onReactToComment={handleReactToComment}
+                      onToggleLike={handleToggleLike}
+                      onUpdatePost={handleUpdatePost}
+                      isLikePending={likePendingIds.includes(post.id)}
+                    />
+                  ))}
+                </div>
+              ) : null}
+            </>
           ) : null}
 
-          {!isPostsLoading && safePosts.length > 0 ? (
-            <div className="space-y-5">
-              {safePosts.map((post) => (
-                <PostCard
-                  key={post.id}
-                  post={post}
-                  currentUserId={user?.id}
-                  onCreateComment={handleCreateComment}
-                  onDeletePost={handleDeletePost}
-                  onReactToComment={handleReactToComment}
-                  onToggleLike={handleToggleLike}
-                  onUpdatePost={handleUpdatePost}
-                  isLikePending={likePendingIds.includes(post.id)}
-                />
-              ))}
-            </div>
+          {activeTab === 'about' ? (
+            <section className="rounded-[28px] border border-white/80 bg-white/92 p-5 shadow-[0_20px_48px_rgba(124,58,237,0.08)] dark:border-violet-300/12 dark:bg-white/8">
+              <h2 className="text-xl font-semibold text-stone-950 dark:text-violet-50">A propos du groupe</h2>
+              <p className="mt-3 text-sm leading-7 text-stone-600 dark:text-violet-100/72">
+                {community.description || 'Ce groupe attend encore sa description.'}
+              </p>
+              <div className="mt-5 grid gap-3 text-sm text-stone-600 sm:grid-cols-3 dark:text-violet-100/72">
+                <InfoPill label="Visibilite" value={community.isPrivate ? 'Prive' : 'Public'} />
+                <InfoPill label="Proprietaire" value={community.owner?.name || 'YaZoo'} />
+                <InfoPill label="Statut" value={getMembershipLabel(community)} />
+              </div>
+            </section>
+          ) : null}
+
+          {activeTab === 'members' ? (
+            <section className="rounded-[28px] border border-white/80 bg-white/92 p-5 shadow-[0_20px_48px_rgba(124,58,237,0.08)] dark:border-violet-300/12 dark:bg-white/8">
+              <h2 className="text-xl font-semibold text-stone-950 dark:text-violet-50">Membres du groupe</h2>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {memberPreview.map((member) => (
+                  <div key={member.id ?? member.name} className="flex items-center gap-3 rounded-[22px] border border-violet-100 bg-white/80 p-3 dark:border-violet-300/12 dark:bg-white/8">
+                    <Avatar name={member.name} src={member.avatar || ''} />
+                    <div>
+                      <p className="font-semibold text-stone-950 dark:text-violet-50">{member.name}</p>
+                      <p className="text-xs text-stone-500 dark:text-violet-100/60">
+                        {String(member.id) === String(community.owner?.id) ? 'Admin' : 'Membre'}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {memberPreview.length === 0 ? <StateBox>Aucun membre affiche pour le moment.</StateBox> : null}
+            </section>
+          ) : null}
+
+          {activeTab === 'media' ? (
+            <section className="rounded-[28px] border border-white/80 bg-white/92 p-5 shadow-[0_20px_48px_rgba(124,58,237,0.08)] dark:border-violet-300/12 dark:bg-white/8">
+              <h2 className="text-xl font-semibold text-stone-950 dark:text-violet-50">Medias du groupe</h2>
+              {mediaPosts.length === 0 ? (
+                <StateBox>Aucune photo ou video publiee dans ce groupe.</StateBox>
+              ) : (
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {mediaPosts.map((post) => (
+                    <MediaPreview key={post.id} post={post} />
+                  ))}
+                </div>
+              )}
+            </section>
           ) : null}
         </div>
 
@@ -328,7 +400,7 @@ function CommunityDetailPage() {
           <section className="rounded-[28px] border border-white/80 bg-white/92 p-5 shadow-[0_20px_48px_rgba(124,58,237,0.08)] dark:border-violet-300/12 dark:bg-white/8">
             <h2 className="text-lg font-semibold text-stone-950 dark:text-violet-50">Membres recents</h2>
             <div className="mt-4 flex -space-x-3">
-              {[community.owner, user].filter(Boolean).map((member, index) => (
+              {memberPreview.map((member, index) => (
                 <Avatar
                   key={`${member.id ?? index}-${member.name}`}
                   name={member.name}
@@ -380,6 +452,56 @@ function StateBox({ children }) {
   )
 }
 
+function InfoPill({ label, value }) {
+  return (
+    <div className="rounded-[22px] border border-violet-100 bg-white/78 px-4 py-3 dark:border-violet-300/12 dark:bg-white/8">
+      <p className="text-xs uppercase tracking-[0.16em] text-stone-500 dark:text-violet-100/52">
+        {label}
+      </p>
+      <p className="mt-1 font-semibold text-stone-950 dark:text-violet-50">
+        {value}
+      </p>
+    </div>
+  )
+}
+
+function MediaPreview({ post }) {
+  const mediaUrl = post.mediaUrl ?? post.imageUrl
+  const isVideo = post.mediaKind === 'video'
+
+  return (
+    <article className="overflow-hidden rounded-[24px] border border-violet-100 bg-white/78 dark:border-violet-300/12 dark:bg-white/8">
+      {isVideo ? (
+        <video src={mediaUrl} controls className="h-64 w-full object-cover sm:h-80" />
+      ) : (
+        <img src={mediaUrl} alt={post.content || 'Media du groupe'} className="h-64 w-full object-cover sm:h-80" />
+      )}
+      <p className="line-clamp-2 px-4 py-3 text-sm text-stone-600 dark:text-violet-100/72">
+        {post.content || 'Publication du groupe'}
+      </p>
+    </article>
+  )
+}
+
+function getUniqueMembers(members) {
+  const seen = new Set()
+
+  return members.filter((member) => {
+    if (!member?.id && !member?.name) {
+      return false
+    }
+
+    const key = String(member.id ?? member.name)
+
+    if (seen.has(key)) {
+      return false
+    }
+
+    seen.add(key)
+    return true
+  })
+}
+
 Alert.propTypes = {
   children: PropTypes.node,
   tone: PropTypes.string,
@@ -387,6 +509,15 @@ Alert.propTypes = {
 
 StateBox.propTypes = {
   children: PropTypes.node,
+}
+
+InfoPill.propTypes = {
+  label: PropTypes.string,
+  value: PropTypes.node,
+}
+
+MediaPreview.propTypes = {
+  post: PropTypes.object,
 }
 
 function addCommentToPost(post, comment) {

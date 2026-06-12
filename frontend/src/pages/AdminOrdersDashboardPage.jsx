@@ -100,7 +100,7 @@ function AdminOrdersDashboardPage() {
               Pilotage commandes
             </p>
             <h2 className="mt-4 text-2xl font-semibold leading-tight text-stone-950 sm:text-3xl">
-              Gardez revenus, logistique et vendeurs sous controle dans un cockpit plus premium.
+              Gardez revenus, logistique et vendeurs sous controle depuis un tableau de bord clair.
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-600">
               Les blocs de synthese, les listes de commandes et le classement

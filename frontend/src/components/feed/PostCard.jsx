@@ -174,12 +174,12 @@ function PostCard({
       <div className="h-1.5 bg-[linear-gradient(90deg,#7c3aed,#a855f7,#d8b4fe,#ede9fe)]" />
 
       <div className="p-5">
-        <div className="flex items-start gap-4">
+        <div className="flex items-start gap-3 sm:gap-4">
           <Avatar name={post.author?.name} src={post.author?.avatar} />
 
           <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0 flex-1">
                 <h3 className="text-base font-semibold text-stone-900 dark:text-violet-50">
                   {post.author?.name}
                 </h3>
@@ -260,13 +260,13 @@ function PostCard({
                   <video
                     src={mediaUrl}
                     controls
-                    className="h-64 w-full object-cover sm:h-80 md:h-96 lg:h-[28rem]"
+                    className="h-64 w-full object-cover sm:h-96 md:h-[34rem] lg:h-[42rem] xl:h-[48rem]"
                   />
                 ) : (
                   <img
                     src={mediaUrl}
                     alt="Illustration du post"
-                    className="h-64 w-full object-cover transition duration-500 group-hover:scale-[1.02] sm:h-80 md:h-96 lg:h-[28rem]"
+                    className="h-64 w-full object-cover transition duration-500 group-hover:scale-[1.02] sm:h-96 md:h-[34rem] lg:h-[42rem] xl:h-[48rem]"
                   />
                 )}
               </div>
@@ -386,11 +386,11 @@ function PostActionsMenu({
   onVisibilityChange,
 }) {
   return (
-    <div className="relative shrink-0">
+    <div className="relative z-30 ml-auto shrink-0 self-start">
       <button
         type="button"
         onClick={onToggleMenu}
-        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-violet-100 bg-white/86 text-lg font-bold text-violet-900 transition hover:bg-violet-50 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-50 dark:hover:bg-white/14"
+        className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-violet-100 bg-white/86 text-lg font-bold text-violet-900 transition hover:bg-violet-50 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-50 dark:hover:bg-white/14"
         aria-label="Options du post"
         aria-expanded={isMenuOpen}
       >
@@ -398,7 +398,7 @@ function PostActionsMenu({
       </button>
 
       {isMenuOpen ? (
-        <div className="absolute right-0 top-12 z-20 w-72 overflow-hidden rounded-[24px] border border-violet-100 bg-white/98 p-2 text-sm shadow-[0_24px_60px_rgba(76,29,149,0.22)] backdrop-blur-xl dark:border-violet-300/14 dark:bg-stone-950/96">
+        <div className="absolute right-0 top-[calc(100%+0.5rem)] z-50 max-h-[min(70vh,34rem)] w-[min(18rem,calc(100vw-2rem))] overflow-y-auto rounded-[24px] border border-violet-100 bg-white/98 p-2 text-sm shadow-[0_24px_60px_rgba(76,29,149,0.22)] backdrop-blur-xl dark:border-violet-300/14 dark:bg-stone-950/96">
           <PostMenuButton onClick={onSharePost}>Partager</PostMenuButton>
           <PostMenuButton onClick={onSavePost}>Enregistrer le lien</PostMenuButton>
 

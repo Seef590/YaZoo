@@ -33,6 +33,7 @@ return [
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
         'redirect' => env('GOOGLE_REDIRECT_URI'),
         'frontend_redirect' => env('GOOGLE_FRONTEND_REDIRECT', env('FRONTEND_URL', 'http://localhost:5173').'/feed'),
+        'login_redirect' => env('GOOGLE_LOGIN_REDIRECT', env('FRONTEND_URL', 'http://localhost:5173').'/login'),
     ],
 
     'slack' => [

@@ -5,20 +5,20 @@ function PasswordField({ label, onChange, ...props }) {
 
   return (
     <label className="block">
-      <span className="mb-2 block text-sm font-medium text-stone-700">
+      <span className="mb-2 block text-sm font-medium text-stone-700 dark:text-violet-100">
         {label}
       </span>
       <div className="relative">
         <input
           type={isVisible ? 'text' : 'password'}
-          className="w-full rounded-2xl border border-violet-100 bg-violet-50/55 px-4 py-3 pr-12 text-sm text-stone-700 outline-none transition focus:border-violet-400 focus:bg-white"
+          className="w-full rounded-2xl border border-violet-100 bg-violet-50/55 px-4 py-3 pr-12 text-sm text-stone-700 outline-none transition placeholder:text-stone-400 focus:border-violet-400 focus:bg-white dark:border-violet-300/18 dark:bg-[#12051f] dark:text-violet-50 dark:placeholder:text-violet-200/45 dark:focus:bg-[#160827]"
           onChange={(event) => onChange(event.target.value)}
           {...props}
         />
         <button
           type="button"
           onClick={() => setIsVisible((current) => !current)}
-          className="absolute inset-y-0 right-2 my-auto inline-flex h-8 w-8 items-center justify-center rounded-full text-violet-700 transition hover:bg-violet-100"
+          className="absolute inset-y-0 right-2 my-auto inline-flex h-8 w-8 items-center justify-center rounded-full text-violet-700 transition hover:bg-violet-100 dark:bg-black/40 dark:text-violet-200 dark:hover:bg-violet-500/18"
           aria-label={isVisible ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
           title={isVisible ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
         >

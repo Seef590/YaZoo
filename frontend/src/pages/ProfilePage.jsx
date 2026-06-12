@@ -20,6 +20,13 @@ import { asArray, extractDataArray, extractDataObject } from '../utils/apiData'
 import { getErrorMessage } from '../utils/getErrorMessage'
 import { normalizeAuthUserMedia, normalizeProfileMediaPayload } from '../utils/media'
 
+const PROFILE_TABS = [
+  { key: 'posts', label: 'Publications' },
+  { key: 'about', label: 'A propos' },
+  { key: 'media', label: 'Medias' },
+  { key: 'communities', label: 'Communautes' },
+]
+
 function ProfilePage() {
   const { setUser, user } = useAuth()
   const navigate = useNavigate()
@@ -47,6 +54,7 @@ function ProfilePage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isMessageStarting, setIsMessageStarting] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState('posts')
   const editSectionRef = useRef(null)
   const nameInputRef = useRef(null)
   const requestedProfileId =
@@ -73,7 +81,7 @@ function ProfilePage() {
 
         if (!cancelled) {
           setProfile(data)
-          setRecentPublications(userPosts.slice(0, 5))
+          setRecentPublications(userPosts)
           setForm({
             name: data.name ?? '',
             phone: data.phone ?? '',
@@ -266,6 +274,9 @@ function ProfilePage() {
     recentPublications,
     searchTerm,
   )
+  const mediaPublications = visibleRecentPublications.filter(
+    (post) => post.mediaUrl || post.imageUrl,
+  )
 
   const handleEditToggle = () => {
     if (!isOwnProfile) {
@@ -449,12 +460,12 @@ function ProfilePage() {
 
   return (
     <section className="space-y-6">
-      <section className="overflow-hidden rounded-[30px] border border-white/80 bg-white/92 shadow-[0_24px_60px_rgba(124,58,237,0.08)] sm:rounded-[32px]">
+      <section className="overflow-hidden rounded-[30px] border border-white/80 bg-white/92 shadow-[0_24px_60px_rgba(124,58,237,0.08)] sm:rounded-[32px] dark:border-violet-300/12 dark:bg-white/8">
         <div
           className="relative h-56 bg-cover bg-center sm:h-64 md:h-80 lg:h-96 xl:h-[28rem]"
           style={{
             backgroundImage: coverImage
-              ? `linear-gradient(rgba(15,23,42,0.34),rgba(15,23,42,0.16)), url(${coverImage})`
+              ? `linear-gradient(rgba(15,8,30,0.12),rgba(15,8,30,0.04)), url(${coverImage})`
               : 'linear-gradient(135deg, #5b21b6 0%, #8b5cf6 45%, #ddd6fe 100%)',
           }}
         >
@@ -476,20 +487,20 @@ function ProfilePage() {
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
             <div className="max-w-3xl">
               <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-violet-700">
+                <p className="text-xs uppercase tracking-[0.18em] text-violet-700 dark:text-violet-300">
                   Profil public
                 </p>
-                <h2 className="mt-2 text-2xl font-semibold text-stone-950 sm:text-3xl">
+                <h2 className="mt-2 text-2xl font-semibold text-stone-950 sm:text-3xl dark:text-violet-50">
                   {profile?.name ?? user?.name}
                 </h2>
-                <p className="mt-1 text-sm text-stone-500">
+                <p className="mt-1 text-sm text-stone-500 dark:text-violet-100/62">
                   @{(profile?.name ?? user?.name ?? 'username').toLowerCase().replace(/\s+/g, '')}
                   {profileLocation || profile?.country ? ' - ' : ''}
                   {[profileLocation, profile?.country].filter(Boolean).join(', ')}
                 </p>
-                <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-600">
+                <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-600 dark:text-violet-100/76">
                   {profile?.bio ||
-                    'Je partage mes moments, mes annonces et mes conseils pour construire un profil clair et inspirant.'}
+                    'Bienvenue sur mon profil YaZoo. Retrouvez ici mes publications, mes annonces et mes moments autour des animaux.'}
                 </p>
               </div>
             </div>
@@ -517,7 +528,7 @@ function ProfilePage() {
               <button
                 type="button"
                 onClick={handleShareProfile}
-                className="inline-flex w-full items-center justify-center rounded-full border border-violet-200/80 bg-white/92 px-4 py-2 text-sm font-medium text-stone-700 shadow-[0_12px_26px_rgba(124,58,237,0.08)] transition-all duration-200 hover:-translate-y-0.5 hover:border-violet-300 hover:bg-violet-50/80 hover:text-violet-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200 sm:w-auto"
+                className="inline-flex w-full items-center justify-center rounded-full border border-violet-200/80 bg-white/92 px-4 py-2 text-sm font-medium text-stone-700 shadow-[0_12px_26px_rgba(124,58,237,0.08)] transition-all duration-200 hover:-translate-y-0.5 hover:border-violet-300 hover:bg-violet-50/80 hover:text-violet-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200 sm:w-auto dark:border-violet-300/16 dark:bg-white/8 dark:text-violet-50 dark:hover:bg-white/12"
               >
                 Partager le profil
               </button>
@@ -544,38 +555,86 @@ function ProfilePage() {
         </div>
       ) : null}
 
-      <section className="rounded-[30px] border border-white/80 bg-white/90 p-5 shadow-[0_20px_48px_rgba(124,58,237,0.08)]">
-        <h3 className="text-center text-lg font-semibold text-violet-800 sm:text-xl">
-          Publications recentes
-        </h3>
-
-        <div className="mt-5 space-y-4">
-          {recentPublications.length === 0 ? (
-            <div className="rounded-[24px] border border-dashed border-violet-200 bg-white/84 px-5 py-10 text-center text-sm text-stone-500">
-              Aucune publication recente pour le moment.
-            </div>
-          ) : null}
-
-          {recentPublications.length > 0 && visibleRecentPublications.length === 0 ? (
-            <div className="rounded-[24px] border border-dashed border-violet-200 bg-white/84 px-5 py-10 text-center text-sm text-stone-500">
-              Aucune publication ne correspond a votre recherche.
-            </div>
-          ) : null}
-
-          {visibleRecentPublications.map((post) => (
-            <PostCard
-              key={post.id}
-              post={post}
-              onCreateComment={handleCreateComment}
-              onReactToComment={handleReactToComment}
-              onToggleLike={handleToggleLike}
-              onUpdatePost={handleUpdatePost}
-              onDeletePost={handleDeletePost}
-              isLikePending={likePendingIds.includes(post.id)}
-              currentUserId={user?.id}
-            />
+      <section className="rounded-[30px] border border-white/80 bg-white/90 p-5 shadow-[0_20px_48px_rgba(124,58,237,0.08)] dark:border-violet-300/12 dark:bg-white/8">
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {PROFILE_TABS.map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveTab(tab.key)}
+              className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition ${
+                activeTab === tab.key
+                  ? 'bg-violet-600 text-white'
+                  : 'text-stone-600 hover:bg-violet-50 dark:text-violet-100/70 dark:hover:bg-white/10'
+              }`}
+            >
+              {tab.label}
+            </button>
           ))}
         </div>
+
+        {activeTab === 'posts' ? (
+          <div className="mt-5 space-y-4">
+            {recentPublications.length === 0 ? (
+              <EmptyProfileState>Aucune publication pour le moment.</EmptyProfileState>
+            ) : null}
+
+            {recentPublications.length > 0 && visibleRecentPublications.length === 0 ? (
+              <EmptyProfileState>Aucune publication ne correspond a votre recherche.</EmptyProfileState>
+            ) : null}
+
+            {visibleRecentPublications.map((post) => (
+              <PostCard
+                key={post.id}
+                post={post}
+                onCreateComment={handleCreateComment}
+                onReactToComment={handleReactToComment}
+                onToggleLike={handleToggleLike}
+                onUpdatePost={handleUpdatePost}
+                onDeletePost={handleDeletePost}
+                isLikePending={likePendingIds.includes(post.id)}
+                currentUserId={user?.id}
+              />
+            ))}
+          </div>
+        ) : null}
+
+        {activeTab === 'about' ? (
+          <div className="mt-5 grid gap-4 lg:grid-cols-2">
+            <ProfileInfo label="Nom" value={profile?.name ?? user?.name ?? 'Utilisateur'} />
+            <ProfileInfo label="Ville" value={profileLocation || 'Non renseignee'} />
+            <ProfileInfo label="Pays" value={profile?.country || user?.country || 'Non renseigne'} />
+            <ProfileInfo label="Membre depuis" value={formatProfileDate(profile?.createdAt)} />
+            <div className="rounded-[24px] border border-violet-100 bg-white/78 p-4 lg:col-span-2 dark:border-violet-300/12 dark:bg-white/8">
+              <p className="text-xs uppercase tracking-[0.16em] text-stone-500 dark:text-violet-100/52">Bio</p>
+              <p className="mt-2 text-sm leading-7 text-stone-700 dark:text-violet-100/76">
+                {profile?.bio || 'Ce membre partage son univers animalier sur YaZoo.'}
+              </p>
+            </div>
+          </div>
+        ) : null}
+
+        {activeTab === 'media' ? (
+          <div className="mt-5">
+            {mediaPublications.length === 0 ? (
+              <EmptyProfileState>Aucune photo ou video publiee pour le moment.</EmptyProfileState>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {mediaPublications.map((post) => (
+                  <ProfileMediaPreview key={post.id} post={post} />
+                ))}
+              </div>
+            )}
+          </div>
+        ) : null}
+
+        {activeTab === 'communities' ? (
+          <div className="mt-5">
+            <EmptyProfileState>
+              Les communautes liees a ce profil seront affichees ici lorsqu elles seront disponibles.
+            </EmptyProfileState>
+          </div>
+        ) : null}
       </section>
 
       {isOwnProfile && isEditOpen ? (
@@ -737,7 +796,7 @@ function ProfilePage() {
 function Field({ label, inputRef = null, readOnly = false, ...props }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-sm font-medium text-stone-700">
+      <span className="mb-2 block text-sm font-medium text-stone-700 dark:text-violet-100">
         {label}
       </span>
       <input
@@ -745,8 +804,8 @@ function Field({ label, inputRef = null, readOnly = false, ...props }) {
         readOnly={readOnly}
         className={`w-full rounded-2xl border px-4 py-3 text-sm outline-none transition ${
           readOnly
-            ? 'border-stone-200 bg-stone-100 text-stone-500'
-            : 'border-violet-100 bg-violet-50/50 text-stone-700 focus:border-violet-400 focus:bg-white'
+            ? 'border-stone-200 bg-stone-100 text-stone-500 dark:border-violet-300/12 dark:bg-white/8 dark:text-violet-100/62'
+            : 'border-violet-100 bg-violet-50/50 text-stone-700 focus:border-violet-400 focus:bg-white dark:border-violet-300/18 dark:bg-[#12051f] dark:text-violet-50 dark:placeholder:text-violet-200/45 dark:focus:bg-[#160827]'
         }`}
         {...props}
       />
@@ -754,11 +813,62 @@ function Field({ label, inputRef = null, readOnly = false, ...props }) {
   )
 }
 
+function EmptyProfileState({ children }) {
+  return (
+    <div className="rounded-[24px] border border-dashed border-violet-200 bg-white/84 px-5 py-10 text-center text-sm text-stone-500 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-100/70">
+      {children}
+    </div>
+  )
+}
+
+function ProfileInfo({ label, value }) {
+  return (
+    <div className="rounded-[24px] border border-violet-100 bg-white/78 p-4 dark:border-violet-300/12 dark:bg-white/8">
+      <p className="text-xs uppercase tracking-[0.16em] text-stone-500 dark:text-violet-100/52">
+        {label}
+      </p>
+      <p className="mt-1 font-semibold text-stone-950 dark:text-violet-50">
+        {value}
+      </p>
+    </div>
+  )
+}
+
+function ProfileMediaPreview({ post }) {
+  const mediaUrl = post.mediaUrl ?? post.imageUrl
+  const isVideo = post.mediaKind === 'video'
+
+  return (
+    <article className="overflow-hidden rounded-[24px] border border-violet-100 bg-white/78 dark:border-violet-300/12 dark:bg-white/8">
+      {isVideo ? (
+        <video src={mediaUrl} controls className="h-64 w-full object-cover sm:h-80" />
+      ) : (
+        <img src={mediaUrl} alt={post.content || 'Media du profil'} className="h-64 w-full object-cover sm:h-80" />
+      )}
+      <p className="line-clamp-2 px-4 py-3 text-sm text-stone-600 dark:text-violet-100/72">
+        {post.content || 'Publication YaZoo'}
+      </p>
+    </article>
+  )
+}
+
+function formatProfileDate(value) {
+  if (!value) {
+    return 'Non renseignee'
+  }
+
+  return new Intl.DateTimeFormat('fr-FR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  }).format(new Date(value))
+}
+
 function StatCard({ label, value }) {
   return (
-    <div className="rounded-[24px] bg-[linear-gradient(135deg,_rgba(244,237,255,0.96),_rgba(237,233,254,0.72))] px-4 py-4 text-center">
-      <p className="text-xs uppercase tracking-[0.18em] text-stone-600">{label}</p>
-      <p className="mt-1 text-sm font-semibold text-stone-900">
+    <div className="rounded-[24px] bg-[linear-gradient(135deg,_rgba(244,237,255,0.96),_rgba(237,233,254,0.72))] px-4 py-4 text-center dark:bg-[linear-gradient(135deg,_rgba(124,58,237,0.18),_rgba(24,6,44,0.92))]">
+      <p className="text-xs uppercase tracking-[0.18em] text-stone-600 dark:text-violet-100/70">{label}</p>
+      <p className="mt-1 text-sm font-semibold text-stone-900 dark:text-violet-50">
         {value}
       </p>
     </div>

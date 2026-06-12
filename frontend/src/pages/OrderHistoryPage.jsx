@@ -80,12 +80,11 @@ function OrderHistoryPage() {
               Historique
             </p>
             <h2 className="mt-4 text-2xl font-semibold leading-tight text-stone-950 sm:text-3xl">
-              Retrouvez vos commandes archivees dans une lecture plus elegante et plus rassurante.
+              Retrouvez vos commandes archivees et consultez chaque detail important.
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-600">
               Chaque achat et chaque vente garde ses informations essentielles,
-              mais dans une presentation plus premium, plus calme et plus facile
-              a parcourir sur mobile comme sur desktop.
+              avec les factures et les liens utiles faciles a retrouver.
             </p>
           </div>
 

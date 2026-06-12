@@ -10,3 +10,13 @@ export const logoutRequest = () => api.post('/auth/logout')
 export const meRequest = () => api.get('/auth/me')
 
 export const getGoogleAuthUrl = () => `${getBackendBaseUrl()}/api/auth/google`
+
+export const isGoogleAuthEnabled = () => {
+  const rawValue = import.meta.env.VITE_GOOGLE_AUTH_ENABLED
+
+  if (rawValue === undefined) {
+    return true
+  }
+
+  return !['0', 'false', 'off', 'no'].includes(String(rawValue).toLowerCase())
+}

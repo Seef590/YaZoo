@@ -156,9 +156,8 @@ function AdminModerationPage() {
               Pilotez la qualite de YaZoo dans un espace admin plus net, plus rapide et plus rassurant.
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-600">
-              Les indicateurs cles, les onglets de moderation et les cartes de
-              contenu restent immediatement lisibles, avec un rendu plus premium
-              et plus coherent avec le reste de la plateforme.
+              Les indicateurs cles, les onglets de moderation et les contenus
+              a verifier restent regroupes pour prendre les bonnes decisions rapidement.
             </p>
           </div>
 

@@ -335,8 +335,7 @@ function CommunitiesPage() {
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-600">
               Creez un groupe public ou prive, centralisez les demandes d acces
-              et offrez une premiere impression plus chaleureuse, plus nette et
-              plus rassurante.
+              et donnez aux membres un espace clair pour echanger.
             </p>
           </div>
 
