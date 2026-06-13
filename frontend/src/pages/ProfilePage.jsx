@@ -471,7 +471,7 @@ function ProfilePage() {
               className="absolute inset-0 h-full w-full object-cover"
             />
           ) : null}
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.22),_transparent_28%)]" />
+          <div className="absolute inset-0 bg-white/5 dark:bg-black/10" />
           <div className="absolute bottom-5 right-5 z-10 rounded-full bg-white/18 px-4 py-2 text-xs font-medium uppercase tracking-[0.18em] text-white backdrop-blur">
             Profil YaZoo
           </div>

@@ -222,7 +222,7 @@ function CommunityDetailPage() {
 
   const coverStyle = community.imageUrl && !isVideoMedia(community.imageUrl)
     ? {
-        backgroundImage: `linear-gradient(rgba(10,8,18,0.3),rgba(10,8,18,0.36)), url(${community.imageUrl})`,
+        backgroundImage: `linear-gradient(rgba(10,8,18,0.12),rgba(10,8,18,0.18)), url(${community.imageUrl})`,
       }
     : undefined
   const safePosts = asArray(posts)
@@ -237,7 +237,7 @@ function CommunityDetailPage() {
           className="relative h-56 bg-[linear-gradient(135deg,#4c1d95,#7c3aed,#c4b5fd)] bg-cover bg-center sm:h-72 lg:h-96"
           style={coverStyle}
         >
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.24),_transparent_28%)]" />
+          <div className="absolute inset-0 bg-white/5 dark:bg-black/10" />
           <div className="absolute bottom-5 left-5 right-5 flex flex-wrap items-end justify-between gap-4">
             <div>
               <span className="rounded-full bg-stone-950/58 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-white backdrop-blur">
