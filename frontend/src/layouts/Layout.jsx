@@ -192,7 +192,11 @@ function Layout() {
           </form>
 
           <div className="mt-3 flex flex-wrap items-center gap-2 sm:hidden">
-            <InlinePill tone={realtimeIndicator.tone}>{realtimeIndicator.shortLabel}</InlinePill>
+            {realtimeIndicator.shortLabel ? (
+              <InlinePill tone={realtimeIndicator.tone}>
+                {realtimeIndicator.shortLabel}
+              </InlinePill>
+            ) : null}
             <InlinePill>
               {unreadCount} notification{unreadCount > 1 ? 's' : ''}
             </InlinePill>
@@ -308,7 +312,7 @@ function MobileMenuDrawer({
         aria-modal="true"
         aria-label="Menu principal"
         className={`absolute right-0 top-0 h-full w-[86%] max-w-sm overflow-y-auto border-l border-white/55 bg-[linear-gradient(180deg,_rgba(255,255,255,0.9),_rgba(246,239,255,0.95))] p-4 shadow-[0_30px_70px_rgba(124,58,237,0.2)] backdrop-blur-2xl transition-transform duration-300 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
-      >
+          >
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <Avatar
@@ -601,7 +605,7 @@ function getRealtimeIndicator(realtimeStatus, isRealtimeEnabled) {
   if (!isRealtimeEnabled) {
     return {
       label: 'Sync 30s',
-      shortLabel: 'Sync 30s',
+      shortLabel: '',
       tone: 'stone',
     }
   }
@@ -624,7 +628,7 @@ function getRealtimeIndicator(realtimeStatus, isRealtimeEnabled) {
 
   return {
     label: 'Sync secours',
-    shortLabel: 'Secours',
+    shortLabel: '',
     tone: 'stone',
   }
 }
