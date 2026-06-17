@@ -268,3 +268,24 @@ Statut avant deploiement :
 - Branche locale : `safe-ui-audit-fixes`.
 - Les ressources Azure existantes restent ciblees : `yazoo` et `yazoo-api`.
 - Images DockerHub ciblees : `5eef/yazoo-frontend:latest` et `5eef/yazoo-api:latest`.
+
+## 10. Deploiement final - 2026-06-17
+
+GitHub :
+- Commit pousse sur `origin/safe-ui-audit-fixes` : `7fe04f5`.
+- Les dossiers non lies `docs/rapport_yazoo_uml/`, `docs/soutenance/`, `scripts/build_rapport_yazoo_uml.py`, `scripts/build_yazoo_soutenance_pptx.py` restent non suivis et non deployes.
+
+DockerHub :
+- `5eef/yazoo-api:latest` pousse avec digest `sha256:84b7f3565e1fd86eed98cb305e2cf8690246499908ad3c58309a015792d2c3e8`.
+- `5eef/yazoo-frontend:latest` pousse avec digest `sha256:7d7dbc12a7bc5e5504570c20bed1c2b729d3981c6650716de3b96c4255151670`.
+
+Azure :
+- App Service backend existant `yazoo-api` mis a jour vers `5eef/yazoo-api:latest`, aucune nouvelle ressource creee.
+- App Service frontend existant `yazoo` mis a jour vers `5eef/yazoo-frontend:latest`, aucune nouvelle ressource creee.
+- Redemarrage effectue pour `yazoo-api` et `yazoo`.
+
+Verifications publiques apres deploiement :
+- `https://yazoo.azurewebsites.net/` : HTTP 200.
+- `https://yazoo.azurewebsites.net/contact` : HTTP 200.
+- `https://yazoo.azurewebsites.net/LICENSE.txt` : HTTP 200, licence MIT exposee.
+- `https://yazoo-api.azurewebsites.net/health/ready` : HTTP 200.
