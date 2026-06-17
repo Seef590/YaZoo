@@ -1,10 +1,17 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/laravel",
+    "name": "youssef-bough/yazoo",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "description": "YaZoo social platform and animal marketplace.",
+    "keywords": ["yazoo", "marketplace", "social", "animals", "laravel"],
     "license": "MIT",
+    "authors": [
+        {
+            "name": "Youssef BOUGHIOUL",
+            "email": "bough.youssef@gmail.com",
+            "role": "Owner"
+        }
+    ],
     "require": {
         "php": "^8.2",
         "laravel/framework": "^12.0",

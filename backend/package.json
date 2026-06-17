@@ -1,5 +1,8 @@
 {
+    "name": "yazoo-backend-assets",
     "private": true,
+    "license": "MIT",
+    "author": "Youssef BOUGHIOUL",
     "type": "module",
     "scripts": {
         "build": "vite build",

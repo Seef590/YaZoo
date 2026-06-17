@@ -34,8 +34,15 @@ RUN npm run build
 
 FROM nginx:1.27-alpine
 
+LABEL org.opencontainers.image.title="YaZoo Frontend" \
+      org.opencontainers.image.description="YaZoo social platform and animal marketplace frontend." \
+      org.opencontainers.image.authors="Youssef BOUGHIOUL <bough.youssef@gmail.com>" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.vendor="Youssef BOUGHIOUL"
+
 COPY infra/nginx/frontend.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/frontend/dist /usr/share/nginx/html
+COPY LICENSE /usr/share/nginx/html/LICENSE.txt
 
 EXPOSE 80
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \

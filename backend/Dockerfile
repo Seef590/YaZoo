@@ -17,6 +17,12 @@ RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --no-
 
 FROM php:8.4-fpm-alpine AS production
 
+LABEL org.opencontainers.image.title="YaZoo API" \
+      org.opencontainers.image.description="YaZoo social platform and animal marketplace backend." \
+      org.opencontainers.image.authors="Youssef BOUGHIOUL <bough.youssef@gmail.com>" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.vendor="Youssef BOUGHIOUL"
+
 WORKDIR /var/www/html
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
@@ -46,6 +52,7 @@ RUN set -eux; \
 
 COPY --from=vendor /app/vendor ./vendor
 COPY backend/ ./
+COPY LICENSE /licenses/YaZoo-LICENSE
 
 RUN set -eux; \
     composer dump-autoload --optimize; \

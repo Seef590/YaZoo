@@ -2,6 +2,9 @@
 
 Projet local: `C:\Users\seef7\OneDrive\Desktop\YaZoo`
 
+Copyright (c) 2026 Youssef BOUGHIOUL. YaZoo est distribue sous licence MIT.
+Voir le fichier `LICENSE` pour les conditions completes.
+
 ## Prerequis
 
 - PHP 8.2+ et Composer
