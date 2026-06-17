@@ -362,3 +362,43 @@ Problemes restants / limites de cette session :
 Nettoyage realise pendant cette session :
 - `frontend/dist` supprime apres le build de verification.
 - `frontend/coverage` supprime si present.
+
+## 12. Deploiement GitHub DockerHub Azure - 2026-06-17
+
+GitHub :
+- Commit cree : `ddef4fd` avec le message `Fix messaging Arabic RTL search feed follow UI and deployment`.
+- Push effectue sur `origin/main` : `6ffabbf..ddef4fd`.
+- Push effectue aussi sur `origin/safe-ui-audit-fixes` : `6ffabbf..ddef4fd`.
+- Les dossiers non suivis `docs/rapport_yazoo_uml/`, `docs/soutenance/`, `scripts/build_rapport_yazoo_uml.py`, `scripts/build_yazoo_soutenance_pptx.py` restent hors commit/deploiement.
+
+Docker local :
+- `docker version` : OK, Docker Desktop disponible.
+- `docker compose config` : OK.
+- `docker compose build` : OK pour backend, queue et frontend.
+
+DockerHub :
+- Backend construit et pousse via le script existant :
+  - image : `5eef/yazoo-api:latest`
+  - digest : `sha256:3e53915d61f7bc9e7ee0c20af09104a879c10aea685d637543f7995c34432a2d`
+- Frontend construit et pousse via le script existant :
+  - image : `5eef/yazoo-frontend:latest`
+  - digest : `sha256:20fe4cbd7741d509b97901a49122e6d96e800fd769fef7b02bcd07d240a722ca`
+
+Azure :
+- Ressources existantes utilisees uniquement :
+  - Resource group : `yazoo-rg`
+  - Backend App Service : `yazoo-api`
+  - Frontend App Service : `yazoo`
+- Aucune nouvelle ressource Azure creee.
+- Backend mis a jour vers `DOCKER|5eef/yazoo-api:latest`.
+- Frontend mis a jour vers `DOCKER|5eef/yazoo-frontend:latest`.
+- Redemarrage effectue pour `yazoo-api` et `yazoo`.
+- Verification Azure CLI :
+  - `yazoo-api` : `Running`, host `yazoo-api.azurewebsites.net`, image `DOCKER|5eef/yazoo-api:latest`.
+  - `yazoo` : `Running`, host `yazoo.azurewebsites.net`, image `DOCKER|5eef/yazoo-frontend:latest`.
+
+Validation publique :
+- `curl.exe -I https://yazoo-api.azurewebsites.net/health/ready` : bloque localement avec `Could not connect to server`.
+- `curl.exe -I https://yazoo.azurewebsites.net/` : bloque localement avec `Could not connect to server`.
+- `curl.exe -I https://www.microsoft.com` echoue aussi depuis la meme session, ce qui indique une limite reseau locale pour les checks HTTP sortants.
+- Les checks finaux accessibles depuis cette session sont donc : configuration Azure CLI, etat App Service `Running`, images Docker correctes, push DockerHub reussi.
