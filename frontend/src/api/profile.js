@@ -2,6 +2,10 @@ import api from './client'
 
 export const getProfileRequest = (userId) => api.get(`/users/${userId}`)
 
+export const followUserRequest = (userId) => api.post(`/users/${userId}/follow`)
+
+export const unfollowUserRequest = (userId) => api.delete(`/users/${userId}/follow`)
+
 export const updateProfileRequest = (userId, payload) => {
   const hasFiles = Boolean(payload.avatar_file || payload.cover_photo_file)
 

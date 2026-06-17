@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Animal;
 use App\Models\Product;
 use App\Models\Reservation;
+use App\Models\ServiceListing;
 use App\Models\User;
 use App\Notifications\ReservationApprovedNotification;
 use App\Notifications\ReservationCancelledNotification;
@@ -14,12 +15,14 @@ use App\Notifications\ReservationRejectedNotification;
 use App\Notifications\ReservationRequestedNotification;
 use App\Repositories\ReservationRepository;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
 class ReservationService
 {
     public function __construct(
         protected ReservationRepository $reservations,
+        protected ActivityLogger $activityLogger,
     ) {}
 
     /**
@@ -66,6 +69,7 @@ class ReservationService
                 ->findOrFail($animal->id);
 
             abort_if($lockedAnimal->listing_status !== 'available', 422, "Cette annonce animal n'est plus reservable.");
+            abort_if((int) $lockedAnimal->user_id === (int) $buyer->id, 403, 'Vous ne pouvez pas reserver votre propre annonce animal.');
             abort_if(
                 $lockedAnimal->reservations()->whereIn('reservation_status', $this->activeStatuses())->exists(),
                 422,
@@ -77,9 +81,13 @@ class ReservationService
                 'seller_id' => $lockedAnimal->user_id,
                 'reservable_type' => Animal::class,
                 'reservable_id' => $lockedAnimal->id,
+                'category' => 'animal',
                 'quantity' => 1,
+                'scheduled_at' => $validated['scheduled_at'] ?? null,
+                'scheduled_end_at' => $validated['scheduled_end_at'] ?? null,
                 'delivery_method' => $validated['delivery_method'],
-                'note' => $validated['note'] ?? null,
+                'note' => $validated['note'] ?? $validated['message'] ?? null,
+                'contact_phone' => $validated['contact_phone'] ?? $validated['delivery_phone'] ?? null,
                 'payment_method' => $validated['payment_method'],
                 'reservation_status' => 'pending',
                 'payment_status' => 'pending',
@@ -103,6 +111,7 @@ class ReservationService
 
         $reservation = $this->reservations->loadForResponse($reservation);
         $reservation->seller?->notify(new ReservationRequestedNotification($reservation));
+        $this->logReservationAction('reservation.created', $reservation, $buyer);
 
         return $reservation;
     }
@@ -118,6 +127,7 @@ class ReservationService
                 ->findOrFail($product->id);
 
             abort_if($lockedProduct->listing_status === 'sold' || $lockedProduct->stock <= 0, 422, "Ce produit n'est plus reservable.");
+            abort_if((int) $lockedProduct->user_id === (int) $buyer->id, 403, 'Vous ne pouvez pas reserver votre propre produit.');
 
             $quantity = (int) ($validated['quantity'] ?? 1);
             $availableQuantity = $this->availableProductQuantity($lockedProduct);
@@ -129,9 +139,13 @@ class ReservationService
                 'seller_id' => $lockedProduct->user_id,
                 'reservable_type' => Product::class,
                 'reservable_id' => $lockedProduct->id,
+                'category' => 'product',
                 'quantity' => $quantity,
+                'scheduled_at' => $validated['scheduled_at'] ?? null,
+                'scheduled_end_at' => $validated['scheduled_end_at'] ?? null,
                 'delivery_method' => $validated['delivery_method'],
-                'note' => $validated['note'] ?? null,
+                'note' => $validated['note'] ?? $validated['message'] ?? null,
+                'contact_phone' => $validated['contact_phone'] ?? $validated['delivery_phone'] ?? null,
                 'payment_method' => $validated['payment_method'],
                 'reservation_status' => 'pending',
                 'payment_status' => 'pending',
@@ -153,6 +167,76 @@ class ReservationService
 
         $reservation = $this->reservations->loadForResponse($reservation);
         $reservation->seller?->notify(new ReservationRequestedNotification($reservation));
+        $this->logReservationAction('reservation.created', $reservation, $buyer);
+
+        return $reservation;
+    }
+
+    /**
+     * @param  array<string, mixed>  $validated
+     */
+    public function createUnified(User $buyer, array $validated): Reservation
+    {
+        $category = (string) $validated['category'];
+        $reservableId = (int) $validated['reservable_id'];
+
+        return match ($category) {
+            'animal' => $this->createAnimal($buyer, Animal::query()->findOrFail($reservableId), $validated),
+            'product' => $this->createProduct($buyer, Product::query()->findOrFail($reservableId), $validated),
+            'pet_sitting', 'training' => $this->createService($buyer, $category, $reservableId, $validated),
+            default => abort(422, 'Categorie de reservation invalide.'),
+        };
+    }
+
+    /**
+     * @param  array<string, mixed>  $validated
+     */
+    public function createService(User $buyer, string $category, int $serviceId, array $validated): Reservation
+    {
+        $reservation = DB::transaction(function () use ($buyer, $category, $serviceId, $validated): Reservation {
+            $serviceType = $category === 'pet_sitting' ? 'pet_sitting' : 'training';
+            $service = ServiceListing::query()
+                ->lockForUpdate()
+                ->findOrFail($serviceId);
+
+            abort_if($service->type !== $serviceType, 422, 'Le type du service ne correspond pas a la categorie demandee.');
+            abort_if($service->status !== 'active', 422, "Ce service n'est pas reservable.");
+            abort_if((int) $service->user_id === (int) $buyer->id, 403, 'Vous ne pouvez pas reserver votre propre service.');
+
+            $reservation = Reservation::create([
+                'buyer_id' => $buyer->id,
+                'seller_id' => $service->user_id,
+                'reservable_type' => ServiceListing::class,
+                'reservable_id' => $service->id,
+                'category' => $category,
+                'quantity' => 1,
+                'scheduled_at' => $validated['scheduled_at'] ?? null,
+                'scheduled_end_at' => $validated['scheduled_end_at'] ?? null,
+                'delivery_method' => 'pickup',
+                'note' => $validated['note'] ?? $validated['message'] ?? null,
+                'contact_phone' => $validated['contact_phone'] ?? null,
+                'payment_method' => $validated['payment_method'] ?? 'cash_on_pickup',
+                'reservation_status' => 'pending',
+                'payment_status' => 'pending',
+                'delivery_status' => 'pending',
+                'delivery_contact_name' => $validated['delivery_contact_name'] ?? null,
+                'delivery_phone' => $validated['delivery_phone'] ?? $validated['contact_phone'] ?? null,
+                'delivery_city' => $validated['delivery_city'] ?? null,
+                'delivery_address' => $validated['delivery_address'] ?? null,
+                'delivery_notes' => $validated['delivery_notes'] ?? null,
+                'unit_price' => $service->price ?? 0,
+                'total_price' => $service->price ?? 0,
+                'delivery_fee' => 0,
+            ]);
+
+            $service->increment('reservations_count');
+
+            return $reservation;
+        });
+
+        $reservation = $this->reservations->loadForResponse($reservation);
+        $reservation->seller?->notify(new ReservationRequestedNotification($reservation));
+        $this->logReservationAction('reservation.created', $reservation, $buyer);
 
         return $reservation;
     }
@@ -177,6 +261,7 @@ class ReservationService
 
         $reservation = $this->reservations->loadForResponse($reservation);
         $reservation->buyer?->notify(new ReservationApprovedNotification($reservation));
+        $this->logReservationAction('reservation.approved', $reservation, $reservation->seller);
 
         return $reservation;
     }
@@ -216,6 +301,7 @@ class ReservationService
             $lockedReservation->update([
                 'reservation_status' => 'rejected',
                 'payment_status' => 'cancelled',
+                'rejected_at' => CarbonImmutable::now(),
             ]);
 
             $this->lockReservableForUpdate($lockedReservation);
@@ -226,6 +312,7 @@ class ReservationService
 
         $reservation = $this->reservations->loadForResponse($reservation);
         $reservation->buyer?->notify(new ReservationRejectedNotification($reservation));
+        $this->logReservationAction('reservation.rejected', $reservation, $reservation->seller);
 
         return $reservation;
     }
@@ -260,6 +347,7 @@ class ReservationService
 
         $reservation = $this->reservations->loadForResponse($reservation);
         $reservation->seller?->notify(new ReservationCancelledNotification($reservation));
+        $this->logReservationAction('reservation.cancelled', $reservation, $reservation->buyer);
 
         return $reservation;
     }
@@ -270,7 +358,11 @@ class ReservationService
             $lockedReservation = $this->reservations->lockForUpdate($reservation);
 
             abort_if($lockedReservation->reservation_status !== 'approved', 422, 'Seules les reservations approuvees peuvent etre finalisees.');
-            abort_if(! $this->isDeliveryAtCompletionStep($lockedReservation), 422, 'La livraison doit etre terminee avant de finaliser la commande.');
+            abort_if(
+                ! $this->isServiceReservation($lockedReservation) && ! $this->isDeliveryAtCompletionStep($lockedReservation),
+                422,
+                'La livraison doit etre terminee avant de finaliser la commande.',
+            );
 
             $lockedReservation->update([
                 'reservation_status' => 'completed',
@@ -301,6 +393,7 @@ class ReservationService
 
         $reservation = $this->reservations->loadForResponse($reservation);
         $reservation->buyer?->notify(new ReservationCompletedNotification($reservation));
+        $this->logReservationAction('reservation.completed', $reservation, $reservation->seller);
 
         return $reservation;
     }
@@ -369,7 +462,7 @@ class ReservationService
         }
     }
 
-    protected function lockReservableForUpdate(Reservation $reservation): Animal|Product|null
+    protected function lockReservableForUpdate(Reservation $reservation): Animal|Product|ServiceListing|null
     {
         $reservable = $reservation->reservable;
 
@@ -393,7 +486,23 @@ class ReservationService
             return $lockedProduct;
         }
 
+        if ($reservable instanceof ServiceListing) {
+            $lockedService = ServiceListing::query()
+                ->lockForUpdate()
+                ->findOrFail($reservable->id);
+
+            $reservation->setRelation('reservable', $lockedService);
+
+            return $lockedService;
+        }
+
         return null;
+    }
+
+    protected function isServiceReservation(Reservation $reservation): bool
+    {
+        return in_array($reservation->category, ['pet_sitting', 'training'], true)
+            || $reservation->reservable_type === ServiceListing::class;
     }
 
     protected function canTransitionDeliveryStatus(Reservation $reservation, string $nextStatus): bool
@@ -422,5 +531,31 @@ class ReservationService
     protected function generateInvoiceNumber(Reservation $reservation): string
     {
         return sprintf('YAZ-%s-%05d', now()->format('Ymd'), $reservation->id);
+    }
+
+    protected function logReservationAction(string $action, Reservation $reservation, ?User $actor): void
+    {
+        $this->activityLogger->log(
+            $action,
+            'reservation',
+            $reservation,
+            [
+                'category' => $reservation->category ?? $this->categoryForReservable($reservation->reservable),
+                'status' => $reservation->reservation_status,
+                'description' => $action,
+            ],
+            $actor,
+            $reservation->buyer,
+        );
+    }
+
+    protected function categoryForReservable(?Model $reservable): string
+    {
+        return match (true) {
+            $reservable instanceof Animal => 'animal',
+            $reservable instanceof Product => 'product',
+            $reservable instanceof ServiceListing => $reservable->type,
+            default => 'listing',
+        };
     }
 }

@@ -24,6 +24,7 @@ const ProductsMarketplacePage = lazy(() => import('./pages/ProductsMarketplacePa
 const ProfilePage = lazy(() => import('./pages/ProfilePage'))
 const RegisterPage = lazy(() => import('./pages/RegisterPage'))
 const ReservationsPage = lazy(() => import('./pages/ReservationsPage'))
+const ServicesMarketplacePage = lazy(() => import('./pages/ServicesMarketplacePage'))
 const SettingsPage = lazy(() => import('./pages/SettingsPage'))
 
 function App() {
@@ -56,6 +57,10 @@ function App() {
           <Route
             path="/marketplace/products/:productId"
             element={<ProductDetailPage />}
+          />
+          <Route
+            path="/marketplace/services"
+            element={<ServicesMarketplacePage />}
           />
           <Route
             path="/marketplace/animals/:animalId"

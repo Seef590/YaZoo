@@ -5,6 +5,7 @@ namespace App\Policies;
 use App\Models\Animal;
 use App\Models\Product;
 use App\Models\Reservation;
+use App\Models\ServiceListing;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
 
@@ -47,7 +48,7 @@ class ReservationPolicy
      */
     public function approve(User $user, Reservation $reservation): bool
     {
-        return $user->id === $reservation->seller_id;
+        return $user->id === $reservation->seller_id || (bool) $user->is_admin;
     }
 
     /**
@@ -55,7 +56,7 @@ class ReservationPolicy
      */
     public function reject(User $user, Reservation $reservation): bool
     {
-        return $user->id === $reservation->seller_id;
+        return $user->id === $reservation->seller_id || (bool) $user->is_admin;
     }
 
     /**
@@ -63,7 +64,7 @@ class ReservationPolicy
      */
     public function updateDeliveryStatus(User $user, Reservation $reservation): bool
     {
-        return $user->id === $reservation->seller_id;
+        return $user->id === $reservation->seller_id || (bool) $user->is_admin;
     }
 
     /**
@@ -71,7 +72,7 @@ class ReservationPolicy
      */
     public function cancel(User $user, Reservation $reservation): bool
     {
-        return $user->id === $reservation->buyer_id;
+        return $user->id === $reservation->buyer_id || (bool) $user->is_admin;
     }
 
     /**
@@ -79,7 +80,12 @@ class ReservationPolicy
      */
     public function complete(User $user, Reservation $reservation): bool
     {
-        return $user->id === $reservation->seller_id;
+        return $user->id === $reservation->seller_id || (bool) $user->is_admin;
+    }
+
+    public function createService(User $user, ServiceListing $service): bool
+    {
+        return ! $user->is($service->user);
     }
 
     /**

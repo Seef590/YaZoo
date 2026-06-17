@@ -112,6 +112,7 @@ function Layout() {
     { to: '/feed', label: t('common.feed') },
     { to: '/profile', label: t('common.profile') },
     { to: '/marketplace', label: t('common.marketplace') },
+    { to: '/marketplace/services', label: t('common.assistance') },
     { to: '/communities', label: t('common.communities') },
     { to: '/messages', label: t('common.messages') },
     { to: '/reservations', label: t('common.reservations') },

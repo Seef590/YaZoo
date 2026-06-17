@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\CommunityController;
 use App\Http\Controllers\Api\ConversationController;
+use App\Http\Controllers\Api\HistoryController;
 use App\Http\Controllers\Api\MediaController;
 use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\MonitoringController;
@@ -17,6 +18,7 @@ use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ReservationController;
 use App\Http\Controllers\Api\ReservationReviewController;
+use App\Http\Controllers\Api\ServiceListingController;
 use App\Http\Controllers\Api\StoryController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Middleware\ForceJsonResponse;
@@ -74,12 +76,20 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
 
         Route::get('/users/{user}', [ProfileController::class, 'show']);
         Route::patch('/users/{user}', [ProfileController::class, 'update']);
+        Route::post('/users/{user}/follow', [ProfileController::class, 'follow']);
+        Route::delete('/users/{user}/follow', [ProfileController::class, 'unfollow']);
 
         Route::get('/animals', [AnimalController::class, 'index']);
         Route::get('/animals/{animal}', [AnimalController::class, 'show']);
 
         Route::get('/products', [ProductController::class, 'index']);
         Route::get('/products/{product}', [ProductController::class, 'show']);
+
+        Route::get('/services', [ServiceListingController::class, 'index']);
+        Route::get('/services/feed', [ServiceListingController::class, 'feed']);
+        Route::get('/my/services', [ServiceListingController::class, 'mine']);
+        Route::get('/services/types', [ServiceListingController::class, 'types']);
+        Route::get('/services/{service}', [ServiceListingController::class, 'show']);
 
         Route::middleware('throttle:marketplace-write')->group(function (): void {
             Route::post('/animals', [AnimalController::class, 'store']);
@@ -88,19 +98,31 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
             Route::post('/products', [ProductController::class, 'store']);
             Route::put('/products/{product}', [ProductController::class, 'update']);
             Route::delete('/products/{product}', [ProductController::class, 'destroy']);
+            Route::post('/services', [ServiceListingController::class, 'store']);
+            Route::put('/services/{service}', [ServiceListingController::class, 'update']);
+            Route::patch('/services/{service}', [ServiceListingController::class, 'update']);
+            Route::delete('/services/{service}', [ServiceListingController::class, 'destroy']);
         });
 
         Route::get('/reservations', [ReservationController::class, 'index']);
+        Route::get('/reservations/{reservation}', [ReservationController::class, 'show']);
         Route::get('/orders/history', [ReservationController::class, 'history']);
+        Route::get('/history', [HistoryController::class, 'index']);
+        Route::get('/history/me', [HistoryController::class, 'index']);
         Route::get('/reservations/{reservation}/invoice', [ReservationController::class, 'invoice']);
         Route::middleware('throttle:reservations-write')->group(function (): void {
+            Route::post('/reservations', [ReservationController::class, 'store']);
             Route::post('/animals/{animal}/reservations', [ReservationController::class, 'storeAnimal']);
             Route::post('/products/{product}/reservations', [ReservationController::class, 'storeProduct']);
             Route::post('/reservations/{reservation}/approve', [ReservationController::class, 'approve']);
+            Route::patch('/reservations/{reservation}/approve', [ReservationController::class, 'approve']);
             Route::post('/reservations/{reservation}/reject', [ReservationController::class, 'reject']);
+            Route::patch('/reservations/{reservation}/reject', [ReservationController::class, 'reject']);
             Route::patch('/reservations/{reservation}/delivery-status', [ReservationController::class, 'updateDeliveryStatus']);
             Route::post('/reservations/{reservation}/cancel', [ReservationController::class, 'cancel']);
+            Route::patch('/reservations/{reservation}/cancel', [ReservationController::class, 'cancel']);
             Route::post('/reservations/{reservation}/complete', [ReservationController::class, 'complete']);
+            Route::patch('/reservations/{reservation}/complete', [ReservationController::class, 'complete']);
             Route::post('/reservations/{reservation}/reviews', [ReservationReviewController::class, 'store']);
         });
 

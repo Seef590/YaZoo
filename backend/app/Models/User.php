@@ -139,6 +139,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the service listings created by the user.
+     */
+    public function serviceListings(): HasMany
+    {
+        return $this->hasMany(ServiceListing::class);
+    }
+
+    /**
      * Get the communities created by the user.
      */
     public function createdCommunities(): HasMany
@@ -184,6 +192,14 @@ class User extends Authenticatable
     public function reservationsAsSeller(): HasMany
     {
         return $this->hasMany(Reservation::class, 'seller_id');
+    }
+
+    /**
+     * Get activity log rows owned by the user.
+     */
+    public function activityLogs(): HasMany
+    {
+        return $this->hasMany(ActivityLog::class);
     }
 
     /**

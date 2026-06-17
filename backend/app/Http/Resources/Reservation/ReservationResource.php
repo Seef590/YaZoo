@@ -5,6 +5,7 @@ namespace App\Http\Resources\Reservation;
 use App\Models\Animal;
 use App\Models\Product;
 use App\Models\Reservation;
+use App\Models\ServiceListing;
 use App\Support\MarketplaceMedia;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -24,10 +25,13 @@ class ReservationResource extends JsonResource
         $viewerId = $request->user()?->id ?? 0;
         $isBuyer = $request->user()?->is($this->buyer) ?? false;
         $isSeller = $request->user()?->is($this->seller) ?? false;
+        $isAdmin = (bool) ($request->user()?->is_admin ?? false);
 
         return [
             'id' => $this->id,
             'kind' => $this->listingKind(),
+            'category' => $this->category ?? $this->listingKind(),
+            'status' => $this->reservation_status,
             'reservationStatus' => $this->reservation_status,
             'paymentStatus' => $this->payment_status,
             'paymentMethod' => $this->payment_method,
@@ -35,13 +39,19 @@ class ReservationResource extends JsonResource
             'deliveryStatus' => $this->delivery_status,
             'quantity' => $this->quantity,
             'note' => $this->note,
+            'message' => $this->note,
+            'contactPhone' => $this->contact_phone,
+            'scheduledAt' => $this->scheduled_at?->toISOString(),
+            'scheduledEndAt' => $this->scheduled_end_at?->toISOString(),
             'unitPrice' => $this->unit_price !== null ? (float) $this->unit_price : null,
             'totalPrice' => $this->total_price !== null ? (float) $this->total_price : null,
             'deliveryFee' => $this->delivery_fee !== null ? (float) $this->delivery_fee : null,
             'grandTotal' => $this->grandTotal(),
             'invoiceNumber' => $this->invoice_number,
             'createdAt' => $this->created_at?->toISOString(),
+            'acceptedAt' => $this->approved_at?->toISOString(),
             'approvedAt' => $this->approved_at?->toISOString(),
+            'rejectedAt' => $this->rejected_at?->toISOString(),
             'completedAt' => $this->completed_at?->toISOString(),
             'cancelledAt' => $this->cancelled_at?->toISOString(),
             'invoiceIssuedAt' => $this->invoice_issued_at?->toISOString(),
@@ -59,12 +69,26 @@ class ReservationResource extends JsonResource
                 'phone' => $this->seller?->phone,
                 'avatar' => $this->seller?->avatar,
             ],
+            'provider' => [
+                'id' => $this->seller?->id,
+                'name' => $this->seller?->name,
+                'email' => $this->seller?->publicEmail(),
+                'phone' => $this->seller?->phone,
+                'avatar' => $this->seller?->avatar,
+            ],
             'listing' => [
                 'id' => $this->reservable?->id,
                 'title' => $this->listingTitle(),
                 'imageUrl' => $this->listingImageUrl(),
-                'location' => $this->reservable?->location,
-                'listingStatus' => $this->reservable?->listing_status,
+                'location' => $this->reservable?->location ?? $this->reservable?->city,
+                'listingStatus' => $this->reservable?->listing_status ?? $this->reservable?->status,
+                'routePath' => $this->listingRoutePath(),
+            ],
+            'reservable' => [
+                'id' => $this->reservable?->id,
+                'type' => $this->reservable_type,
+                'title' => $this->listingTitle(),
+                'price' => $this->unit_price !== null ? (float) $this->unit_price : null,
                 'routePath' => $this->listingRoutePath(),
             ],
             'delivery' => [
@@ -81,10 +105,10 @@ class ReservationResource extends JsonResource
             ],
             'isBuyer' => $isBuyer,
             'isSeller' => $isSeller,
-            'canApprove' => $isSeller && $this->reservation_status === 'pending',
-            'canReject' => $isSeller && $this->reservation_status === 'pending',
-            'canCancel' => $isBuyer && $this->canBuyerCancel(),
-            'canComplete' => $isSeller && $this->canSellerComplete(),
+            'canApprove' => ($isSeller || $isAdmin) && $this->reservation_status === 'pending',
+            'canReject' => ($isSeller || $isAdmin) && $this->reservation_status === 'pending',
+            'canCancel' => ($isBuyer || $isAdmin) && $this->canBuyerCancel(),
+            'canComplete' => ($isSeller || $isAdmin) && $this->canSellerComplete(),
             'canMarkPreparing' => $isSeller && $this->delivery_method === 'delivery' && $this->reservation_status === 'approved' && $this->delivery_status === 'pending',
             'canMarkReadyForPickup' => $isSeller && $this->delivery_method === 'pickup' && $this->reservation_status === 'approved' && in_array($this->delivery_status, ['pending', 'preparing'], true),
             'canMarkShipped' => $isSeller && $this->delivery_method === 'delivery' && in_array($this->delivery_status, ['preparing'], true),
@@ -125,6 +149,10 @@ class ReservationResource extends JsonResource
     {
         if ($this->reservation_status !== 'approved') {
             return false;
+        }
+
+        if ($this->reservable instanceof ServiceListing || in_array($this->category, ['pet_sitting', 'training'], true)) {
+            return true;
         }
 
         if ($this->delivery_method === 'pickup') {
@@ -184,6 +212,7 @@ class ReservationResource extends JsonResource
         return match ($this->reservable_type) {
             Animal::class => 'animal',
             Product::class => 'product',
+            ServiceListing::class => $this->category ?: 'service',
             default => 'listing',
         };
     }
@@ -195,6 +224,10 @@ class ReservationResource extends JsonResource
     {
         if ($this->reservable instanceof Animal || $this->reservable instanceof Product) {
             return $this->reservable->name;
+        }
+
+        if ($this->reservable instanceof ServiceListing) {
+            return $this->reservable->title;
         }
 
         return 'Annonce';
@@ -213,6 +246,10 @@ class ReservationResource extends JsonResource
             return MarketplaceMedia::resolveUrl($this->reservable->image_url);
         }
 
+        if ($this->reservable instanceof ServiceListing) {
+            return $this->reservable->media[0] ?? null;
+        }
+
         return null;
     }
 
@@ -227,6 +264,10 @@ class ReservationResource extends JsonResource
 
         if ($this->reservable instanceof Product) {
             return '/marketplace/products/'.$this->reservable->id;
+        }
+
+        if ($this->reservable instanceof ServiceListing) {
+            return '/marketplace/services/'.$this->reservable->id;
         }
 
         return null;

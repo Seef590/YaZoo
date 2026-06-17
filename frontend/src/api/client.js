@@ -2,6 +2,7 @@ import axios from 'axios'
 
 import { getErrorMessage } from '../utils/getErrorMessage'
 import { getApiBaseUrl, getBackendBaseUrl } from '../lib/appConfig'
+import { getCurrentLocale } from '../lib/i18n'
 import { getCurrentSocketId } from '../lib/realtime'
 import { emitErrorToast } from '../lib/toastBus'
 
@@ -34,6 +35,16 @@ api.interceptors.request.use((config) => {
   }
 
   const socketId = getCurrentSocketId()
+  const locale = getCurrentLocale()
+
+  if (typeof config.headers?.set === 'function') {
+    config.headers.set('Accept-Language', locale)
+  } else {
+    config.headers = {
+      ...(config.headers ?? {}),
+      'Accept-Language': locale,
+    }
+  }
 
   if (socketId) {
     if (typeof config.headers?.set === 'function') {

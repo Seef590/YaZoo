@@ -9,7 +9,7 @@ import {
   toggleLikeRequest,
   updatePostRequest,
 } from '../api/posts'
-import { getProfileRequest, updateProfileRequest } from '../api/profile'
+import { followUserRequest, getProfileRequest, unfollowUserRequest, updateProfileRequest } from '../api/profile'
 import { createConversationRequest } from '../api/messages'
 import PostCard from '../components/feed/PostCard'
 import Avatar from '../components/ui/Avatar'
@@ -53,6 +53,7 @@ function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isMessageStarting, setIsMessageStarting] = useState(false)
+  const [isFollowProcessing, setIsFollowProcessing] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('posts')
   const editSectionRef = useRef(null)
@@ -345,6 +346,32 @@ function ProfilePage() {
     }
   }
 
+  const handleToggleFollow = async () => {
+    if (!profile?.id || isOwnProfile) {
+      return
+    }
+
+    setIsFollowProcessing(true)
+    setErrorMessage('')
+    setSuccessMessage('')
+
+    try {
+      const response = profile.isFollowing
+        ? await unfollowUserRequest(profile.id)
+        : await followUserRequest(profile.id)
+      const nextProfile = normalizeProfileMediaPayload(extractDataObject(response, profile))
+
+      setProfile(nextProfile)
+      setSuccessMessage(response.data.message)
+    } catch (error) {
+      setErrorMessage(
+        getErrorMessage(error, 'Impossible de mettre a jour cet abonnement.'),
+      )
+    } finally {
+      setIsFollowProcessing(false)
+    }
+  }
+
   const handleToggleLike = async (postId, reaction = 'like') => {
     let previousPost = null
 
@@ -517,7 +544,20 @@ function ProfilePage() {
                 >
                   {isEditOpen ? 'Fermer' : 'Modifier'}
                 </Button>
-              ) : (
+            ) : (
+              <>
+                <Button
+                  type="button"
+                  onClick={handleToggleFollow}
+                  disabled={isFollowProcessing}
+                  className="w-full sm:w-auto"
+                >
+                  {isFollowProcessing
+                    ? 'Mise a jour...'
+                    : profile?.isFollowing
+                      ? 'Ne plus suivre'
+                      : 'Suivre'}
+                </Button>
                 <Button
                   type="button"
                   onClick={handleStartConversation}
@@ -526,6 +566,7 @@ function ProfilePage() {
                 >
                   {isMessageStarting ? 'Ouverture...' : 'Envoyer un message'}
                 </Button>
+              </>
               )}
               <button
                 type="button"
@@ -702,14 +743,16 @@ function ProfilePage() {
                   <p className="text-sm font-medium text-stone-800">
                     Photo de couverture
                   </p>
-                  <div
-                    className="mt-4 h-40 rounded-[24px] bg-cover bg-center"
-                    style={{
-                      backgroundImage: coverPreview
-                        ? `url(${coverPreview})`
-                        : 'linear-gradient(135deg, #5b21b6 0%, #8b5cf6 45%, #ddd6fe 100%)',
-                    }}
-                  />
+                  <div className="relative mt-4 h-40 overflow-hidden rounded-[24px] bg-[linear-gradient(135deg,#5b21b6_0%,#8b5cf6_45%,#ddd6fe_100%)]">
+                    {coverPreview ? (
+                      <img
+                        src={coverPreview}
+                        alt="Apercu de la photo de couverture"
+                        className="absolute inset-0 h-full w-full object-cover"
+                      />
+                    ) : null}
+                    <div className="absolute inset-0 bg-white/5 dark:bg-black/5" />
+                  </div>
                   <div className="mt-4 flex flex-wrap gap-2">
                     <label className="inline-flex cursor-pointer items-center justify-center rounded-full border border-violet-100 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-violet-50">
                       Changer la couverture

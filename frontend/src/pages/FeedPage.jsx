@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import PropTypes from 'prop-types'
 
 import { getAnimalsRequest } from '../api/animals'
-import { getCommunitiesRequest } from '../api/communities'
+import { getCommunitiesRequest, joinCommunityRequest } from '../api/communities'
 import {
   createCommentRequest,
   createPostRequest,
@@ -15,7 +15,8 @@ import {
 } from '../api/posts'
 import { getProductsRequest } from '../api/products'
 import { getProfileRequest } from '../api/profile'
-import { getReservationsRequest } from '../api/reservations'
+import { createReservationRequest, getReservationsRequest } from '../api/reservations'
+import { getServiceSuggestionsRequest } from '../api/services'
 import {
   createStoryRequest,
   deleteStoryRequest,
@@ -44,6 +45,8 @@ function FeedPage() {
   const [profileSummary, setProfileSummary] = useState(null)
   const [marketplaceHighlights, setMarketplaceHighlights] = useState([])
   const [communityHighlights, setCommunityHighlights] = useState([])
+  const [serviceHighlights, setServiceHighlights] = useState([])
+  const [organicActionId, setOrganicActionId] = useState('')
   const [reservationSummary, setReservationSummary] = useState({
     buyer: 0,
     seller: 0,
@@ -85,12 +88,14 @@ function FeedPage() {
       profileResult,
       animalsResult,
       productsResult,
+      servicesResult,
       communitiesResult,
       reservationsResult,
     ] = await Promise.allSettled([
       getProfileRequest(user.id),
       getAnimalsRequest(),
       getProductsRequest(),
+      getServiceSuggestionsRequest(),
       getCommunitiesRequest(),
       getReservationsRequest(),
     ])
@@ -110,18 +115,22 @@ function FeedPage() {
     const communities = communitiesResult.status === 'fulfilled'
       ? extractDataArray(communitiesResult.value)
       : []
+    const services = servicesResult.status === 'fulfilled'
+      ? extractDataArray(servicesResult.value)
+      : []
     const reservations = reservationsResult.status === 'fulfilled'
       ? reservationsResult.value.data ?? {}
       : {}
 
     setMarketplaceHighlights(
-      buildMarketplaceHighlights(animals, products, user.id),
+      buildMarketplaceHighlights(animals, products, user.id, { onlyOwn: false }),
     )
     setCommunityHighlights(
       communities
-        .filter((community) => community.isMember || community.isAdmin)
+        .filter((community) => !community.isAdmin)
         .slice(0, 3),
     )
+    setServiceHighlights(services.slice(0, 4))
     setReservationSummary({
       buyer: reservations.buyerReservations?.length ?? 0,
       seller: reservations.sellerReservations?.length ?? 0,
@@ -288,6 +297,47 @@ function FeedPage() {
     setPosts((current) => asArray(current).filter((post) => post.id !== postId))
   }
 
+  const handleJoinCommunity = async (communityId) => {
+    setOrganicActionId(`community-${communityId}`)
+    setErrorMessage('')
+
+    try {
+      const response = await joinCommunityRequest(communityId)
+      const nextCommunity = extractDataObject(response, null)
+
+      setCommunityHighlights((current) =>
+        asArray(current).map((community) =>
+          community.id === communityId ? nextCommunity : community,
+        ),
+      )
+    } catch (error) {
+      setErrorMessage(
+        getErrorMessage(error, "Impossible de rejoindre la communaute."),
+      )
+    } finally {
+      setOrganicActionId('')
+    }
+  }
+
+  const handleReserveService = async (service) => {
+    setOrganicActionId(`service-${service.id}`)
+    setErrorMessage('')
+
+    try {
+      await createReservationRequest({
+        category: service.type,
+        reservable_id: service.id,
+      })
+      navigate('/reservations')
+    } catch (error) {
+      setErrorMessage(
+        getErrorMessage(error, "Impossible d'envoyer la demande de reservation."),
+      )
+    } finally {
+      setOrganicActionId('')
+    }
+  }
+
   const handleCreateStory = async (payload) => {
     setIsStorySubmitting(true)
     setStoryErrorMessage('')
@@ -397,6 +447,14 @@ function FeedPage() {
     () => filterPosts(safePosts, searchTerm),
     [safePosts, searchTerm],
   )
+  const organicFeedItems = useMemo(
+    () => buildOrganicFeedItems(visiblePosts, {
+      marketplace: marketplaceHighlights,
+      services: serviceHighlights,
+      communities: communityHighlights,
+    }),
+    [communityHighlights, marketplaceHighlights, serviceHighlights, visiblePosts],
+  )
   const storyViewerKey = getStoryViewerKey(activeStoryIndex, viewerStories)
   const ownPosts = useMemo(
     () =>
@@ -505,19 +563,30 @@ function FeedPage() {
 
           {!isLoading ? (
             <div className="space-y-5">
-              {visiblePosts.map((post) => (
-                <PostCard
-                  key={post.id}
-                  post={post}
-                  onCreateComment={handleCreateComment}
-                  onReactToComment={handleReactToComment}
-                  onToggleLike={handleToggleLike}
-                  onUpdatePost={handleUpdatePost}
-                  onDeletePost={handleDeletePost}
-                  isLikePending={likePendingIds.includes(post.id)}
-                  currentUserId={user?.id}
-                />
-              ))}
+              {organicFeedItems.map((item) =>
+                item.type === 'post' ? (
+                  <PostCard
+                    key={`post-${item.post.id}`}
+                    post={item.post}
+                    onCreateComment={handleCreateComment}
+                    onReactToComment={handleReactToComment}
+                    onToggleLike={handleToggleLike}
+                    onUpdatePost={handleUpdatePost}
+                    onDeletePost={handleDeletePost}
+                    isLikePending={likePendingIds.includes(item.post.id)}
+                    currentUserId={user?.id}
+                  />
+                ) : (
+                  <OrganicSuggestionCard
+                    key={item.key}
+                    item={item}
+                    processingId={organicActionId}
+                    onNavigate={navigate}
+                    onJoinCommunity={handleJoinCommunity}
+                    onReserveService={handleReserveService}
+                  />
+                ),
+              )}
             </div>
           ) : null}
         </div>
@@ -605,7 +674,7 @@ function FeedPage() {
             <p className="text-xs uppercase tracking-[0.18em] text-violet-700">
               Marketplace
             </p>
-            {marketplaceHighlights.map((item) => (
+              {marketplaceHighlights.slice(0, 3).map((item) => (
               <button
                 key={`${item.kind}-${item.id}`}
                 type="button"
@@ -758,6 +827,121 @@ function StoryCard({ storyGroup, onOpen, onAddStory }) {
           Ajouter une autre story
         </button>
       ) : null}
+    </article>
+  )
+}
+
+function OrganicSuggestionCard({
+  item,
+  processingId,
+  onNavigate,
+  onJoinCommunity,
+  onReserveService,
+}) {
+  if (item.type === 'service') {
+    const service = item.service
+    const isProcessing = processingId === `service-${service.id}`
+
+    return (
+      <article className="rounded-[28px] border border-violet-100 bg-[linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.88))] p-5 shadow-[0_18px_42px_rgba(124,58,237,0.08)] dark:border-violet-300/14 dark:bg-[linear-gradient(135deg,_rgba(24,6,44,0.92),_rgba(8,5,13,0.96))]">
+        <p className="text-xs uppercase tracking-[0.18em] text-violet-700 dark:text-violet-200">
+          Service recommande
+        </p>
+        <h3 className="mt-2 text-lg font-semibold text-stone-950 dark:text-white">
+          {service.title}
+        </h3>
+        <p className="mt-2 text-sm leading-6 text-stone-600 dark:text-violet-100/76">
+          {service.description}
+        </p>
+        <div className="mt-4 flex flex-wrap gap-2 text-xs">
+          <span className="rounded-full bg-violet-50 px-3 py-1 font-medium text-violet-800 dark:bg-white/10 dark:text-violet-50">
+            {service.type === 'training' ? 'Dresseur/Dresseuse' : 'Gardien/Gardienne'}
+          </span>
+          <span className="rounded-full bg-white px-3 py-1 font-medium text-stone-700 dark:bg-white/10 dark:text-violet-50">
+            {service.city || 'Ville non renseignee'}
+          </span>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={() => onNavigate('/marketplace/services')}
+            className="rounded-full border border-violet-100 bg-white px-4 py-2 text-sm font-semibold text-violet-900 transition hover:bg-violet-50 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-50"
+          >
+            Voir le service
+          </button>
+          {!service.isOwner ? (
+            <button
+              type="button"
+              onClick={() => onReserveService(service)}
+              disabled={isProcessing}
+              className="rounded-full bg-[linear-gradient(135deg,#7c3aed,#a855f7)] px-4 py-2 text-sm font-semibold text-white transition hover:brightness-105 disabled:opacity-60"
+            >
+              {isProcessing ? 'Envoi...' : 'Reserver'}
+            </button>
+          ) : null}
+        </div>
+      </article>
+    )
+  }
+
+  if (item.type === 'community') {
+    const community = item.community
+    const isProcessing = processingId === `community-${community.id}`
+
+    return (
+      <article className="rounded-[28px] border border-violet-100 bg-white/94 p-5 shadow-[0_18px_42px_rgba(124,58,237,0.08)] dark:border-violet-300/14 dark:bg-white/8">
+        <p className="text-xs uppercase tracking-[0.18em] text-violet-700 dark:text-violet-200">
+          Communaute a decouvrir
+        </p>
+        <h3 className="mt-2 text-lg font-semibold text-stone-950 dark:text-white">
+          {community.name}
+        </h3>
+        <p className="mt-2 text-sm leading-6 text-stone-600 dark:text-violet-100/76">
+          {community.description || 'Un espace pour echanger autour des animaux.'}
+        </p>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={() => onNavigate(`/communities/${community.id}`)}
+            className="rounded-full border border-violet-100 bg-white px-4 py-2 text-sm font-semibold text-violet-900 transition hover:bg-violet-50 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-50"
+          >
+            Voir
+          </button>
+          {!community.isMember && community.membershipStatus !== 'pending' ? (
+            <button
+              type="button"
+              onClick={() => onJoinCommunity(community.id)}
+              disabled={isProcessing}
+              className="rounded-full bg-[linear-gradient(135deg,#7c3aed,#a855f7)] px-4 py-2 text-sm font-semibold text-white transition hover:brightness-105 disabled:opacity-60"
+            >
+              {isProcessing ? 'Envoi...' : community.isPrivate ? "Demander l'acces" : 'Rejoindre'}
+            </button>
+          ) : null}
+        </div>
+      </article>
+    )
+  }
+
+  const listing = item.listing
+
+  return (
+    <article className="rounded-[28px] border border-violet-100 bg-white/94 p-5 shadow-[0_18px_42px_rgba(124,58,237,0.08)] dark:border-violet-300/14 dark:bg-white/8">
+      <p className="text-xs uppercase tracking-[0.18em] text-violet-700 dark:text-violet-200">
+        Marketplace recommande
+      </p>
+      <h3 className="mt-2 text-lg font-semibold text-stone-950 dark:text-white">
+        {listing.title}
+      </h3>
+      <p className="mt-2 text-sm text-stone-600 dark:text-violet-100/76">
+        {[listing.priceLabel, listing.location].filter(Boolean).join(' - ')}
+      </p>
+      <button
+        type="button"
+        onClick={() => onNavigate(listing.href)}
+        className="mt-4 rounded-full bg-[linear-gradient(135deg,#7c3aed,#a855f7)] px-4 py-2 text-sm font-semibold text-white transition hover:brightness-105"
+      >
+        Voir l'annonce
+      </button>
     </article>
   )
 }
@@ -933,9 +1117,18 @@ StoryCard.propTypes = {
   onAddStory: PropTypes.func,
 }
 
-function buildMarketplaceHighlights(animals, products, userId) {
+OrganicSuggestionCard.propTypes = {
+  item: PropTypes.object,
+  processingId: PropTypes.string,
+  onNavigate: PropTypes.func,
+  onJoinCommunity: PropTypes.func,
+  onReserveService: PropTypes.func,
+}
+
+function buildMarketplaceHighlights(animals, products, userId, options = {}) {
+  const onlyOwn = options.onlyOwn ?? true
   const ownAnimals = asArray(animals)
-    .filter((animal) => String(animal.author?.id) === String(userId) || animal.isOwner)
+    .filter((animal) => onlyOwn ? String(animal.author?.id) === String(userId) || animal.isOwner : !animal.isOwner)
     .map((animal) => ({
       id: animal.id,
       kind: 'animal',
@@ -947,7 +1140,7 @@ function buildMarketplaceHighlights(animals, products, userId) {
     }))
 
   const ownProducts = asArray(products)
-    .filter((product) => String(product.author?.id) === String(userId) || product.isOwner)
+    .filter((product) => onlyOwn ? String(product.author?.id) === String(userId) || product.isOwner : !product.isOwner)
     .map((product) => ({
       id: product.id,
       kind: 'product',
@@ -961,6 +1154,45 @@ function buildMarketplaceHighlights(animals, products, userId) {
   return [...ownAnimals, ...ownProducts]
     .sort((first, second) => new Date(second.createdAt ?? 0) - new Date(first.createdAt ?? 0))
     .slice(0, 3)
+}
+
+function buildOrganicFeedItems(posts, suggestions) {
+  const feedItems = []
+  const organicSuggestions = [
+    ...asArray(suggestions.services).map((service) => ({
+      type: 'service',
+      key: `organic-service-${service.id}`,
+      service,
+    })),
+    ...asArray(suggestions.communities).map((community) => ({
+      type: 'community',
+      key: `organic-community-${community.id}`,
+      community,
+    })),
+    ...asArray(suggestions.marketplace).map((listing) => ({
+      type: 'marketplace',
+      key: `organic-marketplace-${listing.kind}-${listing.id}`,
+      listing,
+    })),
+  ]
+
+  asArray(posts).forEach((post, index) => {
+    feedItems.push({ type: 'post', key: `post-${post.id}`, post })
+
+    if ((index + 1) % 2 === 0) {
+      const suggestion = organicSuggestions.shift()
+
+      if (suggestion) {
+        feedItems.push(suggestion)
+      }
+    }
+  })
+
+  if (feedItems.length === 0) {
+    return organicSuggestions.slice(0, 3)
+  }
+
+  return feedItems
 }
 
 function addCommentToPost(post, comment) {

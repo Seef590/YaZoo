@@ -5,6 +5,7 @@ namespace Tests\Feature\Reservation;
 use App\Models\Animal;
 use App\Models\Product;
 use App\Models\Reservation;
+use App\Models\ServiceListing;
 use App\Models\User;
 use App\Notifications\ReservationApprovedNotification;
 use App\Notifications\ReservationCompletedNotification;
@@ -284,5 +285,201 @@ class ReservationApiTest extends TestCase
             ->assertJsonPath('data.invoiceNumber', 'YAZ-20260403-00099')
             ->assertJsonPath('data.delivery.city', 'Rabat')
             ->assertJsonPath('data.grandTotal', 285);
+    }
+
+    public function test_unified_endpoint_can_create_animal_and_product_reservations(): void
+    {
+        Notification::fake();
+
+        $seller = User::factory()->create();
+        $buyer = User::factory()->create();
+        $animal = Animal::factory()->create([
+            'user_id' => $seller->id,
+            'listing_status' => 'available',
+            'price' => 500,
+        ]);
+        $product = Product::factory()->create([
+            'user_id' => $seller->id,
+            'listing_status' => 'available',
+            'stock' => 3,
+            'price' => 120,
+        ]);
+
+        Sanctum::actingAs($buyer, ['*']);
+
+        $this->postJson('/api/reservations', [
+            'category' => 'animal',
+            'reservable_id' => $animal->id,
+            'message' => 'Je souhaite reserver cet animal.',
+        ])
+            ->assertCreated()
+            ->assertJsonPath('data.category', 'animal')
+            ->assertJsonPath('data.provider.id', $seller->id);
+
+        $this->postJson('/api/reservations', [
+            'category' => 'product',
+            'reservable_id' => $product->id,
+            'quantity' => 2,
+        ])
+            ->assertCreated()
+            ->assertJsonPath('data.category', 'product')
+            ->assertJsonPath('data.quantity', 2)
+            ->assertJsonPath('data.totalPrice', 240);
+
+        $this->assertDatabaseHas('activity_logs', ['action' => 'reservation.created']);
+    }
+
+    public function test_unified_endpoint_blocks_own_resource_reservations(): void
+    {
+        $owner = User::factory()->create();
+        $animal = Animal::factory()->create([
+            'user_id' => $owner->id,
+            'listing_status' => 'available',
+        ]);
+        $product = Product::factory()->create([
+            'user_id' => $owner->id,
+            'listing_status' => 'available',
+            'stock' => 1,
+        ]);
+
+        Sanctum::actingAs($owner, ['*']);
+
+        $this->postJson('/api/reservations', [
+            'category' => 'animal',
+            'reservable_id' => $animal->id,
+        ])->assertForbidden();
+
+        $this->postJson('/api/reservations', [
+            'category' => 'product',
+            'reservable_id' => $product->id,
+        ])->assertForbidden();
+    }
+
+    public function test_user_can_reserve_pet_sitting_and_training_services(): void
+    {
+        Notification::fake();
+
+        $provider = User::factory()->create();
+        $buyer = User::factory()->create();
+        $petSitting = ServiceListing::factory()->create([
+            'user_id' => $provider->id,
+            'type' => 'pet_sitting',
+            'status' => 'active',
+            'price' => 180,
+        ]);
+        $training = ServiceListing::factory()->create([
+            'user_id' => $provider->id,
+            'type' => 'training',
+            'status' => 'active',
+            'price' => 250,
+        ]);
+
+        Sanctum::actingAs($buyer, ['*']);
+
+        $this->postJson('/api/reservations', [
+            'category' => 'pet_sitting',
+            'reservable_id' => $petSitting->id,
+            'scheduled_at' => now()->addDay()->toISOString(),
+            'message' => 'Besoin de garde pour mon chat.',
+        ])
+            ->assertCreated()
+            ->assertJsonPath('data.category', 'pet_sitting')
+            ->assertJsonPath('data.kind', 'pet_sitting')
+            ->assertJsonPath('data.totalPrice', 180);
+
+        $this->postJson('/api/reservations', [
+            'category' => 'training',
+            'reservable_id' => $training->id,
+            'message' => 'Je souhaite une seance de dressage.',
+        ])
+            ->assertCreated()
+            ->assertJsonPath('data.category', 'training')
+            ->assertJsonPath('data.kind', 'training')
+            ->assertJsonPath('data.provider.id', $provider->id);
+
+        $this->assertSame(1, $petSitting->refresh()->reservations_count);
+        $this->assertSame(1, $training->refresh()->reservations_count);
+    }
+
+    public function test_service_reservation_status_actions_and_history(): void
+    {
+        Notification::fake();
+
+        $provider = User::factory()->create();
+        $buyer = User::factory()->create();
+        $other = User::factory()->create();
+        $service = ServiceListing::factory()->create([
+            'user_id' => $provider->id,
+            'type' => 'training',
+            'status' => 'active',
+            'price' => 300,
+        ]);
+
+        Sanctum::actingAs($buyer, ['*']);
+
+        $reservationId = $this->postJson('/api/reservations', [
+            'category' => 'training',
+            'reservable_id' => $service->id,
+        ])
+            ->assertCreated()
+            ->json('data.id');
+
+        Sanctum::actingAs($other, ['*']);
+
+        $this->patchJson("/api/reservations/{$reservationId}/approve")
+            ->assertForbidden();
+
+        Sanctum::actingAs($provider, ['*']);
+
+        $this->patchJson("/api/reservations/{$reservationId}/approve")
+            ->assertOk()
+            ->assertJsonPath('data.status', 'approved')
+            ->assertJsonPath('data.canComplete', true);
+
+        $this->patchJson("/api/reservations/{$reservationId}/complete")
+            ->assertOk()
+            ->assertJsonPath('data.status', 'completed')
+            ->assertJsonPath('data.invoiceNumber', fn ($value) => is_string($value) && str_starts_with($value, 'YAZ-'));
+
+        $this->assertDatabaseHas('activity_logs', [
+            'action' => 'reservation.approved',
+            'subject_id' => $reservationId,
+        ]);
+        $this->assertDatabaseHas('activity_logs', [
+            'action' => 'reservation.completed',
+            'subject_id' => $reservationId,
+        ]);
+    }
+
+    public function test_buyer_can_cancel_service_reservation_and_invalid_status_is_refused(): void
+    {
+        $provider = User::factory()->create();
+        $buyer = User::factory()->create();
+        $service = ServiceListing::factory()->create([
+            'user_id' => $provider->id,
+            'type' => 'pet_sitting',
+            'status' => 'active',
+        ]);
+
+        Sanctum::actingAs($buyer, ['*']);
+
+        $reservationId = $this->postJson('/api/reservations', [
+            'category' => 'pet_sitting',
+            'reservable_id' => $service->id,
+        ])
+            ->assertCreated()
+            ->json('data.id');
+
+        $this->patchJson("/api/reservations/{$reservationId}/cancel")
+            ->assertOk()
+            ->assertJsonPath('data.status', 'cancelled');
+
+        $this->patchJson("/api/reservations/{$reservationId}/approve")
+            ->assertForbidden();
+
+        Sanctum::actingAs($provider, ['*']);
+
+        $this->patchJson("/api/reservations/{$reservationId}/approve")
+            ->assertUnprocessable();
     }
 }

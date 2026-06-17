@@ -25,10 +25,16 @@ class StoreReservationRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'category' => ['nullable', Rule::in(['animal', 'product', 'pet_sitting', 'training'])],
+            'reservable_id' => ['nullable', 'integer', 'min:1'],
             'quantity' => ['nullable', 'integer', 'min:1', 'max:99'],
             'note' => ['nullable', 'string', 'max:1500'],
-            'payment_method' => ['required', Rule::in(Reservation::PAYMENT_METHODS)],
-            'delivery_method' => ['required', Rule::in(Reservation::DELIVERY_METHODS)],
+            'message' => ['nullable', 'string', 'max:1500'],
+            'contact_phone' => ['nullable', 'string', 'max:50'],
+            'scheduled_at' => ['nullable', 'date'],
+            'scheduled_end_at' => ['nullable', 'date', 'after_or_equal:scheduled_at'],
+            'payment_method' => ['nullable', Rule::in(Reservation::PAYMENT_METHODS)],
+            'delivery_method' => ['nullable', Rule::in(Reservation::DELIVERY_METHODS)],
             'delivery_contact_name' => ['nullable', 'string', 'max:255'],
             'delivery_phone' => ['nullable', 'string', 'max:50'],
             'delivery_city' => ['required_if:delivery_method,delivery', 'nullable', 'string', 'max:255'],
@@ -44,8 +50,10 @@ class StoreReservationRequest extends FormRequest
     {
         $this->merge([
             'note' => trim((string) $this->input('note')),
-            'payment_method' => trim((string) $this->input('payment_method')),
-            'delivery_method' => trim((string) $this->input('delivery_method')),
+            'message' => trim((string) $this->input('message')),
+            'contact_phone' => trim((string) $this->input('contact_phone')),
+            'payment_method' => trim((string) ($this->input('payment_method') ?: 'cash_on_pickup')),
+            'delivery_method' => trim((string) ($this->input('delivery_method') ?: 'pickup')),
             'delivery_contact_name' => trim((string) $this->input('delivery_contact_name')),
             'delivery_phone' => trim((string) $this->input('delivery_phone')),
             'delivery_city' => trim((string) $this->input('delivery_city')),

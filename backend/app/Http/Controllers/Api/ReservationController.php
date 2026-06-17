@@ -86,6 +86,31 @@ class ReservationController extends Controller
             ->setStatusCode(201);
     }
 
+    public function store(StoreReservationRequest $request): JsonResponse
+    {
+        $validated = $request->validated();
+
+        abort_if(empty($validated['category']) || empty($validated['reservable_id']), 422, 'La categorie et la ressource sont obligatoires.');
+
+        return ReservationResource::make(
+            $this->reservations->createUnified($request->user(), $validated),
+        )
+            ->response()
+            ->setStatusCode(201);
+    }
+
+    public function show(Request $request, Reservation $reservation): ReservationResource
+    {
+        abort_unless(
+            $request->user()->is_admin
+                || $request->user()->id === $reservation->buyer_id
+                || $request->user()->id === $reservation->seller_id,
+            403,
+        );
+
+        return ReservationResource::make($this->reservations->loadInvoice($reservation));
+    }
+
     public function approve(Reservation $reservation): JsonResponse
     {
         $this->authorize('approve', $reservation);

@@ -7,6 +7,8 @@ use App\Http\Requests\Profile\UpdateProfileRequest;
 use App\Http\Resources\Profile\UserProfileResource;
 use App\Models\User;
 use App\Support\MediaStorage;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 
 class ProfileController extends Controller
@@ -68,6 +70,32 @@ class ProfileController extends Controller
         $this->loadProfileAggregates($user);
 
         return UserProfileResource::make($user);
+    }
+
+    public function follow(Request $request, User $user): JsonResponse
+    {
+        abort_if($request->user()->is($user), 422, 'Vous ne pouvez pas suivre votre propre profil.');
+
+        $request->user()->following()->syncWithoutDetaching([$user->id]);
+        $this->loadProfileAggregates($user);
+
+        return response()->json([
+            'message' => 'Profil suivi avec succes.',
+            'data' => UserProfileResource::make($user)->resolve($request),
+        ]);
+    }
+
+    public function unfollow(Request $request, User $user): JsonResponse
+    {
+        abort_if($request->user()->is($user), 422, 'Vous ne pouvez pas vous desabonner de votre propre profil.');
+
+        $request->user()->following()->detach($user->id);
+        $this->loadProfileAggregates($user);
+
+        return response()->json([
+            'message' => 'Abonnement retire avec succes.',
+            'data' => UserProfileResource::make($user)->resolve($request),
+        ]);
     }
 
     private function loadProfileAggregates(User $user): void

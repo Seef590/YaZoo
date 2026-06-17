@@ -21,6 +21,7 @@ class UserProfileResource extends JsonResource
     {
         $canViewPrivateDetails = $request->user()?->is($this->resource)
             || (bool) $request->user()?->is_admin;
+        $viewer = $request->user();
 
         return [
             'id' => $this->id,
@@ -42,6 +43,9 @@ class UserProfileResource extends JsonResource
                 ? round((float) $this->reviews_received_avg_rating, 1)
                 : null,
             'isPhoneVerified' => $this->hasVerifiedPhone(),
+            'isFollowing' => $viewer
+                ? $this->followers()->where('follower_user_id', $viewer->id)->exists()
+                : false,
             'preferredLocale' => $this->preferred_locale ?? 'fr',
             'joinedAt' => $this->created_at?->toISOString(),
             'updatedAt' => $this->updated_at?->toISOString(),

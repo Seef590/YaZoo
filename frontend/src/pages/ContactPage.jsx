@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import api from '../api/client'
 import Footer from '../components/ui/Footer'
 import { useAuth } from '../hooks/useAuth'
+import { useI18n } from '../hooks/useI18n'
 
 const companyContact = {
   phone: '+212606610014',
@@ -13,6 +14,7 @@ const companyContact = {
 
 function ContactPage() {
   const { user } = useAuth()
+  const { t } = useI18n()
   const [objet, setObjet] = useState('')
   const [message, setMessage] = useState('')
   const [sending, setSending] = useState(false)
@@ -40,14 +42,14 @@ function ContactPage() {
     try {
       await api.post('/contact', {
         email: senderEmail,
-        objet: objet || 'Message depuis YaZoo',
+        objet: objet || t('contact.defaultSubject'),
         message,
       })
       setSent(true)
       setMessage('')
       setObjet('')
     } catch {
-      setContactError("Impossible d'envoyer le message pour le moment.")
+      setContactError(t('contact.error'))
     } finally {
       setSending(false)
     }
@@ -61,10 +63,10 @@ function ContactPage() {
             <div>
               <p className="text-xs uppercase tracking-[0.24em] text-violet-700">Contact</p>
               <h1 className="mt-2 text-3xl font-semibold text-stone-950 dark:text-white">
-                Parlons de votre projet YaZoo
+                {t('contact.title')}
               </h1>
               <p className="mt-2 text-sm text-stone-600 dark:text-violet-100/78">
-                Contactez-nous directement pour toute question technique ou commerciale.
+                {t('contact.description')}
               </p>
             </div>
 
@@ -72,7 +74,7 @@ function ContactPage() {
               to="/"
               className="inline-flex items-center rounded-full border border-violet-100 bg-white px-4 py-2 text-sm font-medium text-violet-900 transition hover:-translate-y-0.5 hover:border-violet-200 hover:bg-violet-50 dark:border-violet-300/18 dark:bg-white/8 dark:text-violet-50 dark:hover:bg-white/12"
             >
-              Retour
+              {t('contact.back')}
             </Link>
           </div>
 
@@ -81,7 +83,7 @@ function ContactPage() {
               href={`tel:${companyContact.phone}`}
                 className="rounded-[24px] border border-violet-100 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.84))] px-5 py-5 transition hover:-translate-y-0.5 hover:border-violet-200 dark:border-violet-300/16 dark:bg-[linear-gradient(135deg,_rgba(5,3,10,0.98),_rgba(30,15,52,0.92))]"
             >
-              <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Numero</p>
+              <p className="text-xs uppercase tracking-[0.18em] text-stone-500">{t('contact.number')}</p>
               <p className="mt-3 text-xl font-semibold text-stone-950">{companyContact.phone}</p>
             </a>
 
@@ -101,32 +103,31 @@ function ContactPage() {
               rel="noreferrer"
               className="inline-flex items-center justify-center rounded-2xl bg-green-500 px-5 py-3 text-sm font-semibold text-black shadow-lg shadow-green-500/20 transition hover:bg-green-400 focus:outline-none focus:ring-2 focus:ring-green-300 focus:ring-offset-2 dark:bg-green-400 dark:text-black dark:hover:bg-green-300 dark:focus:ring-green-300"
             >
-              Ouvrir WhatsApp
+              {t('contact.openWhatsapp')}
             </a>
             <a
               href={`tel:${companyContact.phone}`}
               className="inline-flex items-center justify-center rounded-full border border-violet-100 bg-white px-4 py-2 text-sm font-semibold text-violet-900 transition hover:-translate-y-0.5 hover:border-violet-200 hover:bg-violet-50 dark:border-violet-300/18 dark:bg-white/8 dark:text-violet-50 dark:hover:bg-white/12"
             >
-              Appeler {companyContact.phone}
+              {t('contact.callPhone', { phone: companyContact.phone })}
             </a>
           </div>
 
           <section className="mt-5 rounded-[26px] border border-violet-100 bg-violet-50/70 px-5 py-5 transition-colors dark:border-violet-300/16 dark:bg-[linear-gradient(135deg,_rgba(5,3,10,0.98),_rgba(25,12,44,0.94))]">
             <p className="text-xs uppercase tracking-[0.18em] text-violet-700">
-              Message direct
+              {t('contact.directMessage')}
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-stone-950 dark:text-white">
-              Envoyez-nous un message
+              {t('contact.sendMessageTitle')}
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600 dark:text-violet-100/78">
-              Expliquez votre besoin, posez une question ou demandez une
-              demonstration de YaZoo. Nous vous repondrons par email.
+              {t('contact.sendMessageText')}
             </p>
 
             <form onSubmit={handleSend} className="mt-5 grid gap-4">
               <label className="block">
                 <span className="mb-2 block text-sm font-medium text-stone-700 dark:text-violet-50">
-                  Votre email
+                  {t('contact.yourEmail')}
                 </span>
                 <input
                   type="email"
@@ -145,19 +146,19 @@ function ContactPage() {
 
               <label className="block">
                 <span className="mb-2 block text-sm font-medium text-stone-700 dark:text-violet-50">
-                  Objet
+                  {t('contact.subject')}
                 </span>
                 <input
                   value={objet}
                   onChange={(event) => setObjet(event.target.value)}
                   className="w-full rounded-[22px] border border-violet-100 bg-white/90 px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-300 dark:border-violet-300/24 dark:bg-[linear-gradient(135deg,_rgba(5,3,10,0.98),_rgba(24,11,43,0.96))] dark:text-white dark:placeholder:text-violet-100/58"
-                  placeholder="Objet de votre message"
+                  placeholder={t('contact.subjectPlaceholder')}
                 />
               </label>
 
               <label className="block">
                 <span className="mb-2 block text-sm font-medium text-stone-700 dark:text-violet-50">
-                  Message
+                  {t('contact.message')}
                 </span>
                 <textarea
                   rows={5}
@@ -165,13 +166,13 @@ function ContactPage() {
                   onChange={(event) => setMessage(event.target.value)}
                   required
                   className="w-full rounded-[22px] border border-violet-100 bg-white/90 px-4 py-3 text-sm leading-6 text-stone-700 outline-none transition focus:border-violet-300 dark:border-violet-300/24 dark:bg-[linear-gradient(135deg,_rgba(5,3,10,0.98),_rgba(24,11,43,0.96))] dark:text-white dark:placeholder:text-violet-100/58"
-                  placeholder="Decrivez votre question ou besoin..."
+                  placeholder={t('contact.messagePlaceholder')}
                 />
               </label>
 
               {sent ? (
                 <p className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-                  Message envoye avec succes.
+                  {t('contact.success')}
                 </p>
               ) : null}
 
@@ -187,7 +188,7 @@ function ContactPage() {
                   disabled={sending || !message.trim() || !senderEmail.trim()}
                   className="inline-flex rounded-full bg-[linear-gradient(135deg,#7c3aed,#a855f7)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(124,58,237,0.2)] transition hover:-translate-y-0.5 hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {sending ? 'Envoi...' : 'Envoyer le message'}
+                  {sending ? t('contact.sending') : t('contact.send')}
                 </button>
               </div>
             </form>

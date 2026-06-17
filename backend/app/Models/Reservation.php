@@ -55,9 +55,15 @@ class Reservation extends Model
         'seller_id',
         'reservable_type',
         'reservable_id',
+        'category',
         'quantity',
+        'scheduled_at',
+        'scheduled_end_at',
         'delivery_method',
         'note',
+        'contact_phone',
+        'provider_note',
+        'admin_note',
         'payment_method',
         'reservation_status',
         'payment_status',
@@ -73,6 +79,7 @@ class Reservation extends Model
         'invoice_number',
         'invoice_issued_at',
         'approved_at',
+        'rejected_at',
         'completed_at',
         'cancelled_at',
     ];
@@ -86,11 +93,14 @@ class Reservation extends Model
     {
         return [
             'quantity' => 'integer',
+            'scheduled_at' => 'datetime',
+            'scheduled_end_at' => 'datetime',
             'unit_price' => 'decimal:2',
             'total_price' => 'decimal:2',
             'delivery_fee' => 'decimal:2',
             'invoice_issued_at' => 'datetime',
             'approved_at' => 'datetime',
+            'rejected_at' => 'datetime',
             'completed_at' => 'datetime',
             'cancelled_at' => 'datetime',
         ];

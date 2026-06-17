@@ -11,6 +11,9 @@ export const createAnimalReservationRequest = (animalId, payload) =>
 export const createProductReservationRequest = (productId, payload) =>
   api.post(`/products/${productId}/reservations`, payload)
 
+export const createReservationRequest = (payload) =>
+  api.post('/reservations', payload)
+
 export const approveReservationRequest = (reservationId) =>
   api.post(`/reservations/${reservationId}/approve`)
 
