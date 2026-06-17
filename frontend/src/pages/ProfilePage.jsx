@@ -9,11 +9,12 @@ import {
   toggleLikeRequest,
   updatePostRequest,
 } from '../api/posts'
-import { followUserRequest, getProfileRequest, unfollowUserRequest, updateProfileRequest } from '../api/profile'
+import { getProfileRequest, updateProfileRequest } from '../api/profile'
 import { createConversationRequest } from '../api/messages'
 import PostCard from '../components/feed/PostCard'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
+import FollowButton from '../components/ui/FollowButton'
 import ScrollTopButton from '../components/ui/ScrollTopButton'
 import { useAuth } from '../hooks/useAuth'
 import { asArray, extractDataArray, extractDataObject } from '../utils/apiData'
@@ -53,7 +54,6 @@ function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isMessageStarting, setIsMessageStarting] = useState(false)
-  const [isFollowProcessing, setIsFollowProcessing] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('posts')
   const editSectionRef = useRef(null)
@@ -346,32 +346,6 @@ function ProfilePage() {
     }
   }
 
-  const handleToggleFollow = async () => {
-    if (!profile?.id || isOwnProfile) {
-      return
-    }
-
-    setIsFollowProcessing(true)
-    setErrorMessage('')
-    setSuccessMessage('')
-
-    try {
-      const response = profile.isFollowing
-        ? await unfollowUserRequest(profile.id)
-        : await followUserRequest(profile.id)
-      const nextProfile = normalizeProfileMediaPayload(extractDataObject(response, profile))
-
-      setProfile(nextProfile)
-      setSuccessMessage(response.data.message)
-    } catch (error) {
-      setErrorMessage(
-        getErrorMessage(error, 'Impossible de mettre a jour cet abonnement.'),
-      )
-    } finally {
-      setIsFollowProcessing(false)
-    }
-  }
-
   const handleToggleLike = async (postId, reaction = 'like') => {
     let previousPost = null
 
@@ -498,7 +472,7 @@ function ProfilePage() {
               className="absolute inset-0 h-full w-full object-cover"
             />
           ) : null}
-          <div className="absolute inset-0 bg-white/5 dark:bg-black/10" />
+          <div className="absolute inset-x-0 bottom-0 h-28 bg-[linear-gradient(180deg,transparent,rgba(17,12,28,0.22))]" />
           <div className="absolute bottom-5 right-5 z-10 rounded-full bg-white/18 px-4 py-2 text-xs font-medium uppercase tracking-[0.18em] text-white backdrop-blur">
             Profil YaZoo
           </div>
@@ -546,18 +520,16 @@ function ProfilePage() {
                 </Button>
             ) : (
               <>
-                <Button
-                  type="button"
-                  onClick={handleToggleFollow}
-                  disabled={isFollowProcessing}
-                  className="w-full sm:w-auto"
-                >
-                  {isFollowProcessing
-                    ? 'Mise a jour...'
-                    : profile?.isFollowing
-                      ? 'Ne plus suivre'
-                      : 'Suivre'}
-                </Button>
+                <FollowButton
+                  userId={profile?.id}
+                  isFollowing={profile?.isFollowing}
+                  hidden={isOwnProfile}
+                  onChange={(nextProfile) => {
+                    if (nextProfile) {
+                      setProfile(normalizeProfileMediaPayload(nextProfile))
+                    }
+                  }}
+                />
                 <Button
                   type="button"
                   onClick={handleStartConversation}
@@ -751,7 +723,7 @@ function ProfilePage() {
                         className="absolute inset-0 h-full w-full object-cover"
                       />
                     ) : null}
-                    <div className="absolute inset-0 bg-white/5 dark:bg-black/5" />
+                    <div className="absolute inset-x-0 bottom-0 h-16 bg-[linear-gradient(180deg,transparent,rgba(17,12,28,0.16))]" />
                   </div>
                   <div className="mt-4 flex flex-wrap gap-2">
                     <label className="inline-flex cursor-pointer items-center justify-center rounded-full border border-violet-100 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-violet-50">

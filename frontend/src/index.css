@@ -19,6 +19,7 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
@@ -186,6 +187,53 @@ body ::selection {
 
 #root {
   min-height: 100vh;
+  overflow-x: clip;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+}
+
+:root.rtl body {
+  direction: rtl;
+  text-align: right;
+}
+
+:root.rtl input,
+:root.rtl textarea,
+:root.rtl select {
+  text-align: right;
+}
+
+:root.rtl [class*='text-left'] {
+  text-align: right;
+}
+
+:root.rtl [class*='text-right'] {
+  text-align: left;
+}
+
+:root.rtl [class*='right-3'] {
+  right: auto;
+  left: 0.75rem;
+}
+
+:root.rtl [class*='right-5'] {
+  right: auto;
+  left: 1.25rem;
+}
+
+:root.rtl [class*='left-1/2'] {
+  left: 50%;
 }
 
 .yz-wordmark {

@@ -13,7 +13,7 @@ function Layout() {
   const navigate = useNavigate()
   const location = useLocation()
   const { isAuthenticated, isBootstrapping, logout, user } = useAuth()
-  const { t } = useI18n()
+  const { isRtl, t } = useI18n()
   const { unreadCount, realtimeStatus, isRealtimeEnabled } = useNotifications()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [globalSearch, setGlobalSearch] = useState('')
@@ -142,7 +142,7 @@ function Layout() {
               <img src="/yazoo-logo.svg" alt="Logo YaZoo" className="h-12 w-12 shrink-0 object-contain" />
               <div className="min-w-0">
                 <p className="yz-wordmark truncate text-base">YaZoo</p>
-                <p className="truncate text-xs text-stone-700 dark:text-violet-100/78">Reseau social animalier</p>
+                <p className="truncate text-xs text-stone-700 dark:text-violet-100/78">{t('common.tagline')}</p>
               </div>
             </NavLink>
 
@@ -150,22 +150,22 @@ function Layout() {
               <SearchInput value={globalSearch} onChange={setGlobalSearch} />
             </form>
 
-            <div className="ml-auto flex items-center gap-2">
+            <div className="ms-auto flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => setIsMobileMenuOpen(true)}
                 ref={mobileMenuTriggerRef}
                 className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/55 bg-white/35 text-stone-700 transition hover:border-violet-200 hover:bg-white/55 hover:text-violet-900 lg:hidden"
-                aria-label="Ouvrir le menu"
+                aria-label={t('layout.menuOpen')}
                 aria-expanded={isMobileMenuOpen}
                 aria-controls="yazoo-mobile-navigation"
               >
                 <AppIcon name="menu" className="h-5 w-5" />
               </button>
 
-              <DesktopActionLink to="/feed" icon="home" label="Feed" className="hidden lg:inline-flex" />
-              <DesktopActionLink to="/messages" icon="chat" label="Messages" className="hidden lg:inline-flex" />
-              <DesktopActionLink to="/notifications" icon="bell" label="Notifications" className="hidden lg:inline-flex" />
+              <DesktopActionLink to="/feed" icon="home" label={t('common.feed')} className="hidden lg:inline-flex" />
+              <DesktopActionLink to="/messages" icon="chat" label={t('common.messages')} className="hidden lg:inline-flex" />
+              <DesktopActionLink to="/notifications" icon="bell" label={t('common.notifications')} className="hidden lg:inline-flex" />
 
               <div className="hidden lg:block">
                 <InlinePill tone={realtimeIndicator.tone}>{realtimeIndicator.label}</InlinePill>
@@ -173,17 +173,17 @@ function Layout() {
 
               <div className="hidden lg:flex items-center gap-2 rounded-full border border-white/50 bg-white/35 px-3 py-1.5 dark:border-violet-300/15 dark:bg-white/8">
                 <Avatar
-                  name={user?.name ?? 'Utilisateur'}
+                  name={user?.name ?? t('common.user')}
                   src={user?.avatar || ''}
                   className="h-7 w-7 border border-white/80 text-[10px]"
                 />
                 <span className="max-w-[120px] truncate text-xs font-medium text-stone-700 dark:text-violet-50">
-                  {user?.name ?? 'Utilisateur'}
+                  {user?.name ?? t('common.user')}
                 </span>
               </div>
 
               <Button type="button" variant="secondary" onClick={logout} className="hidden lg:inline-flex">
-                Se deconnecter
+                {t('common.logout')}
               </Button>
             </div>
           </div>
@@ -199,9 +199,9 @@ function Layout() {
               </InlinePill>
             ) : null}
             <InlinePill>
-              {unreadCount} notification{unreadCount > 1 ? 's' : ''}
+              {t('layout.unread', { count: unreadCount, suffix: unreadCount > 1 ? 's' : '' })}
             </InlinePill>
-            {user?.isAdmin ? <InlinePill tone="violet">Admin</InlinePill> : null}
+            {user?.isAdmin ? <InlinePill tone="violet">{t('common.adminContent')}</InlinePill> : null}
           </div>
         </header>
 
@@ -221,9 +221,11 @@ function Layout() {
         onLogout={logout}
         onCreateStory={handleCreateStory}
         closeButtonRef={mobileMenuCloseRef}
+        isRtl={isRtl}
+        t={t}
       />
 
-      <MobileBottomDock user={user} onCreateStory={handleCreateStory} />
+      <MobileBottomDock user={user} onCreateStory={handleCreateStory} t={t} />
     </div>
   )
 }
@@ -253,14 +255,16 @@ function DesktopNav({ items }) {
 }
 
 function SearchInput({ value, onChange }) {
+  const { t } = useI18n()
+
   return (
     <label className="block">
-      <span className="sr-only">Rechercher</span>
+      <span className="sr-only">{t('common.search')}</span>
       <input
         type="search"
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        placeholder="Rechercher..."
+        placeholder={t('common.searchPlaceholder')}
         className="w-full rounded-full border border-white/55 bg-white/70 px-4 py-2 text-sm text-stone-700 outline-none transition focus:border-violet-300 focus:bg-white dark:border-violet-300/14 dark:bg-white/10 dark:text-violet-50 dark:placeholder:text-violet-100/45 dark:focus:bg-white/14"
       />
     </label>
@@ -297,13 +301,20 @@ function MobileMenuDrawer({
   onLogout,
   onCreateStory,
   closeButtonRef,
+  isRtl,
+  t,
 }) {
+  const closedTransform = isRtl ? '-translate-x-full' : 'translate-x-full'
+  const sideClass = isRtl
+    ? 'left-0 border-r'
+    : 'right-0 border-l'
+
   return (
     <div className={`fixed inset-0 z-40 lg:hidden ${isOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}>
       <button
         type="button"
         onClick={onClose}
-        aria-label="Fermer le menu"
+        aria-label={t('layout.menuClose')}
         className={`absolute inset-0 bg-violet-950/30 transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'}`}
       />
 
@@ -311,20 +322,20 @@ function MobileMenuDrawer({
         id="yazoo-mobile-navigation"
         role="dialog"
         aria-modal="true"
-        aria-label="Menu principal"
-        className={`absolute right-0 top-0 h-full w-[86%] max-w-sm overflow-y-auto border-l border-white/55 bg-[linear-gradient(180deg,_rgba(255,255,255,0.9),_rgba(246,239,255,0.95))] p-4 shadow-[0_30px_70px_rgba(124,58,237,0.2)] backdrop-blur-2xl transition-transform duration-300 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        aria-label={t('layout.mainMenu')}
+        className={`absolute top-0 h-full w-[86%] max-w-sm overflow-y-auto border-white/55 bg-[linear-gradient(180deg,_rgba(255,255,255,0.9),_rgba(246,239,255,0.95))] p-4 shadow-[0_30px_70px_rgba(124,58,237,0.2)] backdrop-blur-2xl transition-transform duration-300 dark:border-violet-300/16 dark:bg-[linear-gradient(180deg,_rgba(12,8,20,0.98),_rgba(32,16,55,0.96))] ${sideClass} ${isOpen ? 'translate-x-0' : closedTransform}`}
           >
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <Avatar
-              name={user?.name ?? 'Utilisateur'}
+              name={user?.name ?? t('common.user')}
               src={user?.avatar || ''}
               className="border border-white/80"
             />
             <div>
-              <p className="text-sm font-semibold text-stone-950">{user?.name ?? 'Utilisateur'}</p>
+              <p className="text-sm font-semibold text-stone-950 dark:text-violet-50">{user?.name ?? t('common.user')}</p>
               <p className="text-xs text-stone-500">
-                Navigation rapide <span className="yz-wordmark text-xs font-semibold">YaZoo</span>
+                {t('layout.quickNavigation')} <span className="yz-wordmark text-xs font-semibold">YaZoo</span>
               </p>
             </div>
           </div>
@@ -334,7 +345,7 @@ function MobileMenuDrawer({
             onClick={onClose}
             ref={closeButtonRef}
             className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/55 bg-white/55 text-stone-700 transition hover:border-violet-200 hover:text-violet-900"
-            aria-label="Fermer"
+            aria-label={t('layout.menuClose')}
           >
             <AppIcon name="close" className="h-5 w-5" />
           </button>
@@ -367,7 +378,7 @@ function MobileMenuDrawer({
               onCreateStory()
             }}
           >
-            Creer ma story
+            {t('creation.createStory')}
           </Button>
           <Button
             type="button"
@@ -377,7 +388,7 @@ function MobileMenuDrawer({
               onLogout()
             }}
           >
-            Se deconnecter
+            {t('common.logout')}
           </Button>
         </div>
       </aside>
@@ -404,14 +415,14 @@ function DesktopActionLink({ to, icon, label, className = '' }) {
   )
 }
 
-function MobileBottomDock({ user, onCreateStory }) {
+function MobileBottomDock({ user, onCreateStory, t }) {
   return (
     <nav className="fixed bottom-3 left-1/2 z-30 flex w-[calc(100%-1rem)] max-w-md -translate-x-1/2 items-center justify-between rounded-[24px] border border-white/55 bg-[linear-gradient(135deg,_rgba(255,255,255,0.46),_rgba(248,240,255,0.32),_rgba(255,255,255,0.18))] px-1.5 py-1.5 pb-[max(0.375rem,env(safe-area-inset-bottom))] shadow-[0_20px_44px_rgba(124,58,237,0.14)] backdrop-blur-2xl dark:border-violet-300/16 dark:bg-[linear-gradient(135deg,_rgba(24,16,38,0.84),_rgba(49,24,83,0.58),_rgba(12,8,20,0.72))] lg:hidden">
-      <MobileDockLink to="/feed" label="Feed" icon="home" />
-      <MobileDockLink to="/marketplace" label="Marche" icon="search" />
-      <MobileDockStoryButton onClick={onCreateStory} />
-      <MobileDockLink to="/messages" label="Msgs" icon="chat" />
-      <MobileDockProfileLink user={user} />
+      <MobileDockLink to="/feed" label={t('common.feed')} icon="home" />
+      <MobileDockLink to="/marketplace" label={t('common.marketplaceShort')} icon="search" />
+      <MobileDockStoryButton onClick={onCreateStory} label={t('common.story')} />
+      <MobileDockLink to="/messages" label={t('common.messagesShort')} icon="chat" />
+      <MobileDockProfileLink user={user} label={t('common.profile')} />
     </nav>
   )
 }
@@ -434,7 +445,9 @@ function MobileDockLink({ to, label, icon }) {
   )
 }
 
-function MobileDockProfileLink({ user }) {
+function MobileDockProfileLink({ user, label }) {
+  const { t } = useI18n()
+
   return (
     <NavLink
       to="/profile"
@@ -447,25 +460,25 @@ function MobileDockProfileLink({ user }) {
       }
     >
       <Avatar
-        name={user?.name ?? 'Utilisateur'}
+        name={user?.name ?? t('common.user')}
         src={user?.avatar || ''}
         className="h-5 w-5 border border-white/80 text-[10px]"
       />
-      <span>Profil</span>
+      <span>{label}</span>
     </NavLink>
   )
 }
 
-function MobileDockStoryButton({ onClick }) {
+function MobileDockStoryButton({ onClick, label }) {
   return (
     <button
       type="button"
       onClick={onClick}
       className="flex min-w-[64px] flex-col items-center gap-1 rounded-[20px] bg-[linear-gradient(135deg,#7c3aed,#a855f7)] px-3 py-2 text-[11px] font-semibold text-white transition hover:brightness-105"
-      aria-label="Publier une story"
+      aria-label={label}
     >
       <AppIcon name="story" className="h-5 w-5" />
-      <span>Story</span>
+      <span>{label}</span>
     </button>
   )
 }
@@ -651,6 +664,8 @@ MobileMenuDrawer.propTypes = {
   onLogout: PropTypes.func,
   onCreateStory: PropTypes.func,
   closeButtonRef: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
+  isRtl: PropTypes.bool,
+  t: PropTypes.func,
 }
 
 DesktopActionLink.propTypes = {
@@ -663,6 +678,7 @@ DesktopActionLink.propTypes = {
 MobileBottomDock.propTypes = {
   user: PropTypes.object,
   onCreateStory: PropTypes.func,
+  t: PropTypes.func,
 }
 
 MobileDockLink.propTypes = {
@@ -673,10 +689,12 @@ MobileDockLink.propTypes = {
 
 MobileDockProfileLink.propTypes = {
   user: PropTypes.object,
+  label: PropTypes.string,
 }
 
 MobileDockStoryButton.propTypes = {
   onClick: PropTypes.func,
+  label: PropTypes.string,
 }
 
 InlinePill.propTypes = {

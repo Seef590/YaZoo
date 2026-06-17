@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { vi } from 'vitest'
 
 import ProductsMarketplacePage from './ProductsMarketplacePage'
+import { I18nProvider } from '../contexts/I18nContext'
 import * as productService from '../services/marketplace/productsMarketplaceService'
 
 vi.mock('../services/marketplace/productsMarketplaceService', () => ({
@@ -27,10 +28,13 @@ describe('ProductsMarketplacePage', () => {
 
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <ProductsMarketplacePage />
+        <I18nProvider>
+          <ProductsMarketplacePage />
+        </I18nProvider>
       </MemoryRouter>,
     )
 
+    await user.click(await screen.findByRole('button', { name: /Ajouter un produit/i }))
     const heading = await screen.findByRole('heading', { name: 'Creer un produit' })
     const publicationForm = heading.closest('form')
 

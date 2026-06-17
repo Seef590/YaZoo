@@ -47,6 +47,9 @@ class PostResource extends JsonResource
                 'avatar' => MediaStorage::resolveUrl($this->user?->avatar),
                 'city' => $this->user?->city,
                 'country' => $this->user?->country,
+                'isFollowing' => $viewerId && $this->user_id !== $viewerId
+                    ? $request->user()?->following()->whereKey($this->user_id)->exists()
+                    : false,
             ],
             'community' => $this->whenLoaded('community', fn () => [
                 'id' => $this->community?->id,

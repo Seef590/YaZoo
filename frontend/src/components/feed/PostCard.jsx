@@ -3,21 +3,23 @@ import PropTypes from 'prop-types'
 
 import { formatDate } from '../../utils/formatDate'
 import { getErrorMessage } from '../../utils/getErrorMessage'
+import { useI18n } from '../../hooks/useI18n'
 import Avatar from '../ui/Avatar'
 import Button from '../ui/Button'
+import FollowButton from '../ui/FollowButton'
 import CommentList from './CommentList'
 
 const POST_REACTIONS = [
-  { key: 'like', label: "J'aime", icon: '\u{1F44D}' },
-  { key: 'love', label: "J'adore", icon: '\u{2764}\u{FE0F}' },
-  { key: 'happy', label: 'Content', icon: '\u{1F60A}' },
-  { key: 'wow', label: 'Wow', icon: '\u{1F62E}' },
+  { key: 'like', labelKey: 'post.reactions.like', icon: '\u{1F44D}' },
+  { key: 'love', labelKey: 'post.reactions.love', icon: '\u{2764}\u{FE0F}' },
+  { key: 'happy', labelKey: 'post.reactions.happy', icon: '\u{1F60A}' },
+  { key: 'wow', labelKey: 'post.reactions.wow', icon: '\u{1F62E}' },
 ]
 
 const POST_VISIBILITIES = [
-  { key: 'public', label: 'Public', helper: 'Tout le monde peut voir ce post.' },
-  { key: 'followers', label: 'Followers', helper: 'Visible par vos abonnes.' },
-  { key: 'private', label: 'Prive', helper: 'Visible seulement par vous.' },
+  { key: 'public', labelKey: 'post.visibility.public', helperKey: 'post.visibility.publicHelp' },
+  { key: 'followers', labelKey: 'post.visibility.followers', helperKey: 'post.visibility.followersHelp' },
+  { key: 'private', labelKey: 'post.visibility.private', helperKey: 'post.visibility.privateHelp' },
 ]
 
 function PostCard({
@@ -30,6 +32,7 @@ function PostCard({
   onUpdatePost,
   isLikePending = false,
 }) {
+  const { t } = useI18n()
   const [showComments, setShowComments] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
@@ -44,7 +47,7 @@ function PostCard({
   const mediaKind = post.mediaKind ?? (post.imageUrl ? 'image' : null)
   const canManagePost = String(post.author?.id) === String(currentUserId)
   const visibility = post.visibility ?? 'public'
-  const visibilityLabel = getVisibilityLabel(visibility)
+  const visibilityLabel = getVisibilityLabel(visibility, t)
 
   const metadata = [post.location, formatDate(post.createdAt)]
     .filter(Boolean)
@@ -83,7 +86,7 @@ function PostCard({
       if (navigator.share) {
         await navigator.share({
           title: `Post YaZoo de ${post.author?.name ?? 'membre'}`,
-          text: post.content || 'Publication YaZoo',
+          text: post.content || t('post.shareFallback'),
           url,
         })
       } else {
@@ -184,9 +187,17 @@ function PostCard({
                   {post.author?.name}
                 </h3>
                 <p className="text-sm text-stone-500 dark:text-violet-100/60">{metadata}</p>
-                <span className="mt-2 inline-flex rounded-full border border-violet-100 bg-white/70 px-2.5 py-1 text-[11px] font-semibold text-violet-800 dark:border-violet-300/15 dark:bg-white/8 dark:text-violet-100">
-                  {visibilityLabel}
-                </span>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <span className="inline-flex rounded-full border border-violet-100 bg-white/70 px-2.5 py-1 text-[11px] font-semibold text-violet-800 dark:border-violet-300/15 dark:bg-white/8 dark:text-violet-100">
+                    {visibilityLabel}
+                  </span>
+                  <FollowButton
+                    userId={post.author?.id}
+                    isFollowing={post.author?.isFollowing}
+                    hidden={canManagePost}
+                    compact
+                  />
+                </div>
               </div>
 
               <PostActionsMenu
@@ -205,6 +216,7 @@ function PostCard({
                 onSharePost={handleSharePost}
                 onToggleMenu={() => setIsMenuOpen((current) => !current)}
                 onVisibilityChange={handleVisibilityChange}
+                t={t}
               />
             </div>
 
@@ -251,9 +263,9 @@ function PostCard({
             ) : null}
 
             {mediaUrl ? (
-              <div className="relative mt-4 overflow-hidden rounded-[28px] bg-stone-100 shadow-[0_18px_40px_rgba(124,58,237,0.08)] dark:bg-stone-900">
+              <div className="relative -mx-5 mt-4 w-[calc(100%+2.5rem)] overflow-hidden bg-stone-100 shadow-[0_18px_40px_rgba(124,58,237,0.08)] dark:bg-stone-900 sm:rounded-[28px]">
                 <span className="absolute right-3 top-3 z-10 rounded-full bg-violet-950/72 px-3 py-1 text-xs font-medium text-white backdrop-blur">
-                  {mediaKind === 'video' ? 'Video' : 'Photo'}
+                  {mediaKind === 'video' ? t('post.video') : t('post.photo')}
                 </span>
 
                 {mediaKind === 'video' ? (
@@ -265,7 +277,7 @@ function PostCard({
                 ) : (
                   <img
                     src={mediaUrl}
-                    alt="Illustration du post"
+                    alt={t('post.mediaAlt')}
                     className="h-64 w-full object-cover transition duration-500 group-hover:scale-[1.02] sm:h-96 md:h-[34rem] lg:h-[42rem] xl:h-[48rem]"
                   />
                 )}
@@ -285,8 +297,8 @@ function PostCard({
                         ? 'border-violet-300 bg-violet-600 text-white shadow-[0_12px_26px_rgba(124,58,237,0.18)]'
                         : 'border-violet-100 bg-white/86 text-violet-900 hover:bg-violet-50 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-50 dark:hover:bg-white/14'
                     }`}
-                    aria-label={`${reaction.label} ce post`}
-                    title={reaction.label}
+                    aria-label={t('post.reactAria', { reaction: t(reaction.labelKey) })}
+                    title={t(reaction.labelKey)}
                   >
                     <span aria-hidden="true">{reaction.icon}</span>
                     <span>
@@ -301,12 +313,12 @@ function PostCard({
                 variant="ghost"
                 onClick={() => setShowComments((current) => !current)}
               >
-                {showComments ? 'Masquer' : 'Commentaires'} |{' '}
+                {showComments ? t('common.hide') : t('post.comments')} |{' '}
                 {post.commentsCount ?? post.comments?.length ?? 0}
               </Button>
 
               <span className="inline-flex items-center rounded-full border border-violet-100 bg-white/70 px-4 py-2 text-sm font-semibold text-stone-600 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-100/80">
-                Partages | {post.sharesCount ?? 0}
+                {t('post.shares')} | {post.sharesCount ?? 0}
               </span>
             </div>
           </div>
@@ -330,8 +342,8 @@ function PostCard({
                         ? 'border-violet-300 bg-violet-600 text-white'
                         : 'border-violet-100 bg-white text-violet-900 hover:bg-violet-50 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-50'
                     }`}
-                    aria-label={`Ajouter la reaction ${reaction.label}`}
-                    title={reaction.label}
+                    aria-label={t('post.addReactionAria', { reaction: t(reaction.labelKey) })}
+                    title={t(reaction.labelKey)}
                   >
                     {reaction.icon}
                   </button>
@@ -341,7 +353,7 @@ function PostCard({
                 value={commentBody}
                 onChange={(event) => setCommentBody(event.target.value)}
                 rows={3}
-                placeholder="Ajouter un commentaire..."
+                placeholder={t('post.addCommentPlaceholder')}
                 className="w-full rounded-2xl border border-violet-100 bg-white px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-400 focus:bg-white dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-50"
               />
 
@@ -353,7 +365,7 @@ function PostCard({
 
               <div className="flex justify-end">
                 <Button type="submit" disabled={isSubmittingComment}>
-                  {isSubmittingComment ? 'Envoi...' : 'Commenter'}
+                  {isSubmittingComment ? t('common.sending') : t('post.commentAction')}
                 </Button>
               </div>
             </form>
@@ -361,7 +373,10 @@ function PostCard({
             <CommentList
               comments={post.comments ?? []}
               postId={post.id}
-              reactions={POST_REACTIONS}
+              reactions={POST_REACTIONS.map((reaction) => ({
+                ...reaction,
+                label: t(reaction.labelKey),
+              }))}
               onCreateReply={onCreateComment}
               onReactToComment={onReactToComment}
             />
@@ -384,6 +399,7 @@ function PostActionsMenu({
   onSharePost,
   onToggleMenu,
   onVisibilityChange,
+  t,
 }) {
   return (
     <div className="relative z-30 ml-auto shrink-0 self-start">
@@ -421,8 +437,8 @@ function PostActionsMenu({
                       : 'text-stone-700 hover:bg-violet-50 dark:text-violet-50 dark:hover:bg-white/10'
                   }`}
                 >
-                  <span className="block font-semibold">{option.label}</span>
-                  <span className="block text-xs opacity-72">{option.helper}</span>
+                  <span className="block font-semibold">{t(option.labelKey)}</span>
+                  <span className="block text-xs opacity-72">{t(option.helperKey)}</span>
                 </button>
               ))}
               <div className="my-2 h-px bg-violet-100 dark:bg-violet-300/12" />
@@ -458,8 +474,14 @@ function PostMenuButton({ children, onClick, tone = 'default' }) {
   )
 }
 
-function getVisibilityLabel(visibility) {
-  return POST_VISIBILITIES.find((option) => option.key === visibility)?.label ?? 'Public'
+function getVisibilityLabel(visibility, t) {
+  const labels = {
+    public: t('post.visibility.public'),
+    followers: t('post.visibility.followers'),
+    private: t('post.visibility.private'),
+  }
+
+  return labels[visibility] ?? labels.public
 }
 
 function getReactionCount(reactions = [], reactionKey) {
@@ -489,6 +511,7 @@ PostActionsMenu.propTypes = {
   onSharePost: PropTypes.func,
   onToggleMenu: PropTypes.func,
   onVisibilityChange: PropTypes.func,
+  t: PropTypes.func,
 }
 
 PostMenuButton.propTypes = {

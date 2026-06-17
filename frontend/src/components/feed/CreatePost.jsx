@@ -2,9 +2,11 @@ import { useEffect, useRef, useState } from 'react'
 import PropTypes from 'prop-types'
 
 import { getErrorMessage } from '../../utils/getErrorMessage'
+import { useI18n } from '../../hooks/useI18n'
 import Button from '../ui/Button'
 
 function CreatePost({ onCreate, focusToken = 0 }) {
+  const { t } = useI18n()
   const [content, setContent] = useState('')
   const [location, setLocation] = useState('')
   const [tagsInput, setTagsInput] = useState('')
@@ -13,6 +15,7 @@ function CreatePost({ onCreate, focusToken = 0 }) {
   const [mediaPreviewKind, setMediaPreviewKind] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
   const composerRef = useRef(null)
   const canPublish = Boolean(content.trim() || mediaFile)
 
@@ -30,6 +33,7 @@ function CreatePost({ onCreate, focusToken = 0 }) {
     }
 
     const timeoutId = globalThis.setTimeout(() => {
+      setIsOpen(true)
       composerRef.current?.focus()
     }, 180)
 
@@ -71,7 +75,7 @@ function CreatePost({ onCreate, focusToken = 0 }) {
     event.preventDefault()
 
     if (!canPublish) {
-      setErrorMessage('Ajoutez un texte ou un media pour publier votre post.')
+      setErrorMessage(t('feed.createPostNeedsContent'))
       return
     }
 
@@ -95,7 +99,7 @@ function CreatePost({ onCreate, focusToken = 0 }) {
       resetMediaPreview()
     } catch (error) {
       setErrorMessage(
-        getErrorMessage(error, 'Impossible de publier le post pour le moment.'),
+        getErrorMessage(error, t('feed.createPostError')),
       )
     } finally {
       setIsSubmitting(false)
@@ -103,23 +107,25 @@ function CreatePost({ onCreate, focusToken = 0 }) {
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="overflow-hidden rounded-[30px] border border-white/80 bg-white/94 shadow-[0_24px_56px_rgba(124,58,237,0.08)]"
-    >
+    <section className="overflow-hidden rounded-[30px] border border-white/80 bg-white/94 shadow-[0_24px_56px_rgba(124,58,237,0.08)] dark:border-violet-300/14 dark:bg-white/8">
       <div className="border-b border-violet-100 bg-[linear-gradient(135deg,_rgba(124,58,237,0.12),_rgba(216,180,254,0.22),_rgba(255,255,255,0.88))] px-5 py-5">
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-lg font-semibold text-stone-900">
-              Creer un post
+              {t('creation.createPost')}
             </p>
             <p className="text-sm text-stone-600">
-              Partagez une photo, une video, une astuce ou une histoire sur votre animal.
+              {t('feed.createPostDescription')}
             </p>
           </div>
-          <span className="rounded-full border border-violet-100 bg-white/84 px-3 py-1 text-xs font-medium text-violet-800 shadow-sm">
-            Publication rapide
-          </span>
+          <button
+            type="button"
+            onClick={() => setIsOpen((current) => !current)}
+            className="rounded-full border border-violet-100 bg-white/84 px-3 py-1 text-xs font-medium text-violet-800 shadow-sm transition hover:bg-violet-50"
+            aria-expanded={isOpen}
+          >
+            {isOpen ? t('creation.hidePostForm') : t('creation.createPost')}
+          </button>
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">
@@ -134,16 +140,17 @@ function CreatePost({ onCreate, focusToken = 0 }) {
         </div>
       </div>
 
-      <div className="p-5">
+      {isOpen ? (
+      <form onSubmit={handleSubmit} className="p-5">
         <label className="block">
-          <span className="sr-only">Contenu du post</span>
+            <span className="sr-only">{t('feed.postContent')}</span>
           <textarea
             ref={composerRef}
             value={content}
             onChange={(event) => setContent(event.target.value)}
             rows={4}
             maxLength={1200}
-            placeholder="Ex: Mon chat a enfin accepte son nouveau jouet..."
+            placeholder={t('feed.postPlaceholder')}
             className="w-full rounded-[24px] border border-violet-100 bg-violet-50/55 px-4 py-4 text-sm leading-6 text-stone-700 outline-none transition focus:border-violet-400 focus:bg-white"
             aria-describedby="create-post-helper"
           />
@@ -152,7 +159,7 @@ function CreatePost({ onCreate, focusToken = 0 }) {
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           <label className="block">
             <span className="mb-2 block text-sm font-medium text-stone-700">
-              Localisation
+              {t('feed.location')}
             </span>
             <input
               value={location}
@@ -164,7 +171,7 @@ function CreatePost({ onCreate, focusToken = 0 }) {
 
           <label className="block">
             <span className="mb-2 block text-sm font-medium text-stone-700">
-              Tags
+              {t('feed.tags')}
             </span>
             <input
               value={tagsInput}
@@ -179,16 +186,15 @@ function CreatePost({ onCreate, focusToken = 0 }) {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <p className="text-sm font-medium text-stone-800">
-                Ajouter un media
+                {t('feed.addMedia')}
               </p>
               <p className="mt-1 text-xs leading-6 text-stone-500">
-                Une image ou une video par post. Formats acceptes: jpg, png, webp,
-                gif, mp4, webm, mov.
+                {t('feed.mediaHelp')}
               </p>
             </div>
 
             <label className="inline-flex cursor-pointer items-center justify-center rounded-full border border-violet-100 bg-white px-4 py-2 text-sm font-medium text-violet-800 transition hover:-translate-y-0.5 hover:bg-violet-50">
-              Choisir un fichier
+              {t('feed.chooseFile')}
               <input
                 type="file"
                 accept="image/*,video/mp4,video/webm,video/quicktime"
@@ -211,7 +217,7 @@ function CreatePost({ onCreate, focusToken = 0 }) {
                   onClick={resetMediaPreview}
                   className="rounded-full border border-violet-100 bg-violet-50 px-3 py-1 text-xs font-medium text-violet-800 transition hover:bg-violet-100"
                 >
-                  Retirer
+                  {t('profile.remove')}
                 </button>
               </div>
             </div>
@@ -226,15 +232,15 @@ function CreatePost({ onCreate, focusToken = 0 }) {
 
         <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div id="create-post-helper" className="rounded-2xl bg-[linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.82))] px-4 py-3 text-xs leading-6 text-stone-600">
-            {content.trim().length} caracteres - ajoutez du contexte, une ville,
-            quelques tags et un media si vous voulez rendre le post plus vivant.
+            {t('feed.characterHelp', { count: content.trim().length })}
           </div>
           <Button type="submit" disabled={isSubmitting || !canPublish} className="min-w-[140px]">
-            {isSubmitting ? 'Publication...' : 'Publier'}
+            {isSubmitting ? t('feed.publishing') : t('feed.publish')}
           </Button>
         </div>
-      </div>
-    </form>
+      </form>
+      ) : null}
+    </section>
   )
 }
 

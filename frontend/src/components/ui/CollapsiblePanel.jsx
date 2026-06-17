@@ -1,4 +1,7 @@
 import { useId } from 'react'
+import PropTypes from 'prop-types'
+
+import { useI18n } from '../../hooks/useI18n'
 
 function CollapsiblePanel({
   kicker,
@@ -7,10 +10,13 @@ function CollapsiblePanel({
   summary,
   isOpen,
   onToggle,
+  showLabel,
+  hideLabel,
   actions = null,
   children,
 }) {
   const contentId = useId()
+  const { t } = useI18n()
 
   return (
     <section className="rounded-[30px] border border-white/80 bg-white/92 p-5 shadow-[0_20px_48px_rgba(124,58,237,0.08)]">
@@ -43,7 +49,7 @@ function CollapsiblePanel({
             aria-expanded={isOpen}
             aria-controls={contentId}
           >
-            <span>{isOpen ? 'Masquer' : 'Afficher'}</span>
+            <span>{isOpen ? (hideLabel ?? t('common.hide')) : (showLabel ?? t('common.show'))}</span>
             <svg
               viewBox="0 0 24 24"
               fill="none"
@@ -67,6 +73,19 @@ function CollapsiblePanel({
       </div>
     </section>
   )
+}
+
+CollapsiblePanel.propTypes = {
+  kicker: PropTypes.string,
+  title: PropTypes.string,
+  description: PropTypes.string,
+  summary: PropTypes.string,
+  isOpen: PropTypes.bool,
+  onToggle: PropTypes.func,
+  showLabel: PropTypes.string,
+  hideLabel: PropTypes.string,
+  actions: PropTypes.node,
+  children: PropTypes.node,
 }
 
 export default CollapsiblePanel

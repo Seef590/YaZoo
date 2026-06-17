@@ -1,12 +1,18 @@
+import { useState } from 'react'
+
 import companionImage from '../assets/images/companions-bond.webp'
 import ProductCard from '../components/marketplace/ProductCard'
 import ProductListingForm from '../components/marketplace/ProductListingForm'
 import ProductsFilters from '../components/marketplace/ProductsFilters'
 import { MarketplaceHero } from '../components/marketplace/MarketplaceCommon'
+import CollapsiblePanel from '../components/ui/CollapsiblePanel'
 import { useProductsMarketplace } from '../hooks/useProductsMarketplace'
+import { useI18n } from '../hooks/useI18n'
 
 function ProductsMarketplacePage() {
+  const { t } = useI18n()
   const marketplace = useProductsMarketplace()
+  const [isCreateOpen, setIsCreateOpen] = useState(false)
 
   return (
     <section className="space-y-6">
@@ -36,19 +42,30 @@ function ProductsMarketplacePage() {
       <StatusMessage tone="error" message={marketplace.errorMessage} />
       <StatusMessage tone="success" message={marketplace.successMessage} />
 
-      <ProductListingForm
-        form={marketplace.form}
-        editingId={marketplace.editingId}
-        isSubmitting={marketplace.isSubmitting}
-        imageFile={marketplace.imageFile}
-        galleryFiles={marketplace.galleryFiles}
-        existingPreviewUrls={marketplace.existingPreviewUrls}
-        onCancelEdit={marketplace.resetForm}
-        onFormChange={marketplace.handleFormChange}
-        onGalleryFilesChange={marketplace.setGalleryFiles}
-        onImageFileChange={marketplace.setImageFile}
-        onSubmit={marketplace.handleSubmit}
-      />
+      <CollapsiblePanel
+        kicker={t('common.products')}
+        title={marketplace.editingId ? t('creation.editMode') : t('creation.addProduct')}
+        description={t('marketplace.creationPanelDescription')}
+        summary={marketplace.editingId ? t('creation.editMode') : t('creation.addProduct')}
+        isOpen={isCreateOpen || Boolean(marketplace.editingId)}
+        onToggle={() => setIsCreateOpen((current) => !current)}
+        showLabel={t('creation.addProduct')}
+        hideLabel={t('creation.hideForm')}
+      >
+        <ProductListingForm
+          form={marketplace.form}
+          editingId={marketplace.editingId}
+          isSubmitting={marketplace.isSubmitting}
+          imageFile={marketplace.imageFile}
+          galleryFiles={marketplace.galleryFiles}
+          existingPreviewUrls={marketplace.existingPreviewUrls}
+          onCancelEdit={marketplace.resetForm}
+          onFormChange={marketplace.handleFormChange}
+          onGalleryFilesChange={marketplace.setGalleryFiles}
+          onImageFileChange={marketplace.setImageFile}
+          onSubmit={marketplace.handleSubmit}
+        />
+      </CollapsiblePanel>
 
       <MarketplaceGrid
         isLoading={marketplace.isLoading}

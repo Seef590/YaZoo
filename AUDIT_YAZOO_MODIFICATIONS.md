@@ -196,14 +196,14 @@ Frontend :
 - `npm.cmd run build` : OK, build Vite genere.
 
 Backend :
-- `php artisan route:list` : OK, 97 routes.
-- `php artisan migrate:status` : bloque hors Docker, `Host mysql failed` car l'hote `mysql` n'est resolu que dans le reseau Compose.
+- `php artisan route:list` : OK, 99 routes.
+- `docker exec yazoo-app-1 php artisan migrate:status` : OK, toutes les migrations attendues sont `Ran`.
 - `php artisan test tests\Feature\Reservation\ReservationApiTest.php` : OK, 10 tests, 92 assertions.
 - `php artisan test` : OK, 76 tests, 453 assertions.
 
 Docker :
 - `docker compose config` : OK.
-- `docker compose build` non execute pour eviter un build long non necessaire apres validation config/build applicatif.
+- `docker compose build` : OK.
 
 ## 8. Problemes restants
 
@@ -211,3 +211,60 @@ Docker :
 - Le feed organique des services expose un endpoint backend `GET /api/services/feed`, mais l'insertion visuelle dans `FeedPage` n'a pas ete finalisee dans cette tranche.
 - Les actions feed/communautes/profil/admin ne sont pas encore toutes connectees a `ActivityLogger`; le service central est en place.
 - Les routes admin services/reservations dediees ne sont pas encore ajoutees; l'admin peut agir via policies sur reservations, mais pas via un dashboard services separe.
+
+## 9. Passe finale UI, RTL, follow et nettoyage - 2026-06-17
+
+Problemes detectes :
+- Les panneaux de creation marketplace etaient visibles en continu ou utilisaient un bouton trop generique.
+- Les tests marketplace echouaient quand plusieurs boutons `Afficher` etaient presents.
+- Les images de post etaient contraintes par le padding interne de la carte.
+- Le header/menu mobile RTL avait encore des alignements physiques gauche/droite.
+- Le feed ne recevait pas encore `author.isFollowing`, donc le bouton suivre ne pouvait pas etre fiable dans `PostCard`.
+- La couverture profil etait trop assombrie par l'overlay global.
+
+Corrections realisees :
+- `frontend/src/components/ui/CollapsiblePanel.jsx` accepte `showLabel` et `hideLabel`, garde `aria-expanded` et conserve le contenu monte pour ne pas perdre les champs.
+- `frontend/src/pages/AnimalsMarketplacePage.jsx`, `ProductsMarketplacePage.jsx`, `CommunitiesPage.jsx` replient les formulaires de creation et affichent des boutons explicites.
+- `frontend/src/components/ui/FollowButton.jsx` ajoute un bouton follow/following reutilisable avec etat loading, erreurs et traduction.
+- `frontend/src/components/feed/PostCard.jsx` affiche Follow/Following sur les posts d'autres utilisateurs, traduit les libelles photo/commentaires/partages/reactions, et rend le media full width sans changer les hauteurs existantes.
+- `backend/app/Http/Resources/Feed/PostResource.php` expose `author.isFollowing` depuis la relation existante.
+- `frontend/src/pages/ProfilePage.jsx` reutilise `FollowButton` et allege l'overlay de couverture pour garder une vraie image claire.
+- `frontend/src/layouts/Layout.jsx` traduit plusieurs libelles fixes et corrige le drawer/bottom nav en RTL.
+- `frontend/src/index.css` ajoute une protection globale anti overflow horizontal et des aides RTL.
+- `frontend/src/lib/i18n.js` ajoute les cles FR/AR pour follow, creation, feed, post et libelles communs.
+- `frontend/src/pages/AnimalsMarketplacePage.test.jsx` et `ProductsMarketplacePage.test.jsx` ouvrent maintenant le panneau de creation via le bon bouton traduit.
+
+Fichiers supprimes apres verification comme artefacts generes ou temporaires :
+- `frontend/dist`
+- `frontend/coverage`
+- `frontend/mobile-shots`
+- `backend/serve.err.log`
+- `backend/serve.out.log`
+- `frontend/dev.err.log`
+- `frontend/dev.out.log`
+- `frontend/dev2.err.log`
+- `frontend/dev2.out.log`
+- `frontend/preview.err.log`
+- `frontend/preview.out.log`
+- `frontend/vite.err.log`
+- `frontend/vite.out.log`
+- `backend/bootstrap/cache/serFE57.tmp`
+
+Fichiers conserves volontairement :
+- `docs/rapport_yazoo_uml/`, `docs/soutenance/`, `scripts/build_rapport_yazoo_uml.py`, `scripts/build_yazoo_soutenance_pptx.py` car ils ressemblent a des livrables/documentation utiles et ne sont pas des caches evidents.
+- `backend/storage/logs/*`, backups infra, migrations, seeders, assets, Dockerfiles et scripts deploy.
+
+Tests relances apres cette passe :
+- `npm.cmd run lint` : OK.
+- `npm.cmd test -- --run` : OK, 11 fichiers, 25 tests.
+- `npm.cmd run build` : OK.
+- `php artisan route:list` : OK, 99 routes.
+- `docker exec yazoo-app-1 php artisan migrate:status` : OK.
+- `php artisan test` : OK, 76 tests, 453 assertions.
+- `docker compose config` : OK.
+- `docker compose build` : OK.
+
+Statut avant deploiement :
+- Branche locale : `safe-ui-audit-fixes`.
+- Les ressources Azure existantes restent ciblees : `yazoo` et `yazoo-api`.
+- Images DockerHub ciblees : `5eef/yazoo-frontend:latest` et `5eef/yazoo-api:latest`.

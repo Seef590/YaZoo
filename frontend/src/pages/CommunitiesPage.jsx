@@ -15,6 +15,7 @@ import {
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import CollapsiblePanel from '../components/ui/CollapsiblePanel'
+import { useI18n } from '../hooks/useI18n'
 import { asArray, extractDataArray, extractDataObject } from '../utils/apiData'
 import { formatDate } from '../utils/formatDate'
 import { getErrorMessage } from '../utils/getErrorMessage'
@@ -28,6 +29,7 @@ const defaultForm = {
 }
 
 function CommunitiesPage() {
+  const { t } = useI18n()
   const [searchParams, setSearchParams] = useSearchParams()
   const queryFromUrl = searchParams.get('q') ?? ''
   const [communities, setCommunities] = useState([])
@@ -46,6 +48,7 @@ function CommunitiesPage() {
   const [loadingRequestCommunityIds, setLoadingRequestCommunityIds] = useState([])
   const [processingMembershipIds, setProcessingMembershipIds] = useState([])
   const [isFiltersOpen, setIsFiltersOpen] = useState(false)
+  const [isCreateOpen, setIsCreateOpen] = useState(false)
   const activeFiltersCount = search.trim() ? 1 : 0
 
   useEffect(() => {
@@ -424,10 +427,20 @@ function CommunitiesPage() {
       ) : null}
 
       <div className="grid gap-6 xl:grid-cols-[360px_1fr]">
+        <CollapsiblePanel
+          kicker="Creation"
+          title={editingId ? 'Modifier la communaute' : 'Creer une communaute'}
+          description="Lancez un groupe public ou prive autour d'un sujet animalier."
+          summary={editingId ? 'Modification en cours' : 'Creation'}
+          isOpen={isCreateOpen || Boolean(editingId)}
+          onToggle={() => setIsCreateOpen((current) => !current)}
+          showLabel={t('creation.createCommunity')}
+          hideLabel={t('creation.hideForm')}
+        >
         <form
           onSubmit={handleSubmit}
-        className="rounded-[30px] border border-white/80 bg-white/92 p-4 shadow-[0_20px_48px_rgba(124,58,237,0.08)] sm:p-5"
-      >
+          className="rounded-[24px] border border-violet-100 bg-white/60 p-4 dark:border-violet-300/14 dark:bg-white/8 sm:p-5"
+        >
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.18em] text-violet-700">
@@ -532,6 +545,7 @@ function CommunitiesPage() {
             </Button>
           </div>
         </form>
+        </CollapsiblePanel>
 
         <div className="space-y-4">
           <div className="rounded-[30px] border border-white/80 bg-white/92 p-5 shadow-[0_20px_48px_rgba(124,58,237,0.08)]">

@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { vi } from 'vitest'
 
 import AnimalsMarketplacePage from './AnimalsMarketplacePage'
+import { I18nProvider } from '../contexts/I18nContext'
 import * as animalService from '../services/marketplace/animalsMarketplaceService'
 
 vi.mock('../services/marketplace/animalsMarketplaceService', () => ({
@@ -27,10 +28,13 @@ describe('AnimalsMarketplacePage', () => {
 
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <AnimalsMarketplacePage />
+        <I18nProvider>
+          <AnimalsMarketplacePage />
+        </I18nProvider>
       </MemoryRouter>,
     )
 
+    await user.click(await screen.findByRole('button', { name: /Ajouter un animal/i }))
     const heading = await screen.findByRole('heading', { name: 'Creer une annonce animal' })
     const publicationForm = heading.closest('form')
 
