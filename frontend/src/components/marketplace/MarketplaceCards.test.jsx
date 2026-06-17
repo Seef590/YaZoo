@@ -23,6 +23,7 @@ const animal = {
   galleryUrls: ['https://example.com/luna-2.webp'],
   createdAt: '2026-04-07T10:00:00.000Z',
   author: {
+    id: 42,
     name: 'Sara Seller',
     email: 'sara@yazoo.app',
   },
@@ -42,6 +43,7 @@ const product = {
   galleryUrls: ['https://example.com/panier-2.webp'],
   createdAt: '2026-04-07T10:00:00.000Z',
   author: {
+    id: 84,
     name: 'Boutique YaZoo',
     email: 'shop@yazoo.app',
   },
@@ -82,7 +84,7 @@ describe('marketplace cards', () => {
 
     expect(screen.getByRole('link', { name: 'Contacter' })).toHaveAttribute(
       'href',
-      expect.stringContaining('sara%40yazoo.app'),
+      expect.stringContaining('user=42'),
     )
   })
 
@@ -112,7 +114,7 @@ describe('marketplace cards', () => {
 
     expect(screen.getByRole('link', { name: 'Contacter' })).toHaveAttribute(
       'href',
-      expect.stringContaining('shop%40yazoo.app'),
+      expect.stringContaining('user=84'),
     )
   })
 })

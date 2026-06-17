@@ -265,8 +265,8 @@ function ReservationCard({ reservation, processingId, onAction }) {
   const message = reservation.isBuyer
     ? `Bonjour, je fais suite a ma commande pour "${reservation.listing.title}".`
     : `Bonjour, je vous contacte au sujet de votre commande pour "${reservation.listing.title}".`
-  const contactPath = counterpart?.email
-    ? `/messages?email=${encodeURIComponent(counterpart.email)}&message=${encodeURIComponent(message)}`
+  const contactPath = counterpart?.id
+    ? `/messages?user=${encodeURIComponent(counterpart.id)}&message=${encodeURIComponent(message)}`
     : null
 
   return (

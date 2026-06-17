@@ -10,11 +10,16 @@ use App\Http\Resources\Messaging\MessageResource;
 use App\Models\Conversation;
 use App\Models\Message;
 use App\Notifications\NewMessageNotification;
+use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class MessageController extends Controller
 {
+    public function __construct(
+        protected ActivityLogger $activityLogger,
+    ) {}
+
     /**
      * Store a newly created message in a conversation.
      */
@@ -30,6 +35,7 @@ class MessageController extends Controller
         $message->load('sender:id,name,avatar');
         $conversation->refresh();
         $this->notifyRecipient($conversation, $request->user()->id, $message);
+        $this->logMessageSent($request, $conversation);
         $this->loadConversationSummary($conversation, $request->user()->id);
         event((new ConversationMessageSent($conversation, $message))->dontBroadcastToCurrentUser());
 
@@ -86,5 +92,25 @@ class MessageController extends Controller
                 ->where('user_id', '!=', $userId)
                 ->whereNull('read_at'),
         ]);
+    }
+
+    protected function logMessageSent(Request $request, Conversation $conversation): void
+    {
+        $actor = $request->user();
+        $target = $conversation->otherParticipantFor($actor->id);
+
+        $this->activityLogger->log(
+            'message.sent',
+            'message',
+            $conversation,
+            [
+                'conversation_id' => $conversation->id,
+                'target_user_id' => $target?->id,
+                'sender_id' => $actor->id,
+            ],
+            $actor,
+            $actor,
+            $request,
+        );
     }
 }

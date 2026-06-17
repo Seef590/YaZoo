@@ -289,3 +289,76 @@ Verifications publiques apres deploiement :
 - `https://yazoo.azurewebsites.net/contact` : HTTP 200.
 - `https://yazoo.azurewebsites.net/LICENSE.txt` : HTTP 200, licence MIT exposee.
 - `https://yazoo-api.azurewebsites.net/health/ready` : HTTP 200.
+
+## 11. Messagerie privee, liens contact et feed utilisateurs - 2026-06-17
+
+Audit complementaire :
+- Les tables `conversations` et `messages` existaient deja avec une conversation directe par colonnes `participant_one_id` / `participant_two_id`.
+- Aucun doublon de table n'a ete cree. La correction reste additive et compatible avec l'ancien endpoint `POST /api/conversations`.
+- La messagerie avait deja notifications, resource, tests et websocket event, mais pas les routes attendues `/conversations/direct` et `/conversations/{conversation}/read`.
+- Les liens marketplace/reservations utilisaient encore `email` comme identifiant de contact.
+- `Layout.jsx` affichait encore le libelle UI `Sync 30s`.
+- Le feed ne chargeait pas encore une section utilisateurs inscrits/suggestions.
+
+Corrections backend :
+- `backend/routes/api.php` ajoute :
+  - `POST /api/conversations/direct`
+  - `PATCH /api/conversations/{conversation}/read`
+  - `GET /api/users/suggestions`
+- `StoreConversationRequest` accepte `user_id` en alias de `recipient_id` et garde la compatibilite `recipient_email`.
+- `StoreMessageRequest` limite maintenant `body` a 5000 caracteres.
+- `ConversationController` reutilise la logique anti-doublon existante pour `/direct`, marque une conversation lue via `/read`, marque les notifications message comme lues et journalise :
+  - `message.conversation_started`
+  - `message.sent`
+  - `message.read`
+- `MessageController` journalise `message.sent` sans stocker le contenu du message dans l'historique.
+- `ConversationResource` n'expose plus l'email public du participant dans la conversation et fournit aussi les champs compatibles `latest_message`, `unread_count`, `created_at`, `updated_at`.
+- `MessageResource` fournit `conversation_id`, `sender_id`, `is_own`, `created_at`, `read_at`, `edited_at`, `deleted_at`.
+- `UserController@suggestions` retourne jusqu'a 20 utilisateurs hors utilisateur connecte.
+- `UserResource` expose `username`, `isFollowing`, `followersCount`, `followingCount`, `profileUrl`.
+
+Corrections frontend :
+- `frontend/src/api/messages.js` ajoute `createDirectConversationRequest` et `markConversationReadRequest`.
+- `frontend/src/pages/MessagesPage.jsx` supporte :
+  - `/messages`
+  - `/messages?conversation=ID`
+  - `/messages?user=USER_ID`
+  - `/messages?user=USER_ID&message=TEXTE`
+  - compatibilite ancienne `/messages?email=...`
+- Quand `user=ID` est present, le frontend appelle `POST /api/conversations/direct`, ouvre la conversation et conserve le message initial en brouillon.
+- L'ouverture d'une conversation appelle explicitement `PATCH /api/conversations/{id}/read`.
+- La recherche messages filtre localement pendant la saisie.
+- `Enter` envoie le message et `Shift+Enter` garde une nouvelle ligne.
+- Les bulles messages tiennent compte du RTL.
+- `ProfilePage` utilise `/conversations/direct` avec `user_id` pour le bouton Message.
+- `marketplaceUtils`, `AnimalDetailPage`, `ProductDetailPage` et `ReservationsPage` remplacent les liens `?email=` par `?user=`.
+- `Layout.jsx` n'affiche plus `Sync 30s` ni le fallback `Sync secours`.
+- `FeedPage` charge `GET /api/users/suggestions` et affiche une section `Utilisateurs a decouvrir` avec avatar, profil, Follow et Message.
+- `frontend/src/lib/i18n.js` ajoute les cles FR/AR pour message, discussion, profil utilisateur et suggestions feed.
+
+Tests executes pendant cette session :
+- `php artisan route:list` : OK, 102 routes.
+- `php artisan test --filter=MessagingApiTest` : OK, 6 tests, 27 assertions.
+- `php artisan test --filter=UserControllerTest` : OK, 6 tests, 20 assertions.
+- `php artisan test` : OK, 78 tests, 460 assertions.
+- `npm.cmd run lint` : OK.
+- `npm.cmd run build` : OK.
+- `npm.cmd test -- --run` : OK, 11 fichiers, 25 tests.
+- `docker compose config` : OK.
+- `php artisan migrate:status` depuis Windows : bloque, car `.env` local pointe vers `DB_HOST=mysql`, nom resolvable dans Docker mais pas depuis l'hote Windows.
+- `docker ps` : d'abord bloque car Docker Desktop/daemon etait indisponible, puis Docker a ete relance.
+- `docker version` : OK apres relance Docker Desktop.
+- `docker compose build` : OK apres relance Docker Desktop.
+
+Tests frontend corriges :
+- `frontend/src/features/marketplace/marketplaceUtils.test.js` attend maintenant `user=ID`.
+- `frontend/src/components/marketplace/MarketplaceCards.test.jsx` verifie les liens de contact via `user=ID`.
+
+Problemes restants / limites de cette session :
+- La demande initiale couvre une refonte exhaustive de toutes les pages, traductions et validations manuelles. Cette session a livre le coeur messagerie reelle, contacts `user_id`, feed suggestions, suppression Sync UI, tests backend/frontend verts.
+- La structure historique des conversations reste sur `participant_one_id` / `participant_two_id` au lieu d'une nouvelle table pivot `conversation_user`, afin de ne pas casser les donnees et tests existants dans cette passe.
+- Le deploiement GitHub/DockerHub/Azure est repris apres relance Docker Desktop.
+
+Nettoyage realise pendant cette session :
+- `frontend/dist` supprime apres le build de verification.
+- `frontend/coverage` supprime si present.

@@ -167,9 +167,11 @@ function Layout() {
               <DesktopActionLink to="/messages" icon="chat" label={t('common.messages')} className="hidden lg:inline-flex" />
               <DesktopActionLink to="/notifications" icon="bell" label={t('common.notifications')} className="hidden lg:inline-flex" />
 
-              <div className="hidden lg:block">
-                <InlinePill tone={realtimeIndicator.tone}>{realtimeIndicator.label}</InlinePill>
-              </div>
+              {realtimeIndicator.label ? (
+                <div className="hidden lg:block">
+                  <InlinePill tone={realtimeIndicator.tone}>{realtimeIndicator.label}</InlinePill>
+                </div>
+              ) : null}
 
               <div className="hidden lg:flex items-center gap-2 rounded-full border border-white/50 bg-white/35 px-3 py-1.5 dark:border-violet-300/15 dark:bg-white/8">
                 <Avatar
@@ -618,7 +620,7 @@ function AppIcon({ name, className = 'h-5 w-5' }) {
 function getRealtimeIndicator(realtimeStatus, isRealtimeEnabled) {
   if (!isRealtimeEnabled) {
     return {
-      label: 'Sync 30s',
+      label: '',
       shortLabel: '',
       tone: 'stone',
     }
@@ -641,7 +643,7 @@ function getRealtimeIndicator(realtimeStatus, isRealtimeEnabled) {
   }
 
   return {
-    label: 'Sync secours',
+    label: '',
     shortLabel: '',
     tone: 'stone',
   }

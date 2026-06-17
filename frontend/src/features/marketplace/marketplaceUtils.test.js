@@ -80,8 +80,8 @@ describe('marketplaceUtils', () => {
   })
 
   it('formate les libelles et chemins de contact', () => {
-    const animal = { name: 'Luna', author: { email: 'seller@yazoo.app' } }
-    const product = { name: 'Panier', author: { email: 'shop@yazoo.app' } }
+    const animal = { name: 'Luna', author: { id: 42, email: 'seller@yazoo.app' } }
+    const product = { name: 'Panier', author: { id: 84, email: 'shop@yazoo.app' } }
 
     expect(uniqueUrls(['a', 'a', '', 'b'])).toEqual(['a', 'b'])
     expect(formatAnimalCategory('dog')).toBe('Chiens')
@@ -96,7 +96,7 @@ describe('marketplaceUtils', () => {
     expect(formatProductStatus('unknown')).toBe('Disponible')
     expect(formatCondition('used')).toBe('Occasion')
     expect(formatCondition('new')).toBe('Neuf')
-    expect(buildAnimalContactPath(animal)).toContain('seller%40yazoo.app')
-    expect(buildProductContactPath(product)).toContain('shop%40yazoo.app')
+    expect(buildAnimalContactPath(animal)).toContain('user=42')
+    expect(buildProductContactPath(product)).toContain('user=84')
   })
 })

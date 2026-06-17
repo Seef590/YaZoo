@@ -2,14 +2,17 @@ import { useCallback, useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
 import {
+  createDirectConversationRequest,
   createConversationRequest,
   createMessageRequest,
   getConversationRequest,
   getConversationsRequest,
+  markConversationReadRequest,
 } from '../api/messages'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import { useAuth } from '../hooks/useAuth'
+import { useI18n } from '../hooks/useI18n'
 import { useNotifications } from '../hooks/useNotifications'
 import { subscribeToPrivateChannel } from '../lib/realtime'
 import { asArray, extractDataArray, extractDataObject } from '../utils/apiData'
@@ -23,6 +26,7 @@ const defaultConversationForm = {
 
 function MessagesPage() {
   const { user } = useAuth()
+  const { isRtl, t } = useI18n()
   const [searchParams, setSearchParams] = useSearchParams()
   const queryFromUrl = searchParams.get('q') ?? ''
   const [conversations, setConversations] = useState([])
@@ -44,7 +48,7 @@ function MessagesPage() {
     (sum, conversation) => sum + (conversation.unreadCount ?? 0),
     0,
   )
-  const visibleConversations = filterConversations(safeConversations, queryFromUrl)
+  const visibleConversations = filterConversations(safeConversations, search)
 
   const loadConversations = useCallback(
     async ({ silent = false } = {}) => {
@@ -95,6 +99,7 @@ function MessagesPage() {
 
         setSelectedConversation(conversation)
         setConversations((current) => upsertConversation(current, conversation))
+        await markConversationReadRequest(conversationId)
         await refreshUnreadCount()
 
         if (updateQuery) {
@@ -129,7 +134,9 @@ function MessagesPage() {
     }
 
     const requestedConversationId = Number(searchParams.get('conversation'))
+    const requestedUserId = Number(searchParams.get('user'))
     const requestedEmail = searchParams.get('email')
+    const requestedMessage = searchParams.get('message')?.trim() ?? ''
 
     if (
       Number.isInteger(requestedConversationId) &&
@@ -140,6 +147,49 @@ function MessagesPage() {
       return
     }
 
+    if (requestedUserId > 0) {
+      const openDirectConversation = async () => {
+        setIsConversationLoading(true)
+        setErrorMessage('')
+
+        try {
+          const response = await createDirectConversationRequest({
+            user_id: requestedUserId,
+          })
+          const conversation = extractDataObject(response, null)
+
+          if (!conversation?.id) {
+            throw new Error('Conversation introuvable.')
+          }
+
+          setConversations((current) => upsertConversation(current, conversation))
+          setSelectedConversationId(conversation.id)
+          setSelectedConversation(conversation)
+          setMessageBody(requestedMessage)
+          await markConversationReadRequest(conversation.id)
+          await refreshUnreadCount()
+
+          const nextSearchParams = new URLSearchParams(searchParams)
+          nextSearchParams.set('conversation', String(conversation.id))
+          nextSearchParams.delete('user')
+          nextSearchParams.delete('email')
+          if (!requestedMessage) {
+            nextSearchParams.delete('message')
+          }
+          setSearchParams(nextSearchParams, { replace: true })
+        } catch (error) {
+          setErrorMessage(
+            getErrorMessage(error, 'Impossible de demarrer la conversation.'),
+          )
+        } finally {
+          setIsConversationLoading(false)
+        }
+      }
+
+      void openDirectConversation()
+      return
+    }
+
     if (!requestedConversationId && requestedEmail) {
       return
     }
@@ -147,7 +197,15 @@ function MessagesPage() {
     if (!requestedConversationId && conversations[0] && !selectedConversationId) {
       openConversation(conversations[0].id, { updateQuery: false, silent: true })
     }
-  }, [conversations, isLoading, openConversation, searchParams, selectedConversationId])
+  }, [
+    conversations,
+    isLoading,
+    openConversation,
+    refreshUnreadCount,
+    searchParams,
+    selectedConversationId,
+    setSearchParams,
+  ])
 
   useEffect(() => {
     const requestedEmail = searchParams.get('email')?.trim() ?? ''
@@ -374,30 +432,37 @@ function MessagesPage() {
     }
   }
 
+  const handleMessageKeyDown = (event) => {
+    if (event.key !== 'Enter' || event.shiftKey) {
+      return
+    }
+
+    event.preventDefault()
+    event.currentTarget.form?.requestSubmit()
+  }
+
   return (
-    <section className="space-y-6">
+    <section className="space-y-6" dir={isRtl ? 'rtl' : 'ltr'}>
       <section className="overflow-hidden rounded-[30px] border border-white/80 bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.18),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(221,214,254,0.56),_transparent_30%),linear-gradient(135deg,_rgba(255,255,255,0.98)_0%,_rgba(247,241,255,0.9)_48%,_rgba(237,233,254,0.84)_100%)] p-5 shadow-[0_24px_60px_rgba(124,58,237,0.1)] sm:rounded-[32px] sm:p-6">
         <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr] xl:items-center">
           <div>
             <p className="inline-flex rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-violet-700">
-              Messagerie
+              {t('messages.badge')}
             </p>
             <h2 className="mt-4 text-2xl font-semibold leading-tight text-stone-950 sm:text-3xl">
-              Une messagerie plus fluide pour garder des echanges simples, humains et rassurants.
+              {t('messages.title')}
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-600">
-              Demarrez un contact, reprenez une conversation et suivez chaque
-              echange dans un espace plus net, plus lumineux et plus confortable
-              a utiliser au quotidien.
+              {t('messages.text')}
             </p>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
             <HeroStatCard label="Conversations" value={conversations.length} />
-            <HeroStatCard label="Non lus" value={unreadMessages} />
+            <HeroStatCard label={t('messages.unread')} value={unreadMessages} />
             <HeroStatCard
-              label="Conversation active"
-              value={selectedConversation ? 'Ouverte' : 'A ouvrir'}
+              label={t('messages.activeConversation')}
+              value={selectedConversation ? t('messages.opened') : t('messages.toOpen')}
             />
           </div>
         </div>
@@ -423,22 +488,22 @@ function MessagesPage() {
           >
             <div className="mb-4">
               <p className="text-xs uppercase tracking-[0.18em] text-violet-700">
-                Nouveau contact
+                {t('messages.newContact')}
               </p>
               <h2 className="mt-2 text-xl font-semibold text-stone-950">
-                Nouvelle conversation
+                {t('messages.newConversation')}
               </h2>
               <p className="mt-1 text-sm text-stone-500">
-                Lancez un premier echange clair et professionnel en quelques secondes.
+                {t('messages.startWithContact')}
               </p>
             </div>
 
             <label className="block">
               <span className="mb-2 block text-sm font-medium text-stone-700">
-                Email du destinataire
+                {t('common.contactLabel')}
               </span>
               <input
-                type="email"
+                type="text"
                 required
                 value={conversationForm.recipient_email}
                 onChange={handleConversationFormChange('recipient_email')}
@@ -449,7 +514,7 @@ function MessagesPage() {
 
             <label className="mt-4 block">
               <span className="mb-2 block text-sm font-medium text-stone-700">
-                Premier message
+                {t('messages.firstMessage')}
               </span>
               <textarea
                 rows={4}
@@ -464,8 +529,8 @@ function MessagesPage() {
             <div className="mt-4 flex justify-stretch sm:justify-end">
               <Button type="submit" disabled={isConversationSubmitting} className="w-full sm:w-auto">
                 {isConversationSubmitting
-                  ? 'Creation...'
-                  : 'Demarrer la conversation'}
+                  ? t('common.loading')
+                  : t('common.startConversation')}
               </Button>
             </div>
           </form>
@@ -474,7 +539,7 @@ function MessagesPage() {
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs uppercase tracking-[0.18em] text-violet-700">
-                  Boite de reception
+                  {t('messages.inbox')}
                 </p>
                 <h2 className="mt-2 text-xl font-semibold text-stone-950">
                   Conversations
@@ -501,24 +566,24 @@ function MessagesPage() {
               />
               <div className="grid gap-3 sm:flex sm:flex-wrap">
                 <Button type="submit" className="w-full sm:w-auto">
-                  Rechercher
+                {t('common.search')}
                 </Button>
                 {queryFromUrl ? (
                   <Button type="button" variant="ghost" onClick={handleResetSearch} className="w-full sm:w-auto">
-                    Reinitialiser
+                    {t('common.cancel')}
                   </Button>
                 ) : null}
               </div>
             </form>
 
-            {isLoading ? <StateBox>Chargement des conversations...</StateBox> : null}
+            {isLoading ? <StateBox>{t('common.loading')}</StateBox> : null}
 
             {!isLoading && conversations.length === 0 ? (
-              <StateBox>Aucune conversation pour le moment.</StateBox>
+              <StateBox>{t('messages.noConversation')}</StateBox>
             ) : null}
 
             {!isLoading && conversations.length > 0 && visibleConversations.length === 0 ? (
-              <StateBox>Aucune conversation ne correspond a votre recherche.</StateBox>
+              <StateBox>{t('messages.noConversation')}</StateBox>
             ) : null}
 
             {!isLoading && visibleConversations.length > 0 ? (
@@ -531,7 +596,7 @@ function MessagesPage() {
                       key={conversation.id}
                       type="button"
                       onClick={() => openConversation(conversation.id)}
-                      className={`w-full rounded-[26px] border px-4 py-4 text-left transition duration-200 ${
+                      className={`w-full rounded-[26px] border px-4 py-4 text-start transition duration-200 ${
                         isActive
                           ? 'border-transparent bg-[linear-gradient(135deg,#7c3aed,#a855f7,#c4b5fd)] text-white shadow-[0_18px_34px_rgba(124,58,237,0.22)]'
                           : 'border-violet-100 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98),_rgba(246,239,255,0.78))] text-stone-900 hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-[0_16px_30px_rgba(124,58,237,0.1)]'
@@ -565,7 +630,7 @@ function MessagesPage() {
                             }`}
                           >
                             {conversation.latestMessage?.body ??
-                              'Conversation prete a demarrer.'}
+                              t('messages.readyToStart')}
                           </p>
                           <p
                             className={`mt-2 text-xs ${
@@ -574,7 +639,7 @@ function MessagesPage() {
                           >
                             {conversation.updatedAt
                               ? formatDate(conversation.updatedAt)
-                              : 'Maintenant'}
+                              : t('messages.opened')}
                           </p>
                         </div>
                       </div>
@@ -588,12 +653,12 @@ function MessagesPage() {
 
         <div className="rounded-[30px] border border-white/80 bg-white/92 p-5 shadow-[0_20px_48px_rgba(124,58,237,0.08)]">
           {isConversationLoading ? (
-            <StateBox>Chargement de la conversation...</StateBox>
+            <StateBox>{t('common.loading')}</StateBox>
           ) : null}
 
           {!isConversationLoading && !selectedConversation ? (
             <StateBox>
-              Selectionnez une conversation ou creez-en une nouvelle.
+              {t('messages.selectConversation')}
             </StateBox>
           ) : null}
 
@@ -606,13 +671,15 @@ function MessagesPage() {
                   />
                   <div>
                     <p className="text-xs uppercase tracking-[0.18em] text-violet-700">
-                      Conversation ouverte
+                      {t('messages.openConversation')}
                     </p>
                     <h2 className="mt-1 text-xl font-semibold text-stone-950">
                       {selectedConversation.participant?.name ?? 'Utilisateur'}
                     </h2>
                     <p className="text-sm text-stone-500">
-                      {selectedConversation.participant?.email ?? 'Email indisponible'}
+                      {t('messages.discussionWith', {
+                        name: selectedConversation.participant?.name ?? t('common.user'),
+                      })}
                     </p>
                   </div>
                 </div>
@@ -629,7 +696,9 @@ function MessagesPage() {
                     <article
                       key={message.id}
                       className={`flex ${
-                        message.isOwn ? 'justify-end' : 'justify-start'
+                        message.isOwn
+                          ? isRtl ? 'justify-start' : 'justify-end'
+                          : isRtl ? 'justify-end' : 'justify-start'
                       }`}
                     >
                       <div
@@ -640,7 +709,7 @@ function MessagesPage() {
                         }`}
                       >
                         <p className="text-sm font-medium">
-                          {message.isOwn ? 'Vous' : message.sender?.name}
+                          {message.isOwn ? t('messages.you') : message.sender?.name}
                         </p>
                         <p
                           className={`mt-2 text-sm leading-6 ${
@@ -654,14 +723,14 @@ function MessagesPage() {
                             message.isOwn ? 'text-violet-100/90' : 'text-stone-400'
                           }`}
                         >
-                          {formatDate(message.createdAt)}
+                          {formatDate(message.createdAt ?? message.created_at)}
                         </p>
                       </div>
                     </article>
                   ))
                 ) : (
                   <div className="px-4 py-16 text-center text-sm text-stone-500">
-                    Aucun message pour le moment. Envoyez le premier.
+                    {t('messages.noMessageYet')}
                   </div>
                 )}
               </div>
@@ -672,21 +741,22 @@ function MessagesPage() {
               >
                 <label className="block">
                   <span className="mb-2 block text-sm font-medium text-stone-700">
-                    Nouveau message
+                    {t('messages.newMessage')}
                   </span>
                   <textarea
                     rows={4}
                     required
                     value={messageBody}
                     onChange={(event) => setMessageBody(event.target.value)}
+                    onKeyDown={handleMessageKeyDown}
                     className="w-full rounded-[22px] border border-violet-100 bg-white px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-300"
-                    placeholder="Ecrivez votre message..."
+                    placeholder={t('messages.writePlaceholder')}
                   />
                 </label>
 
                 <div className="mt-4 flex justify-stretch sm:justify-end">
                   <Button type="submit" disabled={isMessageSubmitting} className="w-full sm:w-auto">
-                    {isMessageSubmitting ? 'Envoi...' : 'Envoyer'}
+                    {isMessageSubmitting ? t('common.sending') : t('messages.send')}
                   </Button>
                 </div>
               </form>

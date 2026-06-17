@@ -61,7 +61,7 @@ class StoreConversationRequest extends FormRequest
                     }
                 },
             ],
-            'body' => ['nullable', 'string', 'max:2000'],
+            'body' => ['nullable', 'string', 'max:5000'],
         ];
     }
 
@@ -75,7 +75,7 @@ class StoreConversationRequest extends FormRequest
             ?? $this->input('recipient_email');
 
         $this->merge([
-            'recipient_id' => $this->input('recipient_id'),
+            'recipient_id' => $this->input('recipient_id') ?? $this->input('user_id'),
             'recipient_contact' => is_string($contact) ? trim($contact) : $contact,
         ]);
     }

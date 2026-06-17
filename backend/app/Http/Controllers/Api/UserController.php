@@ -33,6 +33,21 @@ class UserController extends Controller
             ->setStatusCode(201);
     }
 
+    public function suggestions(Request $request)
+    {
+        $viewer = $request->user();
+        $limit = min(max((int) $request->integer('limit', 10), 1), 20);
+
+        $users = User::query()
+            ->whereKeyNot($viewer->id)
+            ->withCount(['followers', 'following'])
+            ->latest()
+            ->limit($limit)
+            ->get();
+
+        return UserResource::collection($users);
+    }
+
     private function ensureAdmin(Request $request): void
     {
         abort_unless((bool) $request->user()?->is_admin, Response::HTTP_FORBIDDEN);

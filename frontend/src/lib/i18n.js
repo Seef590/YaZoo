@@ -147,6 +147,7 @@ const messages = {
       editMode: 'Modification en cours',
     },
     feed: {
+      discoverUsers: 'Utilisateurs a decouvrir',
       createPostDescription: 'Partagez une photo, une video, une astuce ou une histoire sur votre animal.',
       createPostNeedsContent: 'Ajoutez un texte ou un media pour publier votre post.',
       createPostError: 'Impossible de publier le post pour le moment.',
@@ -266,6 +267,7 @@ const messages = {
       registerSuccessHint: "Le premier compte d'une base vide devient admin.",
     },
     profile: {
+      viewProfileOf: 'Voir le profil de {name}',
       publicProfile: 'Profil public',
       profileSpace: 'Mon espace public',
       profileSpaceText: 'Posts et annonces visibles en priorite',
@@ -327,6 +329,10 @@ const messages = {
       viewListing: "Voir l'annonce",
     },
     messages: {
+      message: 'Message',
+      sendMessage: 'Envoyer un message',
+      openDiscussion: 'Ouvrir la discussion',
+      discussionWith: 'Discussion avec {name}',
       badge: 'Messagerie',
       title: 'Une boite de reception plus claire, plus douce et plus agreable a suivre.',
       text:
@@ -341,6 +347,7 @@ const messages = {
       openConversation: 'Conversation ouverte',
       newMessage: 'Nouveau message',
       send: 'Envoyer',
+      writePlaceholder: 'Ecrivez votre message...',
       you: 'Vous',
       readyToStart: 'Conversation prete a demarrer.',
       noMessageYet: 'Aucun message pour le moment. Envoyez le premier.',
@@ -501,6 +508,7 @@ const messages = {
       editMode: 'وضع التعديل',
     },
     feed: {
+      discoverUsers: 'مستخدمون لاكتشافهم',
       createPostDescription: 'شارك صورة أو فيديو أو نصيحة أو قصة عن حيوانك.',
       createPostNeedsContent: 'أضف نصا أو وسائط لنشر المنشور.',
       createPostError: 'تعذر نشر المنشور حاليا.',
@@ -618,6 +626,7 @@ const messages = {
       registerSuccessHint: 'أول حساب داخل قاعدة فارغة يصبح مديرا.',
     },
     profile: {
+      viewProfileOf: 'عرض ملف {name} الشخصي',
       publicProfile: 'الملف العام',
       profileSpace: 'مساحتي العامة',
       profileSpaceText: 'المنشورات والإعلانات الظاهرة أولا',
@@ -678,6 +687,10 @@ const messages = {
       viewListing: 'عرض الإعلان',
     },
     messages: {
+      message: 'رسالة',
+      sendMessage: 'إرسال رسالة',
+      openDiscussion: 'فتح المحادثة',
+      discussionWith: 'محادثة مع {name}',
       badge: 'الرسائل',
       title: 'صندوق رسائل أوضح وألطف وأسهل متابعة.',
       text:
@@ -692,6 +705,7 @@ const messages = {
       openConversation: 'المحادثة المفتوحة',
       newMessage: 'رسالة جديدة',
       send: 'إرسال',
+      writePlaceholder: 'اكتب رسالتك...',
       you: 'أنت',
       readyToStart: 'المحادثة جاهزة للبدء.',
       noMessageYet: 'لا توجد رسائل بعد. أرسل أول رسالة.',

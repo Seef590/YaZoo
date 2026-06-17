@@ -74,6 +74,7 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
             Route::delete('/stories/{story}', [StoryController::class, 'destroy']);
         });
 
+        Route::get('/users/suggestions', [UserController::class, 'suggestions']);
         Route::get('/users/{user}', [ProfileController::class, 'show']);
         Route::patch('/users/{user}', [ProfileController::class, 'update']);
         Route::post('/users/{user}/follow', [ProfileController::class, 'follow']);
@@ -138,8 +139,10 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
 
         Route::get('/conversations', [ConversationController::class, 'index']);
         Route::get('/conversations/{conversation}', [ConversationController::class, 'show']);
+        Route::patch('/conversations/{conversation}/read', [ConversationController::class, 'read']);
         Route::middleware('throttle:messages-write')->group(function (): void {
             Route::post('/conversations', [ConversationController::class, 'store']);
+            Route::post('/conversations/direct', [ConversationController::class, 'direct']);
             Route::post('/conversations/{conversation}/messages', [MessageController::class, 'store']);
         });
 

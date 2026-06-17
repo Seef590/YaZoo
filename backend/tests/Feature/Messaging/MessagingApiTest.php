@@ -35,7 +35,7 @@ class MessagingApiTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJsonPath('data.participant.email', 'recipient@example.com')
+            ->assertJsonPath('data.participant.id', $recipient->id)
             ->assertJsonPath('data.messages.0.body', 'Bonjour, je veux parler de votre annonce.');
 
         $this->assertDatabaseHas('conversations', [
@@ -62,8 +62,8 @@ class MessagingApiTest extends TestCase
 
         Sanctum::actingAs($sender, ['*']);
 
-        $response = $this->postJson('/api/conversations', [
-            'recipient_id' => $recipient->id,
+        $response = $this->postJson('/api/conversations/direct', [
+            'user_id' => $recipient->id,
         ]);
 
         $conversationId = $response->json('data.id');
@@ -71,7 +71,6 @@ class MessagingApiTest extends TestCase
         $response
             ->assertCreated()
             ->assertJsonPath('data.participant.id', $recipient->id)
-            ->assertJsonPath('data.participant.email', 'profile@example.com')
             ->assertJsonCount(0, 'data.messages');
 
         $this->assertDatabaseHas('conversations', [
@@ -111,7 +110,7 @@ class MessagingApiTest extends TestCase
 
         $this->getJson('/api/conversations')
             ->assertOk()
-            ->assertJsonPath('data.0.participant.email', 'autre@example.com')
+            ->assertJsonPath('data.0.participant.id', $otherUser->id)
             ->assertJsonPath('data.0.unreadCount', 1);
 
         $this->getJson("/api/conversations/{$conversation->id}")
@@ -125,6 +124,32 @@ class MessagingApiTest extends TestCase
                 ->first()
                 ?->fresh()
                 ?->read_at,
+        );
+    }
+
+    public function test_read_endpoint_marks_conversation_as_read(): void
+    {
+        $viewer = User::factory()->create();
+        $otherUser = User::factory()->create();
+
+        $conversation = Conversation::query()->create([
+            'participant_one_id' => min($viewer->id, $otherUser->id),
+            'participant_two_id' => max($viewer->id, $otherUser->id),
+        ]);
+
+        $conversation->messages()->create([
+            'user_id' => $otherUser->id,
+            'body' => 'Message non lu.',
+        ]);
+
+        Sanctum::actingAs($viewer, ['*']);
+
+        $this->patchJson("/api/conversations/{$conversation->id}/read")
+            ->assertOk()
+            ->assertJsonPath('data.unread_count', 0);
+
+        $this->assertNotNull(
+            $conversation->messages()->where('user_id', $otherUser->id)->first()?->fresh()?->read_at,
         );
     }
 

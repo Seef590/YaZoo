@@ -25,22 +25,33 @@ class ConversationResource extends JsonResource
             'participant' => [
                 'id' => $participant?->id,
                 'name' => $participant?->name,
-                'email' => $participant?->publicEmail(),
-                'phone' => $participant?->phone,
+                'username' => $participant?->name ? str($participant->name)->lower()->replace(' ', '')->toString() : null,
                 'isPhoneVerified' => $participant?->hasVerifiedPhone() ?? false,
                 'avatar' => $participant?->avatar,
                 'city' => $participant?->city,
                 'country' => $participant?->country,
+                'profile_url' => $participant ? "/profile/{$participant->id}" : null,
+                'is_following' => $participant && $request->user()
+                    ? $participant->followers()->where('follower_user_id', $request->user()->id)->exists()
+                    : false,
             ],
             'latestMessage' => $this->whenLoaded('latestMessage', function (): ?array {
                 return $this->latestMessage
                     ? MessageResource::make($this->latestMessage)->resolve()
                     : null;
             }),
+            'latest_message' => $this->whenLoaded('latestMessage', function (): ?array {
+                return $this->latestMessage
+                    ? MessageResource::make($this->latestMessage)->resolve()
+                    : null;
+            }),
             'messages' => MessageResource::collection($this->whenLoaded('messages')),
             'unreadCount' => $this->unread_messages_count ?? 0,
+            'unread_count' => $this->unread_messages_count ?? 0,
             'createdAt' => $this->created_at?->toISOString(),
             'updatedAt' => $this->updated_at?->toISOString(),
+            'created_at' => $this->created_at?->toISOString(),
+            'updated_at' => $this->updated_at?->toISOString(),
         ];
     }
 }

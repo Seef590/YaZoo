@@ -73,14 +73,24 @@ export function buildProductFormData(form, imageFile, galleryFiles) {
 
 export function buildAnimalContactPath(animal) {
   const message = `Bonjour, je vous contacte a propos de votre annonce "${animal.name}". Est-elle toujours disponible ?`
+  const userId = animal.author?.id ?? animal.userId ?? animal.user_id
 
-  return `/messages?email=${encodeURIComponent(animal.author.email)}&message=${encodeURIComponent(message)}`
+  if (userId) {
+    return `/messages?user=${encodeURIComponent(userId)}&message=${encodeURIComponent(message)}`
+  }
+
+  return `/messages?message=${encodeURIComponent(message)}`
 }
 
 export function buildProductContactPath(product) {
   const message = `Bonjour, je vous contacte a propos de votre produit "${product.name}". Est-il toujours disponible ?`
+  const userId = product.author?.id ?? product.userId ?? product.user_id
 
-  return `/messages?email=${encodeURIComponent(product.author.email)}&message=${encodeURIComponent(message)}`
+  if (userId) {
+    return `/messages?user=${encodeURIComponent(userId)}&message=${encodeURIComponent(message)}`
+  }
+
+  return `/messages?message=${encodeURIComponent(message)}`
 }
 
 export function formatAnimalCategory(category) {

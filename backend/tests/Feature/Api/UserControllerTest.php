@@ -36,6 +36,24 @@ class UserControllerTest extends TestCase
             ->assertJsonPath('data.email', null);
     }
 
+    public function test_authenticated_user_can_list_user_suggestions_without_self_or_emails(): void
+    {
+        $viewer = User::factory()->create();
+        $suggested = User::factory()->create([
+            'name' => 'Suggested Member',
+            'email' => 'suggested@example.test',
+        ]);
+
+        Sanctum::actingAs($viewer);
+
+        $this->getJson('/api/users/suggestions')
+            ->assertOk()
+            ->assertJsonPath('data.0.id', $suggested->id)
+            ->assertJsonPath('data.0.name', 'Suggested Member')
+            ->assertJsonPath('data.0.email', null)
+            ->assertJsonMissing(['id' => $viewer->id]);
+    }
+
     public function test_register_validates_required_contact_and_credentials(): void
     {
         $this->postJson('/api/auth/register', [

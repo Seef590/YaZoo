@@ -10,7 +10,7 @@ import {
   updatePostRequest,
 } from '../api/posts'
 import { getProfileRequest, updateProfileRequest } from '../api/profile'
-import { createConversationRequest } from '../api/messages'
+import { createDirectConversationRequest } from '../api/messages'
 import PostCard from '../components/feed/PostCard'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
@@ -327,8 +327,8 @@ function ProfilePage() {
     setSuccessMessage('')
 
     try {
-      const response = await createConversationRequest({
-        recipient_id: profile.id,
+      const response = await createDirectConversationRequest({
+        user_id: profile.id,
       })
       const conversation = extractDataObject(response, null)
 

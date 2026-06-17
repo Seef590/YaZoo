@@ -14,7 +14,7 @@ import {
   updatePostRequest,
 } from '../api/posts'
 import { getProductsRequest } from '../api/products'
-import { getProfileRequest } from '../api/profile'
+import { getProfileRequest, getUserSuggestionsRequest } from '../api/profile'
 import { createReservationRequest, getReservationsRequest } from '../api/reservations'
 import { getServiceSuggestionsRequest } from '../api/services'
 import {
@@ -28,8 +28,10 @@ import PostCard from '../components/feed/PostCard'
 import StoryComposerModal from '../components/feed/StoryComposerModal'
 import StoryViewer from '../components/feed/StoryViewer'
 import Avatar from '../components/ui/Avatar'
+import FollowButton from '../components/ui/FollowButton'
 import ScrollTopButton from '../components/ui/ScrollTopButton'
 import { useAuth } from '../hooks/useAuth'
+import { useI18n } from '../hooks/useI18n'
 import { asArray, extractDataArray, extractDataObject } from '../utils/apiData'
 import { getErrorMessage } from '../utils/getErrorMessage'
 import { normalizeProfileMediaPayload } from '../utils/media'
@@ -39,6 +41,7 @@ function FeedPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { user } = useAuth()
+  const { t } = useI18n()
   const [posts, setPosts] = useState([])
   const [storyGroups, setStoryGroups] = useState([])
   const [errorMessage, setErrorMessage] = useState('')
@@ -46,6 +49,7 @@ function FeedPage() {
   const [marketplaceHighlights, setMarketplaceHighlights] = useState([])
   const [communityHighlights, setCommunityHighlights] = useState([])
   const [serviceHighlights, setServiceHighlights] = useState([])
+  const [userSuggestions, setUserSuggestions] = useState([])
   const [organicActionId, setOrganicActionId] = useState('')
   const [reservationSummary, setReservationSummary] = useState({
     buyer: 0,
@@ -80,6 +84,7 @@ function FeedPage() {
       setProfileSummary(null)
       setMarketplaceHighlights([])
       setCommunityHighlights([])
+      setUserSuggestions([])
       setReservationSummary({ buyer: 0, seller: 0 })
       return
     }
@@ -91,6 +96,7 @@ function FeedPage() {
       servicesResult,
       communitiesResult,
       reservationsResult,
+      suggestionsResult,
     ] = await Promise.allSettled([
       getProfileRequest(user.id),
       getAnimalsRequest(),
@@ -98,6 +104,7 @@ function FeedPage() {
       getServiceSuggestionsRequest(),
       getCommunitiesRequest(),
       getReservationsRequest(),
+      getUserSuggestionsRequest(),
     ])
 
     if (profileResult.status === 'fulfilled') {
@@ -121,6 +128,9 @@ function FeedPage() {
     const reservations = reservationsResult.status === 'fulfilled'
       ? reservationsResult.value.data ?? {}
       : {}
+    const suggestions = suggestionsResult.status === 'fulfilled'
+      ? extractDataArray(suggestionsResult.value)
+      : []
 
     setMarketplaceHighlights(
       buildMarketplaceHighlights(animals, products, user.id, { onlyOwn: false }),
@@ -135,6 +145,7 @@ function FeedPage() {
       buyer: reservations.buyerReservations?.length ?? 0,
       seller: reservations.sellerReservations?.length ?? 0,
     })
+    setUserSuggestions(suggestions)
   }, [user?.id])
 
   const loadStories = useCallback(async ({ silent = false } = {}) => {
@@ -541,6 +552,13 @@ function FeedPage() {
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-6">
+          <UserSuggestionsSection
+            users={userSuggestions}
+            currentUserId={user?.id}
+            onNavigate={navigate}
+            t={t}
+          />
+
           <CreatePost onCreate={handleCreatePost} />
 
           {isLoading ? (
@@ -768,6 +786,74 @@ function FeedPage() {
       />
 
       <ScrollTopButton />
+    </section>
+  )
+}
+
+function UserSuggestionsSection({ users, currentUserId, onNavigate, t }) {
+  const safeUsers = asArray(users).filter(
+    (suggestedUser) => String(suggestedUser.id) !== String(currentUserId),
+  )
+
+  if (safeUsers.length === 0) {
+    return null
+  }
+
+  return (
+    <section className="rounded-[28px] border border-white/80 bg-white/92 p-5 shadow-[0_18px_42px_rgba(124,58,237,0.08)] dark:border-violet-300/14 dark:bg-white/8">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-xs uppercase tracking-[0.18em] text-violet-700 dark:text-violet-200">
+            {t('feed.discoverUsers')}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-4 flex gap-3 overflow-x-auto pb-1">
+        {safeUsers.map((suggestedUser) => (
+          <article
+            key={suggestedUser.id}
+            className="min-w-[220px] rounded-[22px] border border-violet-100 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.78))] p-4 dark:border-violet-300/14 dark:bg-white/8"
+          >
+            <button
+              type="button"
+              onClick={() => onNavigate(`/profile/${suggestedUser.id}`)}
+              className="flex w-full items-center gap-3 text-start"
+              aria-label={t('profile.viewProfileOf', { name: suggestedUser.name ?? t('common.user') })}
+            >
+              <Avatar
+                name={suggestedUser.name ?? t('common.user')}
+                src={suggestedUser.avatar ?? ''}
+                size="sm"
+              />
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-semibold text-stone-950 dark:text-violet-50">
+                  {suggestedUser.name ?? t('common.user')}
+                </span>
+                <span className="block truncate text-xs text-stone-500 dark:text-violet-100/62">
+                  @{suggestedUser.username ?? suggestedUser.id}
+                </span>
+              </span>
+            </button>
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              <FollowButton
+                userId={suggestedUser.id}
+                isFollowing={suggestedUser.isFollowing}
+                hidden={String(suggestedUser.id) === String(currentUserId)}
+                compact
+              />
+              <button
+                type="button"
+                onClick={() => onNavigate(`/messages?user=${suggestedUser.id}`)}
+                className="inline-flex items-center justify-center rounded-full border border-violet-100 bg-white px-3 py-1.5 text-xs font-semibold text-violet-900 transition hover:bg-violet-50 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-50"
+              >
+                {t('messages.message')}
+              </button>
+            </div>
+          </article>
+        ))}
+      </div>
     </section>
   )
 }
@@ -1123,6 +1209,13 @@ OrganicSuggestionCard.propTypes = {
   onNavigate: PropTypes.func,
   onJoinCommunity: PropTypes.func,
   onReserveService: PropTypes.func,
+}
+
+UserSuggestionsSection.propTypes = {
+  users: PropTypes.array,
+  currentUserId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  onNavigate: PropTypes.func,
+  t: PropTypes.func,
 }
 
 function buildMarketplaceHighlights(animals, products, userId, options = {}) {

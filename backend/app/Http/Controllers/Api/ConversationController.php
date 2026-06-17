@@ -11,6 +11,7 @@ use App\Models\Conversation;
 use App\Models\Message;
 use App\Models\User;
 use App\Notifications\NewMessageNotification;
+use App\Services\ActivityLogger;
 use App\Support\PhoneNumber;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,6 +19,10 @@ use Illuminate\Support\Facades\DB;
 
 class ConversationController extends Controller
 {
+    public function __construct(
+        protected ActivityLogger $activityLogger,
+    ) {}
+
     /**
      * Display the authenticated user's conversations.
      */
@@ -68,7 +73,12 @@ class ConversationController extends Controller
                 $message->load('sender:id,name,avatar');
                 $conversation->refresh();
                 $this->notifyRecipient($conversation, $request->user()->id, $message);
+                $this->logMessageActivity('message.sent', $request->user(), $conversation, $recipient);
                 event((new ConversationMessageSent($conversation, $message))->dontBroadcastToCurrentUser());
+            }
+
+            if ($wasCreated) {
+                $this->logMessageActivity('message.conversation_started', $request->user(), $conversation, $recipient);
             }
 
             return [$conversation, $wasCreated ? 201 : 200];
@@ -82,6 +92,14 @@ class ConversationController extends Controller
     }
 
     /**
+     * Start or reuse a direct conversation using the user_id contract expected by the app.
+     */
+    public function direct(StoreConversationRequest $request): JsonResponse
+    {
+        return $this->store($request);
+    }
+
+    /**
      * Display a specific conversation and mark incoming messages as read.
      */
     public function show(Request $request, Conversation $conversation): ConversationResource
@@ -89,6 +107,20 @@ class ConversationController extends Controller
         $this->ensureParticipant($conversation, $request->user()->id);
         $this->markIncomingMessagesAsRead($conversation, $request->user()->id);
         $this->markConversationNotificationsAsRead($request->user(), $conversation->id);
+        $this->loadConversationState($conversation, $request->user()->id, true);
+
+        return ConversationResource::make($conversation);
+    }
+
+    /**
+     * Mark a conversation as read for the authenticated participant.
+     */
+    public function read(Request $request, Conversation $conversation): ConversationResource
+    {
+        $this->ensureParticipant($conversation, $request->user()->id);
+        $this->markIncomingMessagesAsRead($conversation, $request->user()->id);
+        $this->markConversationNotificationsAsRead($request->user(), $conversation->id);
+        $this->logMessageActivity('message.read', $request->user(), $conversation);
         $this->loadConversationState($conversation, $request->user()->id, true);
 
         return ConversationResource::make($conversation);
@@ -236,5 +268,27 @@ class ConversationController extends Controller
             ->where('email', $contact)
             ->orWhere('phone', $phone)
             ->firstOrFail();
+    }
+
+    protected function logMessageActivity(
+        string $event,
+        User $actor,
+        Conversation $conversation,
+        ?User $target = null,
+    ): void {
+        $targetUserId = $target?->id ?? $conversation->otherParticipantFor($actor->id)?->id;
+
+        $this->activityLogger->log(
+            $event,
+            'message',
+            $conversation,
+            [
+                'conversation_id' => $conversation->id,
+                'target_user_id' => $targetUserId,
+                'sender_id' => $actor->id,
+            ],
+            $actor,
+            $actor,
+        );
     }
 }

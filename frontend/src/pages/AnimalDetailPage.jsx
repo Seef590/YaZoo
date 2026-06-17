@@ -148,7 +148,7 @@ function AnimalDetailPage() {
               <LinkButton to="/marketplace" variant="ghost">
                 Retour aux annonces
               </LinkButton>
-              {!animal.isOwner && animal.author?.email ? (
+              {!animal.isOwner && animal.author?.id ? (
                 <LinkButton to={buildAnimalContactPath(animal)} variant="secondary">
                   Contacter le vendeur
                 </LinkButton>
@@ -266,7 +266,7 @@ function AnimalDetailPage() {
                     </p>
                   </div>
 
-                  {animal.author?.email ? (
+                  {animal.author?.id ? (
                     <LinkButton to={buildAnimalContactPath(animal)} variant="ghost">
                       Envoyer un message prive
                     </LinkButton>
@@ -427,7 +427,7 @@ function HeroStatCard({ label, value }) {
 function buildAnimalContactPath(animal) {
   const message = `Bonjour, je vous contacte a propos de votre annonce "${animal.name}". Est-elle toujours disponible ?`
 
-  return `/messages?email=${encodeURIComponent(animal.author.email)}&message=${encodeURIComponent(message)}`
+  return `/messages?user=${encodeURIComponent(animal.author.id)}&message=${encodeURIComponent(message)}`
 }
 
 function LinkButton({ children, to, variant = 'primary', className = '' }) {

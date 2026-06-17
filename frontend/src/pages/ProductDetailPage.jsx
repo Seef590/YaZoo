@@ -151,7 +151,7 @@ function ProductDetailPage() {
               <LinkButton to="/marketplace/products" variant="ghost">
                 Retour aux produits
               </LinkButton>
-              {!product.isOwner && product.author?.email ? (
+              {!product.isOwner && product.author?.id ? (
                 <LinkButton to={buildProductContactPath(product)} variant="secondary">
                   Contacter le vendeur
                 </LinkButton>
@@ -266,7 +266,7 @@ function ProductDetailPage() {
                     </p>
                   </div>
 
-                  {product.author?.email ? (
+                  {product.author?.id ? (
                     <LinkButton to={buildProductContactPath(product)} variant="ghost">
                       Envoyer un message prive
                     </LinkButton>
@@ -443,7 +443,7 @@ function HeroStatCard({ label, value }) {
 function buildProductContactPath(product) {
   const message = `Bonjour, je vous contacte a propos de votre produit "${product.name}". Est-il toujours disponible ?`
 
-  return `/messages?email=${encodeURIComponent(product.author.email)}&message=${encodeURIComponent(message)}`
+  return `/messages?user=${encodeURIComponent(product.author.id)}&message=${encodeURIComponent(message)}`
 }
 
 function LinkButton({ children, to, variant = 'primary', className = '' }) {

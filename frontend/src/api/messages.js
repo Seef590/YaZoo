@@ -8,8 +8,16 @@ export function createConversationRequest(payload) {
   return api.post('/conversations', payload)
 }
 
+export function createDirectConversationRequest(payload) {
+  return api.post('/conversations/direct', payload)
+}
+
 export function getConversationRequest(conversationId) {
   return api.get(`/conversations/${conversationId}`)
+}
+
+export function markConversationReadRequest(conversationId) {
+  return api.patch(`/conversations/${conversationId}/read`)
 }
 
 export function createMessageRequest(conversationId, payload) {
