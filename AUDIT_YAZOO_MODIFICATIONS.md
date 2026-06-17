@@ -272,7 +272,7 @@ Statut avant deploiement :
 ## 10. Deploiement final - 2026-06-17
 
 GitHub :
-- Commit pousse sur `origin/safe-ui-audit-fixes` : `7fe04f5`.
+- Commits pousses sur `origin/safe-ui-audit-fixes` : `7fe04f5` pour les corrections, `c2d0847` pour le rapport de deploiement.
 - Les dossiers non lies `docs/rapport_yazoo_uml/`, `docs/soutenance/`, `scripts/build_rapport_yazoo_uml.py`, `scripts/build_yazoo_soutenance_pptx.py` restent non suivis et non deployes.
 
 DockerHub :
