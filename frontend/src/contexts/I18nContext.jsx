@@ -18,12 +18,13 @@ export function I18nProvider({ children }) {
     document.documentElement.lang = locale
     document.documentElement.dir = nextDirection
     document.documentElement.classList.toggle('rtl', nextDirection === 'rtl')
+    document.documentElement.classList.toggle('ltr', nextDirection === 'ltr')
     document.body.dir = nextDirection
-    setStoredLocale(locale)
   }, [locale])
 
   const setLocale = useCallback((nextLocale) => {
     if (SUPPORTED_LOCALES.includes(nextLocale)) {
+      setStoredLocale(nextLocale)
       setLocaleState(nextLocale)
     }
   }, [])

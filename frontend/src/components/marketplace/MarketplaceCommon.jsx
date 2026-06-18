@@ -1,12 +1,15 @@
 import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
+import { useI18n } from '../../hooks/useI18n'
 
 export function MarketplaceTabs({ active }) {
+  const { t } = useI18n()
+
   return (
-    <div className="inline-flex flex-wrap gap-2 rounded-full border border-white/80 bg-white/82 p-1.5 shadow-[0_14px_30px_rgba(124,58,237,0.08)]">
-      <TabLink to="/marketplace" active={active === 'animals'}>Animaux</TabLink>
-      <TabLink to="/marketplace/products" active={active === 'products'}>Produits</TabLink>
-      <TabLink to="/marketplace/services" active={active === 'services'}>Assistance</TabLink>
+    <div className="yz-horizontal-scroll yz-no-scrollbar inline-flex w-full gap-2 rounded-full border border-white/80 bg-white/82 p-1.5 shadow-[0_14px_30px_rgba(124,58,237,0.08)] sm:w-auto">
+      <TabLink to="/marketplace" active={active === 'animals'}>{t('common.animals')}</TabLink>
+      <TabLink to="/marketplace/products" active={active === 'products'}>{t('common.products')}</TabLink>
+      <TabLink to="/marketplace/services" active={active === 'services'}>{t('common.assistance')}</TabLink>
     </div>
   )
 }
@@ -15,7 +18,7 @@ function TabLink({ to, active, children }) {
   return (
     <Link
       to={to}
-      className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+      className={`shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition ${
         active
           ? 'bg-[linear-gradient(135deg,#7c3aed,#a855f7,#c4b5fd)] text-white shadow-[0_12px_24px_rgba(124,58,237,0.16)]'
           : 'text-stone-600 hover:bg-violet-50 hover:text-violet-900'

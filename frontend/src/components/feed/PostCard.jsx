@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 
 import { formatDate } from '../../utils/formatDate'
 import { getErrorMessage } from '../../utils/getErrorMessage'
+import { getPostMedia } from '../../utils/media'
 import { useI18n } from '../../hooks/useI18n'
 import Avatar from '../ui/Avatar'
 import Button from '../ui/Button'
@@ -41,17 +42,17 @@ function PostCard({
   const [commentReaction, setCommentReaction] = useState('')
   const [commentError, setCommentError] = useState('')
   const [actionMessage, setActionMessage] = useState('')
+  const [hasMediaError, setHasMediaError] = useState(false)
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
   const [isUpdatingPost, setIsUpdatingPost] = useState(false)
-  const mediaUrl = post.mediaUrl ?? post.imageUrl ?? null
-  const mediaKind = post.mediaKind ?? (post.imageUrl ? 'image' : null)
+  const { mediaKind, mediaUrl } = getPostMedia(post)
   const canManagePost = String(post.author?.id) === String(currentUserId)
   const visibility = post.visibility ?? 'public'
   const visibilityLabel = getVisibilityLabel(visibility, t)
 
   const metadata = [post.location, formatDate(post.createdAt)]
     .filter(Boolean)
-    .join(' - ')
+        .join(' - ')
 
   const handleSubmitComment = async (event) => {
     event.preventDefault()
@@ -72,7 +73,7 @@ function PostCard({
       setShowComments(true)
     } catch (error) {
       setCommentError(
-        getErrorMessage(error, "Impossible d'ajouter le commentaire."),
+        getErrorMessage(error, t('post.commentError')),
       )
     } finally {
       setIsSubmittingComment(false)
@@ -91,10 +92,10 @@ function PostCard({
         })
       } else {
         await navigator.clipboard.writeText(url)
-        setActionMessage('Lien du post copie.')
+        setActionMessage(t('post.linkCopied'))
       }
     } catch {
-      setActionMessage('Partage annule ou indisponible.')
+      setActionMessage(t('post.shareUnavailable'))
     } finally {
       setIsMenuOpen(false)
     }
@@ -103,9 +104,9 @@ function PostCard({
   const handleSavePost = async () => {
     try {
       await navigator.clipboard.writeText(`${globalThis.location.origin}/feed?post=${post.id}`)
-      setActionMessage('Lien enregistre dans le presse-papiers.')
+      setActionMessage(t('post.linkSaved'))
     } catch {
-      setActionMessage("Impossible d'enregistrer ce post pour le moment.")
+      setActionMessage(t('post.saveError'))
     } finally {
       setIsMenuOpen(false)
     }
@@ -121,9 +122,9 @@ function PostCard({
 
     try {
       await onUpdatePost(post.id, { visibility: nextVisibility })
-      setActionMessage(`Visibilite mise a jour : ${getVisibilityLabel(nextVisibility)}.`)
+      setActionMessage(t('post.visibilityUpdated', { visibility: getVisibilityLabel(nextVisibility, t) }))
     } catch (error) {
-      setActionMessage(getErrorMessage(error, 'Impossible de changer la visibilite.'))
+      setActionMessage(getErrorMessage(error, t('post.visibilityError')))
     } finally {
       setIsUpdatingPost(false)
       setIsMenuOpen(false)
@@ -143,9 +144,9 @@ function PostCard({
     try {
       await onUpdatePost(post.id, { content: editContent.trim() })
       setIsEditing(false)
-      setActionMessage('Post mis a jour.')
+      setActionMessage(t('post.updated'))
     } catch (error) {
-      setActionMessage(getErrorMessage(error, 'Impossible de modifier ce post.'))
+      setActionMessage(getErrorMessage(error, t('post.updateError')))
     } finally {
       setIsUpdatingPost(false)
     }
@@ -156,7 +157,7 @@ function PostCard({
       return
     }
 
-    const confirmed = globalThis.confirm('Supprimer ce post ? Cette action est definitive.')
+    const confirmed = globalThis.confirm(t('post.deleteConfirm'))
 
     if (!confirmed) {
       return
@@ -167,7 +168,7 @@ function PostCard({
     try {
       await onDeletePost(post.id)
     } catch (error) {
-      setActionMessage(getErrorMessage(error, 'Impossible de supprimer ce post.'))
+      setActionMessage(getErrorMessage(error, t('post.deleteError')))
       setIsUpdatingPost(false)
     }
   }
@@ -243,10 +244,10 @@ function PostCard({
                 />
                 <div className="flex flex-wrap justify-end gap-2">
                   <Button type="button" variant="ghost" onClick={() => setIsEditing(false)}>
-                    Annuler
+                    {t('common.cancel')}
                   </Button>
                   <Button type="submit" disabled={isUpdatingPost || !editContent.trim()}>
-                    {isUpdatingPost ? 'Mise a jour...' : 'Enregistrer'}
+                    {isUpdatingPost ? t('post.updating') : t('common.save')}
                   </Button>
                 </div>
               </form>
@@ -262,8 +263,8 @@ function PostCard({
               </p>
             ) : null}
 
-            {mediaUrl ? (
-              <div className="relative -mx-5 mt-4 w-[calc(100%+2.5rem)] overflow-hidden bg-stone-100 shadow-[0_18px_40px_rgba(124,58,237,0.08)] dark:bg-stone-900 sm:rounded-[28px]">
+            {mediaUrl && !hasMediaError ? (
+              <div className="relative mt-4 overflow-hidden rounded-[24px] bg-stone-100 shadow-[0_18px_40px_rgba(124,58,237,0.08)] dark:bg-stone-900 sm:rounded-[28px]">
                 <span className="absolute right-3 top-3 z-10 rounded-full bg-violet-950/72 px-3 py-1 text-xs font-medium text-white backdrop-blur">
                   {mediaKind === 'video' ? t('post.video') : t('post.photo')}
                 </span>
@@ -273,14 +274,20 @@ function PostCard({
                     src={mediaUrl}
                     controls
                     className="h-64 w-full object-cover sm:h-96 md:h-[34rem] lg:h-[42rem] xl:h-[48rem]"
+                    onError={() => setHasMediaError(true)}
                   />
                 ) : (
                   <img
                     src={mediaUrl}
                     alt={t('post.mediaAlt')}
                     className="h-64 w-full object-cover transition duration-500 group-hover:scale-[1.02] sm:h-96 md:h-[34rem] lg:h-[42rem] xl:h-[48rem]"
+                    onError={() => setHasMediaError(true)}
                   />
                 )}
+              </div>
+            ) : mediaUrl && hasMediaError ? (
+              <div className="mt-4 rounded-[24px] border border-dashed border-violet-200 bg-violet-50 px-4 py-8 text-center text-sm text-violet-800 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-100">
+                {t('post.mediaUnavailable')}
               </div>
             ) : null}
 
@@ -402,28 +409,28 @@ function PostActionsMenu({
   t,
 }) {
   return (
-    <div className="relative z-30 ml-auto shrink-0 self-start">
+    <div className="relative z-30 ms-auto shrink-0 self-start">
       <button
         type="button"
         onClick={onToggleMenu}
         className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-violet-100 bg-white/86 text-lg font-bold text-violet-900 transition hover:bg-violet-50 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-50 dark:hover:bg-white/14"
-        aria-label="Options du post"
+        aria-label={t('post.options')}
         aria-expanded={isMenuOpen}
       >
         ...
       </button>
 
       {isMenuOpen ? (
-        <div className="absolute right-0 top-[calc(100%+0.5rem)] z-50 max-h-[min(70vh,34rem)] w-[min(18rem,calc(100vw-2rem))] overflow-y-auto rounded-[24px] border border-violet-100 bg-white/98 p-2 text-sm shadow-[0_24px_60px_rgba(76,29,149,0.22)] backdrop-blur-xl dark:border-violet-300/14 dark:bg-stone-950/96">
-          <PostMenuButton onClick={onSharePost}>Partager</PostMenuButton>
-          <PostMenuButton onClick={onSavePost}>Enregistrer le lien</PostMenuButton>
+        <div className="absolute end-0 top-[calc(100%+0.5rem)] z-50 max-h-[min(70vh,34rem)] w-[min(18rem,calc(100vw-2rem))] overflow-y-auto rounded-[24px] border border-violet-100 bg-white/98 p-2 text-sm shadow-[0_24px_60px_rgba(76,29,149,0.22)] backdrop-blur-xl dark:border-violet-300/14 dark:bg-stone-950/96">
+          <PostMenuButton onClick={onSharePost}>{t('post.share')}</PostMenuButton>
+          <PostMenuButton onClick={onSavePost}>{t('post.saveLink')}</PostMenuButton>
 
           {canManagePost ? (
             <>
-              <PostMenuButton onClick={onEditPost}>Modifier le post</PostMenuButton>
+              <PostMenuButton onClick={onEditPost}>{t('post.edit')}</PostMenuButton>
               <div className="my-2 h-px bg-violet-100 dark:bg-violet-300/12" />
               <p className="px-3 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-stone-500 dark:text-violet-100/58">
-                Visibilite
+                {t('post.visibilityLabel')}
               </p>
               {POST_VISIBILITIES.map((option) => (
                 <button
@@ -443,12 +450,12 @@ function PostActionsMenu({
               ))}
               <div className="my-2 h-px bg-violet-100 dark:bg-violet-300/12" />
               <PostMenuButton tone="danger" onClick={onDeletePost}>
-                Supprimer
+                {t('post.delete')}
               </PostMenuButton>
             </>
           ) : (
             <p className="px-3 py-2 text-xs text-stone-500 dark:text-violet-100/62">
-              Options auteur disponibles uniquement pour {post.author?.name}.
+              {t('post.authorOnlyOptions', { name: post.author?.name ?? t('common.user') })}
             </p>
           )}
         </div>
@@ -467,7 +474,7 @@ function PostMenuButton({ children, onClick, tone = 'default' }) {
     <button
       type="button"
       onClick={onClick}
-      className={`block w-full rounded-2xl px-3 py-2 text-left font-semibold transition ${toneClass}`}
+      className={`block w-full rounded-2xl px-3 py-2 text-start font-semibold transition ${toneClass}`}
     >
       {children}
     </button>

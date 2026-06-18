@@ -502,7 +502,7 @@ function FeedPage() {
         </div>
 
         {isStoriesLoading ? (
-          <div className="mt-4 flex gap-3 overflow-x-auto pb-1 snap-x snap-mandatory">
+          <div className="yz-horizontal-scroll mt-4 pb-1">
             {Array.from({ length: 4 }).map((_, index) => (
               <div
                 key={`story-skeleton-${index}`}
@@ -515,7 +515,7 @@ function FeedPage() {
             ))}
           </div>
         ) : (
-          <div className="mt-4 flex gap-3 overflow-x-auto pb-1 snap-x snap-mandatory">
+          <div className="yz-horizontal-scroll mt-4 pb-1">
             {storyRowItems.map((storyGroup) => (
               <StoryCard
                 key={storyGroup.id}
@@ -809,11 +809,11 @@ function UserSuggestionsSection({ users, currentUserId, onNavigate, t }) {
         </div>
       </div>
 
-      <div className="mt-4 flex gap-3 overflow-x-auto pb-1">
+      <div className="yz-horizontal-scroll mt-4 pb-1">
         {safeUsers.map((suggestedUser) => (
           <article
             key={suggestedUser.id}
-            className="min-w-[220px] rounded-[22px] border border-violet-100 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.78))] p-4 dark:border-violet-300/14 dark:bg-white/8"
+            className="min-w-[220px] snap-start rounded-[22px] border border-violet-100 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.78))] p-4 dark:border-violet-300/14 dark:bg-white/8"
           >
             <button
               type="button"

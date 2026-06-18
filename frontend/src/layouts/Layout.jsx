@@ -14,12 +14,11 @@ function Layout() {
   const location = useLocation()
   const { isAuthenticated, isBootstrapping, logout, user } = useAuth()
   const { isRtl, t } = useI18n()
-  const { unreadCount, realtimeStatus, isRealtimeEnabled } = useNotifications()
+  const { unreadCount } = useNotifications()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [globalSearch, setGlobalSearch] = useState('')
   const mobileMenuTriggerRef = useRef(null)
   const mobileMenuCloseRef = useRef(null)
-  const realtimeIndicator = getRealtimeIndicator(realtimeStatus, isRealtimeEnabled)
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow
@@ -135,11 +134,11 @@ function Layout() {
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.18),_transparent_24%),radial-gradient(circle_at_top_right,_rgba(244,208,255,0.24),_transparent_20%),linear-gradient(180deg,_#fffaff_0%,_#f7f1ff_100%)] transition-colors dark:bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.26),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(76,29,149,0.28),_transparent_24%),linear-gradient(180deg,_#08050d_0%,_#12091f_54%,_#1b1030_100%)]">
-      <div className="w-full px-3 pb-28 pt-3 sm:px-4 sm:pt-4 lg:px-6 lg:pb-8">
+      <div className="w-full overflow-x-clip px-3 pb-32 pt-3 sm:px-4 sm:pt-4 lg:px-6 lg:pb-8">
         <header className="sticky top-3 z-30 rounded-[26px] border border-white/55 bg-[linear-gradient(135deg,_rgba(255,255,255,0.52),_rgba(248,240,255,0.36),_rgba(255,255,255,0.24))] p-3 shadow-[0_20px_48px_rgba(124,58,237,0.1)] backdrop-blur-2xl transition-colors dark:border-violet-300/15 dark:bg-[linear-gradient(135deg,_rgba(24,16,38,0.82),_rgba(49,24,83,0.54),_rgba(12,8,20,0.72))] dark:shadow-[0_24px_60px_rgba(0,0,0,0.38)] sm:p-4">
           <div className="flex items-center gap-3">
             <NavLink to="/feed" className="flex min-w-0 items-center gap-3">
-              <img src="/yazoo-logo.svg" alt="Logo YaZoo" className="h-12 w-12 shrink-0 object-contain" />
+              <img src="/yazoo-logo.svg" alt={t('layout.logoLabel')} className="h-12 w-12 shrink-0 object-contain" />
               <div className="min-w-0">
                 <p className="yz-wordmark truncate text-base">YaZoo</p>
                 <p className="truncate text-xs text-stone-700 dark:text-violet-100/78">{t('common.tagline')}</p>
@@ -167,12 +166,6 @@ function Layout() {
               <DesktopActionLink to="/messages" icon="chat" label={t('common.messages')} className="hidden lg:inline-flex" />
               <DesktopActionLink to="/notifications" icon="bell" label={t('common.notifications')} className="hidden lg:inline-flex" />
 
-              {realtimeIndicator.label ? (
-                <div className="hidden lg:block">
-                  <InlinePill tone={realtimeIndicator.tone}>{realtimeIndicator.label}</InlinePill>
-                </div>
-              ) : null}
-
               <div className="hidden lg:flex items-center gap-2 rounded-full border border-white/50 bg-white/35 px-3 py-1.5 dark:border-violet-300/15 dark:bg-white/8">
                 <Avatar
                   name={user?.name ?? t('common.user')}
@@ -195,11 +188,6 @@ function Layout() {
           </form>
 
           <div className="mt-3 flex flex-wrap items-center gap-2 sm:hidden">
-            {realtimeIndicator.shortLabel ? (
-              <InlinePill tone={realtimeIndicator.tone}>
-                {realtimeIndicator.shortLabel}
-              </InlinePill>
-            ) : null}
             <InlinePill>
               {t('layout.unread', { count: unreadCount, suffix: unreadCount > 1 ? 's' : '' })}
             </InlinePill>
@@ -209,7 +197,7 @@ function Layout() {
 
         <DesktopNav items={navigationItems} />
 
-        <main className="mt-4 rounded-[30px] border border-white/55 bg-[linear-gradient(180deg,_rgba(255,255,255,0.6),_rgba(248,241,255,0.42),_rgba(255,255,255,0.28))] p-4 shadow-[0_24px_70px_rgba(124,58,237,0.1)] backdrop-blur-2xl transition-colors dark:border-violet-300/14 dark:bg-[linear-gradient(180deg,_rgba(5,3,10,0.9),_rgba(24,11,43,0.82),_rgba(8,5,13,0.88))] dark:shadow-[0_30px_80px_rgba(0,0,0,0.44)] sm:rounded-[34px] sm:p-5">
+        <main className="mt-4 min-w-0 rounded-[30px] border border-white/55 bg-[linear-gradient(180deg,_rgba(255,255,255,0.6),_rgba(248,241,255,0.42),_rgba(255,255,255,0.28))] p-4 pb-24 shadow-[0_24px_70px_rgba(124,58,237,0.1)] backdrop-blur-2xl transition-colors dark:border-violet-300/14 dark:bg-[linear-gradient(180deg,_rgba(5,3,10,0.9),_rgba(24,11,43,0.82),_rgba(8,5,13,0.88))] dark:shadow-[0_30px_80px_rgba(0,0,0,0.44)] sm:rounded-[34px] sm:p-5 sm:pb-24 lg:pb-5">
           <Outlet />
           <Footer mode="app" className="mt-8" />
         </main>
@@ -442,7 +430,7 @@ function MobileDockLink({ to, label, icon }) {
       }
     >
       <AppIcon name={icon} className="h-5 w-5" />
-      <span>{label}</span>
+      <span className="max-w-[4.25rem] truncate whitespace-nowrap">{label}</span>
     </NavLink>
   )
 }
@@ -466,7 +454,7 @@ function MobileDockProfileLink({ user, label }) {
         src={user?.avatar || ''}
         className="h-5 w-5 border border-white/80 text-[10px]"
       />
-      <span>{label}</span>
+      <span className="max-w-[4.25rem] truncate whitespace-nowrap">{label}</span>
     </NavLink>
   )
 }
@@ -480,7 +468,7 @@ function MobileDockStoryButton({ onClick, label }) {
       aria-label={label}
     >
       <AppIcon name="story" className="h-5 w-5" />
-      <span>{label}</span>
+      <span className="max-w-[4.25rem] truncate whitespace-nowrap">{label}</span>
     </button>
   )
 }
@@ -615,38 +603,6 @@ function AppIcon({ name, className = 'h-5 w-5' }) {
       />
     </svg>
   )
-}
-
-function getRealtimeIndicator(realtimeStatus, isRealtimeEnabled) {
-  if (!isRealtimeEnabled) {
-    return {
-      label: '',
-      shortLabel: '',
-      tone: 'stone',
-    }
-  }
-
-  if (realtimeStatus === 'connected') {
-    return {
-      label: 'Temps reel actif',
-      shortLabel: 'Temps reel',
-      tone: 'emerald',
-    }
-  }
-
-  if (realtimeStatus === 'connecting') {
-    return {
-      label: 'Connexion',
-      shortLabel: 'Connexion',
-      tone: 'amber',
-    }
-  }
-
-  return {
-    label: '',
-    shortLabel: '',
-    tone: 'stone',
-  }
 }
 
 DesktopNav.propTypes = {

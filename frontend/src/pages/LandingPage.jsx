@@ -3,38 +3,39 @@ import { Link, Navigate } from 'react-router-dom'
 
 import companionImage from '../assets/images/companions-bond.webp'
 import heroImage from '../assets/images/hero-bond.webp'
+import hero1Image from '../assets/images/hero1.webp'
 import hero2Image from '../assets/images/hero2.webp'
 import hero3Image from '../assets/images/hero3.webp'
 import Footer from '../components/ui/Footer'
 import { useAuth } from '../hooks/useAuth'
-
-const navItems = [
-  { href: '#features', label: 'Fonctionnalites' },
-  { href: '#communaute', label: 'Communaute' },
-  { href: '#aide', label: 'Aide' },
-]
-
-const featureCards = [
-  {
-    title: 'Partage',
-    description: 'Publiez des photos et videos de vos compagnons.',
-    image: heroImage,
-  },
-  {
-    title: 'Adoption',
-    description: 'Adoptez ou proposez des animaux en toute securite.',
-    image: hero3Image,
-  },
-  {
-    title: 'Communaute',
-    description: 'Discutez avec d autres passionnes.',
-    image: hero2Image,
-  },
-]
+import { useI18n } from '../hooks/useI18n'
 
 function LandingPage() {
   const { isAuthenticated, isBootstrapping } = useAuth()
+  const { t } = useI18n()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const navItems = [
+    { href: '#features', label: t('landing.navFeatures') },
+    { href: '#communaute', label: t('landing.navCommunity') },
+    { href: '#aide', label: t('landing.navHelp') },
+  ]
+  const featureCards = [
+    {
+      title: t('landing.shareTitle'),
+      description: t('landing.shareText'),
+      image: hero1Image,
+    },
+    {
+      title: t('landing.adoptionTitle'),
+      description: t('landing.adoptionText'),
+      image: hero3Image,
+    },
+    {
+      title: t('landing.communityTitle'),
+      description: t('landing.communityText'),
+      image: hero2Image,
+    },
+  ]
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow
@@ -66,7 +67,7 @@ function LandingPage() {
   if (isBootstrapping) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[linear-gradient(180deg,_#fffaff_0%,_#f5eeff_100%)] px-4 py-10 dark:bg-[linear-gradient(180deg,_#05030a_0%,_#180b2b_100%)]">
-        <p className="text-sm text-stone-600 dark:text-violet-100/80">Verification de la session...</p>
+        <p className="text-sm text-stone-600 dark:text-violet-100/80">{t('common.loadingSession')}</p>
       </main>
     )
   }
@@ -89,7 +90,7 @@ function LandingPage() {
               <div className="min-w-0">
                 <p className="yz-wordmark text-base">YaZoo</p>
                 <p className="max-w-[16rem] text-xs leading-5 text-stone-700 dark:text-violet-100/80 sm:max-w-none">
-                  Reseau social animalier
+                  {t('common.tagline')}
                 </p>
               </div>
             </a>
@@ -108,7 +109,7 @@ function LandingPage() {
                 to="/login"
                 className="rounded-full px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-white/46 hover:text-violet-800 dark:text-violet-50 dark:hover:bg-violet-400/15 dark:hover:text-white"
               >
-                Connexion
+                {t('common.login')}
               </Link>
             </nav>
 
@@ -116,7 +117,7 @@ function LandingPage() {
               type="button"
               onClick={() => setIsMobileMenuOpen((current) => !current)}
               className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/50 bg-white/30 text-stone-700 shadow-[0_12px_26px_rgba(124,58,237,0.08)] backdrop-blur-xl transition hover:border-white/70 hover:bg-white/46 hover:text-violet-800 dark:border-violet-300/16 dark:bg-black/35 dark:text-white dark:hover:bg-violet-400/18 lg:hidden"
-              aria-label={isMobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+              aria-label={isMobileMenuOpen ? t('layout.menuClose') : t('layout.menuOpen')}
               aria-expanded={isMobileMenuOpen}
               aria-controls="landing-mobile-menu"
             >
@@ -147,7 +148,7 @@ function LandingPage() {
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="block rounded-2xl px-4 py-3 text-sm font-medium text-stone-700 transition hover:bg-white/50 hover:text-violet-900 dark:text-violet-50 dark:hover:bg-violet-400/15"
                 >
-                  Connexion
+                  {t('common.login')}
                 </Link>
               </nav>
             </div>
@@ -160,12 +161,12 @@ function LandingPage() {
         >
           <div>
             <h1 className="text-3xl font-semibold leading-tight text-stone-950 dark:text-white sm:text-4xl md:text-5xl">
-              La communaute animaliere
+              {t('landing.heroLineOne')}
               <br />
-              <span className="text-violet-700">100% marocaine</span>
+              <span className="text-violet-700">{t('landing.heroLineTwo')}</span>
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-7 text-stone-600 dark:text-violet-100/78 md:text-lg">
-              Partagez, adoptez et trouvez tout pour vos compagnons dans une seule application pensee pour les amoureux des animaux.
+              {t('landing.heroDescription')}
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
@@ -173,13 +174,13 @@ function LandingPage() {
                 href="#features"
                 className="inline-flex w-full items-center justify-center rounded-full bg-[linear-gradient(135deg,#7c3aed,#a855f7,#c4b5fd)] px-6 py-3 text-base font-semibold text-white shadow-[0_16px_30px_rgba(124,58,237,0.2)] transition hover:brightness-105 sm:w-auto"
               >
-                Decouvrir
+                {t('landing.discover')}
               </a>
               <Link
                 to="/register"
                 className="inline-flex w-full items-center justify-center rounded-full border border-violet-200 bg-white px-6 py-3 text-base font-medium text-violet-900 transition hover:-translate-y-0.5 hover:border-violet-300 hover:bg-violet-50 dark:border-violet-300/18 dark:bg-black/40 dark:text-violet-50 dark:hover:bg-violet-400/15 sm:w-auto"
               >
-                S inscrire
+                {t('common.register')}
               </Link>
             </div>
           </div>
@@ -203,7 +204,7 @@ function LandingPage() {
           className="rounded-[30px] border border-white/80 bg-white/88 p-5 shadow-[0_20px_60px_rgba(124,58,237,0.08)] backdrop-blur dark:border-violet-300/16 dark:bg-[linear-gradient(135deg,_rgba(5,3,10,0.98),_rgba(30,15,52,0.92))] sm:rounded-[34px] sm:p-7"
         >
           <h2 className="text-center text-2xl font-semibold text-stone-950 dark:text-white sm:text-3xl">
-            Comment ca marche
+            {t('landing.howItWorks')}
           </h2>
           <div className="mt-7 grid gap-5 md:grid-cols-3">
             {featureCards.map((feature) => (

@@ -1,22 +1,27 @@
 import { useI18n } from '../../hooks/useI18n'
+import { LOCALE_LABELS } from '../../lib/i18n'
 
 function LanguageSwitcher({ className = '', compact = false, onLocaleChange }) {
-  const { locale, setLocale, t } = useI18n()
+  const { dir, locale, setLocale, t } = useI18n()
 
   const options = [
-    { value: 'fr', label: t('common.french'), shortLabel: 'FR' },
-    { value: 'en', label: t('common.english'), shortLabel: 'EN' },
-    { value: 'ar', label: t('common.arabic'), shortLabel: 'AR' },
-    { value: 'de', label: t('common.german'), shortLabel: 'DE' },
+    { value: 'fr', label: LOCALE_LABELS.fr, ariaLabel: t('common.french'), shortLabel: 'FR' },
+    { value: 'ar', label: LOCALE_LABELS.ar, ariaLabel: t('common.arabic'), shortLabel: 'AR' },
+    { value: 'en', label: LOCALE_LABELS.en, ariaLabel: t('common.english'), shortLabel: 'EN' },
+    { value: 'es', label: LOCALE_LABELS.es, ariaLabel: t('common.spanish'), shortLabel: 'ES' },
+    { value: 'nl', label: LOCALE_LABELS.nl, ariaLabel: t('common.dutch'), shortLabel: 'NL' },
+    { value: 'pt', label: LOCALE_LABELS.pt, ariaLabel: t('common.portuguese'), shortLabel: 'PT' },
+    { value: 'it', label: LOCALE_LABELS.it, ariaLabel: t('common.italian'), shortLabel: 'IT' },
   ]
 
   return (
     <div
-      className={`flex max-w-full flex-wrap items-center gap-1 rounded-[22px] border border-white/50 bg-white/32 p-1 shadow-[0_10px_24px_rgba(124,58,237,0.08)] backdrop-blur-xl dark:border-violet-300/18 dark:bg-white/8 sm:inline-flex sm:rounded-full ${className}`}
+      className={`flex max-w-full items-center gap-1 overflow-x-auto rounded-[22px] border border-white/50 bg-white/32 p-1 shadow-[0_10px_24px_rgba(124,58,237,0.08)] backdrop-blur-xl dark:border-violet-300/18 dark:bg-white/8 sm:inline-flex sm:rounded-full ${className}`}
       aria-label={t('common.chooseLanguage')}
+      dir={dir}
     >
       {!compact ? (
-        <span className="px-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-600 dark:text-violet-100/75">
+        <span className="shrink-0 whitespace-nowrap px-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-600 dark:text-violet-100/75">
           {t('common.language')}
         </span>
       ) : null}
@@ -29,12 +34,14 @@ function LanguageSwitcher({ className = '', compact = false, onLocaleChange }) {
             key={option.value}
             type="button"
             onClick={() => (onLocaleChange ? onLocaleChange(option.value) : setLocale(option.value))}
-            className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+            className={`shrink-0 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold transition ${
               active
                 ? 'bg-[linear-gradient(135deg,#7c3aed,#a855f7,#c4b5fd)] text-white shadow-[0_10px_20px_rgba(124,58,237,0.14)]'
                 : 'text-stone-600 hover:bg-violet-50 hover:text-violet-900 dark:text-violet-100 dark:hover:bg-violet-400/15 dark:hover:text-white'
             }`}
-            title={option.label}
+            aria-label={option.ariaLabel}
+            aria-pressed={active}
+            title={option.ariaLabel}
           >
             {compact ? option.shortLabel : option.label}
           </button>

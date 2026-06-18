@@ -1,6 +1,16 @@
 export const LOCALE_STORAGE_KEY = 'yazoo-locale'
 
-export const SUPPORTED_LOCALES = ['fr', 'en', 'ar', 'de']
+export const SUPPORTED_LOCALES = ['fr', 'ar', 'en', 'es', 'nl', 'pt', 'it']
+
+export const LOCALE_LABELS = {
+  fr: 'Fran\u00e7ais',
+  ar: '\u0627\u0644\u0639\u0631\u0628\u064a\u0629',
+  en: 'English',
+  es: 'Espa\u00f1ol',
+  nl: 'Nederlands',
+  pt: 'Portugu\u00eas',
+  it: 'Italiano',
+}
 
 const messages = {
   fr: {
@@ -171,8 +181,16 @@ const messages = {
       mediaAlt: 'Media du post',
       comments: 'Commentaires',
       shares: 'Partages',
+      options: 'Options du post',
+      share: 'Partager',
+      saveLink: 'Enregistrer le lien',
+      edit: 'Modifier le post',
+      delete: 'Supprimer',
+      visibilityLabel: 'Visibilite',
+      authorOnlyOptions: 'Options auteur disponibles uniquement pour {name}.',
       addCommentPlaceholder: 'Ajouter un commentaire...',
       commentAction: 'Commenter',
+      commentError: "Impossible d'ajouter le commentaire.",
       shareFallback: 'Publication YaZoo',
       reactAria: '{reaction} ce post',
       addReactionAria: 'Ajouter la reaction {reaction}',
@@ -187,6 +205,7 @@ const messages = {
       updateError: 'Impossible de modifier ce post.',
       deleteConfirm: 'Supprimer ce post ? Cette action est definitive.',
       deleteError: 'Impossible de supprimer ce post.',
+      mediaUnavailable: "Le media n'est pas disponible pour le moment.",
       visibility: {
         public: 'Public',
         followers: 'Abonnes',
@@ -227,6 +246,21 @@ const messages = {
       copyright: 'Copyright {year} YaZoo. Projet developpe par Seef590.',
     },
     landing: {
+      navFeatures: 'Fonctionnalites',
+      navCommunity: 'Communaute',
+      navHelp: 'Aide',
+      heroLineOne: 'La communaute animaliere',
+      heroLineTwo: '100% marocaine',
+      heroDescription:
+        'Partagez, adoptez et trouvez tout pour vos compagnons dans une seule application pensee pour les amoureux des animaux.',
+      discover: 'Decouvrir',
+      howItWorks: 'Comment ca marche',
+      shareTitle: 'Partage',
+      shareText: 'Publiez des photos et videos de vos compagnons.',
+      adoptionTitle: 'Adoption',
+      adoptionText: 'Adoptez ou proposez des animaux en toute securite.',
+      communityTitle: 'Communaute',
+      communityText: 'Discutez avec d autres passionnes.',
       badge: 'Plateforme douce, utile et solide',
       title: 'Le social animalier, le marketplace et la confiance dans une meme app.',
       description:
@@ -918,14 +952,289 @@ const messages = {
   },
 }
 
-export function getStoredLocale() {
-  if (typeof globalThis.localStorage === 'undefined') {
+const localeOverrides = {
+  es: {
+    common: {
+      tagline: 'Red social y marketplace para mascotas',
+      login: 'Iniciar sesion',
+      register: 'Registrarse',
+      createAccount: 'Crear cuenta',
+      alreadyAccount: 'Ya tengo una cuenta',
+      logout: 'Cerrar sesion',
+      profile: 'Perfil',
+      feed: 'Feed',
+      reservations: 'Reservas',
+      history: 'Historial',
+      animals: 'Animales',
+      products: 'Productos',
+      communities: 'Comunidades',
+      messages: 'Mensajes',
+      notifications: 'Notificaciones',
+      settings: 'Ajustes',
+      marketplace: 'Animales y productos',
+      assistance: 'Asistencia',
+      language: 'Idioma',
+      french: 'Francais',
+      arabic: '\u0627\u0644\u0639\u0631\u0628\u064a\u0629',
+      english: 'English',
+      spanish: 'Espanol',
+      dutch: 'Nederlands',
+      portuguese: 'Portugues',
+      italian: 'Italiano',
+      chooseLanguage: 'Elegir idioma',
+      search: 'Buscar',
+      searchPlaceholder: 'Buscar...',
+      story: 'Story',
+      marketplaceShort: 'Mercado',
+      messagesShort: 'Msgs',
+    },
+  },
+  nl: {
+    common: {
+      tagline: 'Sociaal netwerk en marktplaats voor huisdieren',
+      login: 'Inloggen',
+      register: 'Registreren',
+      createAccount: 'Account maken',
+      alreadyAccount: 'Ik heb al een account',
+      logout: 'Uitloggen',
+      profile: 'Profiel',
+      feed: 'Feed',
+      reservations: 'Reservaties',
+      history: 'Geschiedenis',
+      animals: 'Dieren',
+      products: 'Producten',
+      communities: 'Communitys',
+      messages: 'Berichten',
+      notifications: 'Meldingen',
+      settings: 'Instellingen',
+      marketplace: 'Dieren en producten',
+      assistance: 'Assistentie',
+      language: 'Taal',
+      french: 'Francais',
+      arabic: '\u0627\u0644\u0639\u0631\u0628\u064a\u0629',
+      english: 'English',
+      spanish: 'Espanol',
+      dutch: 'Nederlands',
+      portuguese: 'Portugues',
+      italian: 'Italiano',
+      chooseLanguage: 'Taal kiezen',
+      search: 'Zoeken',
+      searchPlaceholder: 'Zoeken...',
+      story: 'Story',
+      marketplaceShort: 'Markt',
+      messagesShort: 'Msgs',
+    },
+  },
+  pt: {
+    common: {
+      tagline: 'Rede social e marketplace para animais',
+      login: 'Entrar',
+      register: 'Criar conta',
+      createAccount: 'Criar conta',
+      alreadyAccount: 'Ja tenho uma conta',
+      logout: 'Sair',
+      profile: 'Perfil',
+      feed: 'Feed',
+      reservations: 'Reservas',
+      history: 'Historico',
+      animals: 'Animais',
+      products: 'Produtos',
+      communities: 'Comunidades',
+      messages: 'Mensagens',
+      notifications: 'Notificacoes',
+      settings: 'Definicoes',
+      marketplace: 'Animais e produtos',
+      assistance: 'Assistencia',
+      language: 'Idioma',
+      french: 'Francais',
+      arabic: '\u0627\u0644\u0639\u0631\u0628\u064a\u0629',
+      english: 'English',
+      spanish: 'Espanol',
+      dutch: 'Nederlands',
+      portuguese: 'Portugues',
+      italian: 'Italiano',
+      chooseLanguage: 'Escolher idioma',
+      search: 'Pesquisar',
+      searchPlaceholder: 'Pesquisar...',
+      story: 'Story',
+      marketplaceShort: 'Mercado',
+      messagesShort: 'Msgs',
+    },
+  },
+  it: {
+    common: {
+      tagline: 'Social network e marketplace per animali',
+      login: 'Accedi',
+      register: 'Registrati',
+      createAccount: 'Crea account',
+      alreadyAccount: 'Ho gia un account',
+      logout: 'Esci',
+      profile: 'Profilo',
+      feed: 'Feed',
+      reservations: 'Prenotazioni',
+      history: 'Cronologia',
+      animals: 'Animali',
+      products: 'Prodotti',
+      communities: 'Community',
+      messages: 'Messaggi',
+      notifications: 'Notifiche',
+      settings: 'Impostazioni',
+      marketplace: 'Animali e prodotti',
+      assistance: 'Assistenza',
+      language: 'Lingua',
+      french: 'Francais',
+      arabic: '\u0627\u0644\u0639\u0631\u0628\u064a\u0629',
+      english: 'English',
+      spanish: 'Espanol',
+      dutch: 'Nederlands',
+      portuguese: 'Portugues',
+      italian: 'Italiano',
+      chooseLanguage: 'Scegli lingua',
+      search: 'Cerca',
+      searchPlaceholder: 'Cerca...',
+      story: 'Story',
+      marketplaceShort: 'Mercato',
+      messagesShort: 'Msgs',
+    },
+  },
+}
+
+messages.en.post = deepMerge(messages.fr.post, {
+  photo: 'Photo',
+  video: 'Video',
+  mediaAlt: 'Post media',
+  comments: 'Comments',
+  shares: 'Shares',
+  options: 'Post options',
+  share: 'Share',
+  saveLink: 'Save link',
+  edit: 'Edit post',
+  delete: 'Delete',
+  visibilityLabel: 'Visibility',
+  authorOnlyOptions: 'Author options are only available to {name}.',
+  addCommentPlaceholder: 'Add a comment...',
+  commentAction: 'Comment',
+  commentError: 'Unable to add the comment.',
+  shareFallback: 'YaZoo post',
+  reactAria: '{reaction} this post',
+  addReactionAria: 'Add {reaction} reaction',
+  linkCopied: 'Post link copied.',
+  linkSaved: 'Link saved to clipboard.',
+  shareUnavailable: 'Sharing was cancelled or is unavailable.',
+  saveError: 'Unable to save this post right now.',
+  visibilityUpdated: 'Visibility updated: {visibility}.',
+  visibilityError: 'Unable to change visibility.',
+  updated: 'Post updated.',
+  updating: 'Updating...',
+  updateError: 'Unable to edit this post.',
+  deleteConfirm: 'Delete this post? This action is permanent.',
+  deleteError: 'Unable to delete this post.',
+  mediaUnavailable: 'The media is unavailable right now.',
+  visibility: {
+    public: 'Public',
+    followers: 'Followers',
+    private: 'Private',
+    publicHelp: 'Everyone can see this post.',
+    followersHelp: 'Visible to your followers.',
+    privateHelp: 'Visible only to you.',
+  },
+  reactions: {
+    like: 'Like',
+    love: 'Love',
+    happy: 'Happy',
+    wow: 'Wow',
+  },
+})
+
+messages.en.landing = deepMerge(messages.fr.landing, {
+  navFeatures: 'Features',
+  navCommunity: 'Community',
+  navHelp: 'Help',
+  heroLineOne: 'The pet community',
+  heroLineTwo: 'made for Morocco',
+  heroDescription:
+    'Share, adopt, and find everything for your companions in one app designed for animal lovers.',
+  discover: 'Discover',
+  howItWorks: 'How it works',
+  shareTitle: 'Share',
+  shareText: 'Publish photos and videos of your companions.',
+  adoptionTitle: 'Adoption',
+  adoptionText: 'Adopt or list animals safely.',
+  communityTitle: 'Community',
+  communityText: 'Chat with other passionate animal lovers.',
+})
+messages.en.common.arabic = 'Arabe'
+messages.en.common.spanish = 'Espanol'
+messages.en.common.dutch = 'Nederlands'
+messages.en.common.portuguese = 'Portugues'
+messages.en.common.italian = 'Italiano'
+
+for (const locale of ['es', 'nl', 'pt', 'it']) {
+  messages[locale] = deepMerge(messages.en, localeOverrides[locale])
+}
+
+messages.fr.common.spanish = 'Espanol'
+messages.fr.common.dutch = 'Nederlands'
+messages.fr.common.portuguese = 'Portugues'
+messages.fr.common.italian = 'Italiano'
+messages.ar.common.english = messages.ar.common.english ?? 'English'
+messages.ar.common.spanish = 'Espanol'
+messages.ar.common.dutch = 'Nederlands'
+messages.ar.common.portuguese = 'Portugues'
+messages.ar.common.italian = 'Italiano'
+
+function deepMerge(base, override = {}) {
+  const result = { ...base }
+
+  for (const [key, value] of Object.entries(override)) {
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      result[key] = deepMerge(base?.[key] ?? {}, value)
+    } else {
+      result[key] = value
+    }
+  }
+
+  return result
+}
+
+export function normalizeLocale(locale) {
+  const normalized = String(locale ?? '')
+    .trim()
+    .toLowerCase()
+    .split('-')[0]
+
+  return SUPPORTED_LOCALES.includes(normalized) ? normalized : ''
+}
+
+export function getBrowserLocale() {
+  if (typeof globalThis.navigator === 'undefined') {
     return 'fr'
   }
 
-  const rawLocale = globalThis.localStorage.getItem(LOCALE_STORAGE_KEY) ?? 'fr'
+  const browserLocales = [
+    ...(globalThis.navigator.languages ?? []),
+    globalThis.navigator.language,
+  ]
 
-  return SUPPORTED_LOCALES.includes(rawLocale) ? rawLocale : 'fr'
+  for (const browserLocale of browserLocales) {
+    const normalizedLocale = normalizeLocale(browserLocale)
+
+    if (normalizedLocale) {
+      return normalizedLocale
+    }
+  }
+
+  return 'fr'
+}
+
+export function getStoredLocale() {
+  if (typeof globalThis.localStorage === 'undefined') {
+    return ''
+  }
+
+  const rawLocale = globalThis.localStorage.getItem(LOCALE_STORAGE_KEY)
+
+  return normalizeLocale(rawLocale)
 }
 
 export function setStoredLocale(locale) {
@@ -933,11 +1242,15 @@ export function setStoredLocale(locale) {
     return
   }
 
-  globalThis.localStorage.setItem(LOCALE_STORAGE_KEY, locale)
+  const normalizedLocale = normalizeLocale(locale)
+
+  if (normalizedLocale) {
+    globalThis.localStorage.setItem(LOCALE_STORAGE_KEY, normalizedLocale)
+  }
 }
 
 export function getCurrentLocale() {
-  return getStoredLocale()
+  return getStoredLocale() || getBrowserLocale() || 'fr'
 }
 
 export function getDirection(locale) {
@@ -962,6 +1275,10 @@ export function translate(locale, key, replacements = {}) {
   }
 
   if (typeof value !== 'string') {
+    if (import.meta.env.DEV) {
+      console.warn(`[i18n] Missing translation key "${key}" for locale "${locale}"`)
+    }
+
     return key
   }
 
@@ -971,17 +1288,15 @@ export function translate(locale, key, replacements = {}) {
 }
 
 export function getDateLocale(locale) {
-  if (locale === 'ar') {
-    return 'ar-MA'
+  const dateLocales = {
+    ar: 'ar-MA',
+    en: 'en-US',
+    es: 'es-ES',
+    nl: 'nl-NL',
+    pt: 'pt-PT',
+    it: 'it-IT',
+    fr: 'fr-FR',
   }
 
-  if (locale === 'de') {
-    return 'de-DE'
-  }
-
-  if (locale === 'en') {
-    return 'en-US'
-  }
-
-  return 'fr-FR'
+  return dateLocales[normalizeLocale(locale)] ?? dateLocales.fr
 }

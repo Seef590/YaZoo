@@ -128,11 +128,11 @@ function CreatePost({ onCreate, focusToken = 0 }) {
           </button>
         </div>
 
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="yz-horizontal-scroll yz-no-scrollbar mt-4 pb-1">
           {['moment', 'photo', 'video', 'adoption', 'communaute'].map((item) => (
             <span
               key={item}
-              className="rounded-full border border-violet-100 bg-white/86 px-3 py-1 text-xs font-medium text-violet-800 shadow-sm"
+              className="whitespace-nowrap rounded-full border border-violet-100 bg-white/86 px-3 py-1 text-xs font-medium text-violet-800 shadow-sm"
             >
               #{item}
             </span>

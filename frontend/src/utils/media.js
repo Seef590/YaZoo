@@ -1,3 +1,54 @@
+import { getBackendBaseUrl } from '../lib/appConfig'
+
+export function getMediaUrl(value) {
+  if (!value) {
+    return ''
+  }
+
+  const rawUrl = String(value).trim()
+
+  if (!rawUrl) {
+    return ''
+  }
+
+  if (/^(blob:|data:|https?:\/\/)/i.test(rawUrl)) {
+    return rawUrl
+  }
+
+  const backendBaseUrl = getBackendBaseUrl()
+  const normalizedPath = rawUrl
+    .replace(/^\/+/, '')
+    .replace(/^public\//, '')
+    .replace(/^storage\//, 'storage/')
+
+  if (normalizedPath.startsWith('storage/')) {
+    return `${backendBaseUrl}/${normalizedPath}`
+  }
+
+  return `${backendBaseUrl}/storage/${normalizedPath}`
+}
+
+export function getPostMedia(post) {
+  const source =
+    post?.mediaUrl ??
+    post?.imageUrl ??
+    post?.media_url ??
+    post?.image_url ??
+    post?.mediaPath ??
+    post?.media_path ??
+    post?.imagePath ??
+    post?.image_path ??
+    ''
+  const mediaUrl = getMediaUrl(source)
+  const rawKind = post?.mediaKind ?? post?.media_kind ?? ''
+  const mediaKind = rawKind || (mediaUrl && /\.(mp4|webm|mov)(\?|#|$)/i.test(mediaUrl) ? 'video' : 'image')
+
+  return {
+    mediaKind: mediaUrl ? mediaKind : null,
+    mediaUrl,
+  }
+}
+
 export function versionMediaUrl(url, version) {
   if (!url || url.startsWith('blob:') || url.startsWith('data:')) {
     return url ?? ''

@@ -203,6 +203,31 @@ svg {
   max-width: 100%;
 }
 
+.yz-horizontal-scroll {
+  display: flex;
+  max-width: 100%;
+  gap: 0.75rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.yz-horizontal-scroll > *,
+.yz-horizontal-scroll-item {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+
+.yz-no-scrollbar {
+  scrollbar-width: none;
+}
+
+.yz-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 :root.rtl body {
   direction: rtl;
   text-align: right;

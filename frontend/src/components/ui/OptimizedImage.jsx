@@ -1,14 +1,22 @@
 import PropTypes from 'prop-types'
+import { useState } from 'react'
 
 export function OptimizedImage({
   alt,
   className,
+  fallback = null,
   height,
   sizes,
   src,
   srcSet,
   width,
 }) {
+  const [hasError, setHasError] = useState(false)
+
+  if (hasError && fallback) {
+    return fallback
+  }
+
   return (
     <img
       alt={alt}
@@ -20,6 +28,7 @@ export function OptimizedImage({
       src={src}
       srcSet={srcSet}
       width={width}
+      onError={() => setHasError(true)}
     />
   )
 }
@@ -27,6 +36,7 @@ export function OptimizedImage({
 OptimizedImage.propTypes = {
   alt: PropTypes.string.isRequired,
   className: PropTypes.string,
+  fallback: PropTypes.node,
   height: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   sizes: PropTypes.string,
   src: PropTypes.string.isRequired,
