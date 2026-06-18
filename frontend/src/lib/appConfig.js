@@ -22,6 +22,16 @@ function trimTrailingSlash(value) {
   return value.replace(/\/+$/, '')
 }
 
+function normalizeApiBaseUrl(value) {
+  const normalizedUrl = trimTrailingSlash(value.trim())
+
+  if (/\/api$/i.test(normalizedUrl)) {
+    return normalizedUrl
+  }
+
+  return `${normalizedUrl}/api`
+}
+
 function getDefaultApiUrl() {
   if (typeof globalThis.location === 'undefined') {
     return 'http://localhost:8000/api'
@@ -37,7 +47,7 @@ function getDefaultApiUrl() {
 export function getApiBaseUrl() {
   const configuredUrl = import.meta.env.VITE_API_URL
 
-  return trimTrailingSlash(
+  return normalizeApiBaseUrl(
     typeof configuredUrl === 'string' && configuredUrl.trim()
       ? configuredUrl
       : getDefaultApiUrl(),

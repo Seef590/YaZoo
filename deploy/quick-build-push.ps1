@@ -11,6 +11,7 @@ param(
     [string] $App = 'backend',
     [string] $Tag = 'latest',
     [string] $FrontendApiUrl = 'https://yazoo-api.azurewebsites.net/api',
+    [string] $FrontendStorageUrl = 'https://yazoo-api.azurewebsites.net/storage',
     [switch] $SkipDockerHubLogin
 )
 
@@ -31,7 +32,7 @@ if ($Registry -eq 'acr') {
 
     Write-Host "Building $App image: $image"
     if ($App -eq 'frontend') {
-        docker build -t $image -f frontend/Dockerfile --build-arg VITE_API_URL=$FrontendApiUrl .
+        docker build -t $image -f frontend/Dockerfile --build-arg VITE_API_URL=$FrontendApiUrl --build-arg VITE_STORAGE_URL=$FrontendStorageUrl .
     } else {
         docker build -t $image -f backend/Dockerfile .
     }
@@ -57,7 +58,7 @@ $image = "$DockerHubUser/${DockerHubRepository}:$Tag"
 
 Write-Host "Building $App image: $image"
 if ($App -eq 'frontend') {
-    docker build -t $image -f frontend/Dockerfile --build-arg VITE_API_URL=$FrontendApiUrl .
+    docker build -t $image -f frontend/Dockerfile --build-arg VITE_API_URL=$FrontendApiUrl --build-arg VITE_STORAGE_URL=$FrontendStorageUrl .
 } else {
     docker build -t $image -f backend/Dockerfile .
 }
