@@ -77,13 +77,15 @@ Date: 2026-06-18
 - Correctif CI ajoute: fallback API explicite en francais quand aucune locale n'est fournie, pour conserver les attentes des tests backend.
 - Correctif securite ajoute: `phpseclib/phpseclib` mis a jour vers `3.0.55` apres echec GitHub Actions sur `composer audit`.
 - Correctif securite frontend ajoute: `form-data` vers `4.0.6`, `engine.io-client` vers `6.6.6`, `ws` vers `8.21.0` apres echec GitHub Actions sur `npm audit --omit=dev`.
-- DockerHub deja pousse pendant cette reprise: `5eef/yazoo-api:latest`, digest `sha256:fbf11973dac053c91d47a52e7b12d6ae13f550092c8c1e3b1648616d754584b2`.
-- Azure deja verifie pendant cette reprise: backend configure sur `DOCKER|5eef/yazoo-api:latest`, `WEBSITES_PORT=8080`, `/health` HTTP 200; frontend `https://yazoo.azurewebsites.net` HTTP 200.
+- DockerHub final backend: `5eef/yazoo-api:latest`, digest `sha256:12389b318f271345498a7bafc01e876f86d18071d2e0ca569709ac0db044cc33`.
+- DockerHub final frontend: `5eef/yazoo-frontend:latest`, digest `sha256:8cee7cd95e42c904d3c44b84722a1b9fa7821ec36c7fe2bd76bb99e4a6c97b10`.
+- Azure final backend: `DOCKER|5eef/yazoo-api:latest`, `WEBSITES_PORT=8080`, `YAZOO_IMAGE_TAG=1d41ca5`, `/health` HTTP 200.
+- Azure final frontend: `DOCKER|5eef/yazoo-frontend:latest`, `WEBSITES_PORT=80`, `YAZOO_IMAGE_TAG=1d41ca5`, `https://yazoo.azurewebsites.net` HTTP 200 avec `Last-Modified: Thu, 18 Jun 2026 02:29:53 GMT`.
+- GitHub Actions final: workflow `CI` OK sur `1d41ca5`; workflow `Deploy YaZoo` bloque sur secrets Azure GitHub absents (`client-id` et `tenant-id`), donc le deploiement reel a ete effectue par Azure CLI locale.
 
 ## Commandes restantes au moment de cette mise a jour
 
-- Commit/push du correctif audit npm.
-- Reverification Azure apres le nouveau push image et apres le workflow GitHub.
+- Aucune commande applicative restante identifiee.
 
 ## Erreurs restantes / limites
 
