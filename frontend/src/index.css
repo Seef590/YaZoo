@@ -205,13 +205,16 @@ svg {
 
 .yz-horizontal-scroll {
   display: flex;
+  width: 100%;
   max-width: 100%;
-  gap: 0.75rem;
+  min-width: 0;
+  gap: 1rem;
   overflow-x: auto;
   overflow-y: hidden;
-  scroll-behavior: smooth;
   scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
+  padding-bottom: 0.25rem;
 }
 
 .yz-horizontal-scroll > *,
@@ -226,6 +229,10 @@ svg {
 
 .yz-no-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+.yz-horizontal-scroll::-webkit-scrollbar {
+  height: 0;
 }
 
 :root.rtl body {

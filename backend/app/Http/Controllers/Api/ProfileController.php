@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Support\MediaStorage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Schema;
 
 class ProfileController extends Controller
@@ -16,8 +17,9 @@ class ProfileController extends Controller
     /**
      * Display the given user's public profile.
      */
-    public function show(User $user): UserProfileResource
+    public function show(string $user): UserProfileResource
     {
+        $user = $this->resolveUser($user);
         $this->loadProfileAggregates($user);
 
         return UserProfileResource::make($user);
@@ -26,8 +28,9 @@ class ProfileController extends Controller
     /**
      * Update the given user's profile.
      */
-    public function update(UpdateProfileRequest $request, User $user): UserProfileResource
+    public function update(UpdateProfileRequest $request, string $user): UserProfileResource
     {
+        $user = $this->resolveUser($user);
         $validated = $request->validated();
         $updates = collect($validated)
             ->except([
@@ -72,8 +75,9 @@ class ProfileController extends Controller
         return UserProfileResource::make($user);
     }
 
-    public function follow(Request $request, User $user): JsonResponse
+    public function follow(Request $request, string $user): JsonResponse
     {
+        $user = $this->resolveUser($user);
         abort_if($request->user()->is($user), 422, 'Vous ne pouvez pas suivre votre propre profil.');
 
         $request->user()->following()->syncWithoutDetaching([$user->id]);
@@ -85,8 +89,9 @@ class ProfileController extends Controller
         ]);
     }
 
-    public function unfollow(Request $request, User $user): JsonResponse
+    public function unfollow(Request $request, string $user): JsonResponse
     {
+        $user = $this->resolveUser($user);
         abort_if($request->user()->is($user), 422, 'Vous ne pouvez pas vous desabonner de votre propre profil.');
 
         $request->user()->following()->detach($user->id);
@@ -111,5 +116,12 @@ class ProfileController extends Controller
         if (Schema::hasTable('reservation_reviews')) {
             $user->loadAvg('reviewsReceived', 'rating');
         }
+    }
+
+    private function resolveUser(string $user): User
+    {
+        return User::query()->whereKey($user)->firstOr(
+            fn () => abort(Response::HTTP_NOT_FOUND, 'Profil introuvable.'),
+        );
     }
 }

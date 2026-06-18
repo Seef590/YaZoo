@@ -17,6 +17,7 @@ vi.mock('../services/marketplace/animalsMarketplaceService', () => ({
 describe('AnimalsMarketplacePage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    localStorage.setItem('yazoo-locale', 'fr')
     animalService.fetchAnimals.mockResolvedValue([])
     animalService.createAnimal.mockResolvedValue({ data: {} })
     animalService.updateAnimal.mockResolvedValue({ data: {} })

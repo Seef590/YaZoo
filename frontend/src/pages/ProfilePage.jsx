@@ -17,6 +17,7 @@ import Button from '../components/ui/Button'
 import FollowButton from '../components/ui/FollowButton'
 import ScrollTopButton from '../components/ui/ScrollTopButton'
 import { useAuth } from '../hooks/useAuth'
+import { useI18n } from '../hooks/useI18n'
 import { asArray, extractDataArray, extractDataObject } from '../utils/apiData'
 import { getErrorMessage } from '../utils/getErrorMessage'
 import { normalizeAuthUserMedia, normalizeProfileMediaPayload } from '../utils/media'
@@ -30,6 +31,7 @@ const PROFILE_TABS = [
 
 function ProfilePage() {
   const { setUser, user } = useAuth()
+  const { t } = useI18n()
   const navigate = useNavigate()
   const { userId: routeUserId } = useParams()
   const [searchParams] = useSearchParams()
@@ -491,7 +493,7 @@ function ProfilePage() {
             <div className="max-w-3xl">
               <div>
                 <p className="text-xs uppercase tracking-[0.18em] text-violet-700 dark:text-violet-300">
-                  Profil public
+                  {t('profile.publicProfile')}
                 </p>
                 <h2 className="mt-2 text-2xl font-semibold text-stone-950 sm:text-3xl dark:text-violet-50">
                   {profile?.name ?? user?.name}
@@ -536,7 +538,7 @@ function ProfilePage() {
                   disabled={isMessageStarting}
                   className="w-full sm:w-auto"
                 >
-                  {isMessageStarting ? 'Ouverture...' : 'Envoyer un message'}
+                  {isMessageStarting ? t('common.loading') : t('messages.sendMessage')}
                 </Button>
               </>
               )}
@@ -545,7 +547,7 @@ function ProfilePage() {
                 onClick={handleShareProfile}
                 className="inline-flex w-full items-center justify-center rounded-full border border-violet-200/80 bg-white/92 px-4 py-2 text-sm font-medium text-stone-700 shadow-[0_12px_26px_rgba(124,58,237,0.08)] transition-all duration-200 hover:-translate-y-0.5 hover:border-violet-300 hover:bg-violet-50/80 hover:text-violet-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-200 sm:w-auto dark:border-violet-300/16 dark:bg-white/8 dark:text-violet-50 dark:hover:bg-white/12"
               >
-                Partager le profil
+                {t('profile.shareProfile')}
               </button>
             </div>
           </div>

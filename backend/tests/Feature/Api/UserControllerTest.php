@@ -36,6 +36,21 @@ class UserControllerTest extends TestCase
             ->assertJsonPath('data.email', null);
     }
 
+    public function test_authenticated_user_profile_lookup_with_numeric_id_does_not_return_unprocessable(): void
+    {
+        $viewer = User::factory()->create();
+        $profile = User::factory()->create();
+
+        Sanctum::actingAs($viewer);
+
+        $this->getJson("/api/users/{$profile->id}")
+            ->assertOk()
+            ->assertJsonPath('data.id', $profile->id);
+
+        $this->getJson('/api/users/999999')
+            ->assertNotFound();
+    }
+
     public function test_authenticated_user_can_list_user_suggestions_without_self_or_emails(): void
     {
         $viewer = User::factory()->create();

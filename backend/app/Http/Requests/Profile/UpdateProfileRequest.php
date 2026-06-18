@@ -15,10 +15,9 @@ class UpdateProfileRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        /** @var User|null $routeUser */
-        $routeUser = $this->route('user');
+        $routeUser = $this->routeUser();
 
-        return $this->user()?->is($routeUser) ?? false;
+        return $routeUser !== null && ($this->user()?->is($routeUser) ?? false);
     }
 
     /**
@@ -28,7 +27,7 @@ class UpdateProfileRequest extends FormRequest
      */
     public function rules(): array
     {
-        $routeUser = $this->route('user');
+        $routeUser = $this->routeUser();
 
         return [
             'name' => ['required', 'string', 'max:120'],
@@ -41,7 +40,7 @@ class UpdateProfileRequest extends FormRequest
             'country' => ['nullable', 'string', 'max:100'],
             'city' => ['nullable', 'string', 'max:100'],
             'bio' => ['nullable', 'string', 'max:2000'],
-            'preferred_locale' => ['nullable', 'string', 'in:fr,en,ar,de'],
+            'preferred_locale' => ['nullable', 'string', 'in:fr,ar,en,es,nl,pt,it,ru'],
             'avatar' => ['nullable', 'string', 'max:2048'],
             'cover_photo' => ['nullable', 'string', 'max:2048'],
             'avatar_file' => ['nullable', 'file', 'image', 'max:10240'],
@@ -83,5 +82,16 @@ class UpdateProfileRequest extends FormRequest
         }
 
         $this->merge($normalized);
+    }
+
+    private function routeUser(): ?User
+    {
+        $routeUser = $this->route('user');
+
+        if ($routeUser instanceof User) {
+            return $routeUser;
+        }
+
+        return User::query()->whereKey($routeUser)->first();
     }
 }

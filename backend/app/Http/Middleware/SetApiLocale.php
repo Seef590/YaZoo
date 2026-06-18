@@ -14,7 +14,7 @@ class SetApiLocale
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $supportedLocales = ['fr', 'ar', 'en', 'es', 'nl', 'pt', 'it'];
+        $supportedLocales = ['fr', 'ar', 'en', 'es', 'nl', 'pt', 'it', 'ru'];
 
         $locale = (string) ($request->header('X-App-Locale')
             ?? $request->query('locale')

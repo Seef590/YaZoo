@@ -12,11 +12,12 @@ function LanguageSwitcher({ className = '', compact = false, onLocaleChange }) {
     { value: 'nl', label: LOCALE_LABELS.nl, ariaLabel: t('common.dutch'), shortLabel: 'NL' },
     { value: 'pt', label: LOCALE_LABELS.pt, ariaLabel: t('common.portuguese'), shortLabel: 'PT' },
     { value: 'it', label: LOCALE_LABELS.it, ariaLabel: t('common.italian'), shortLabel: 'IT' },
+    { value: 'ru', label: LOCALE_LABELS.ru, ariaLabel: t('common.russian'), shortLabel: 'RU' },
   ]
 
   return (
     <div
-      className={`flex max-w-full items-center gap-1 overflow-x-auto rounded-[22px] border border-white/50 bg-white/32 p-1 shadow-[0_10px_24px_rgba(124,58,237,0.08)] backdrop-blur-xl dark:border-violet-300/18 dark:bg-white/8 sm:inline-flex sm:rounded-full ${className}`}
+      className={`yz-horizontal-scroll yz-no-scrollbar max-w-full items-center gap-1 rounded-[22px] border border-white/50 bg-white/32 p-1 shadow-[0_10px_24px_rgba(124,58,237,0.08)] backdrop-blur-xl dark:border-violet-300/18 dark:bg-white/8 sm:inline-flex sm:rounded-full ${className}`}
       aria-label={t('common.chooseLanguage')}
       dir={dir}
     >

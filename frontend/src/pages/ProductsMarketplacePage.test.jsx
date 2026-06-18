@@ -17,6 +17,7 @@ vi.mock('../services/marketplace/productsMarketplaceService', () => ({
 describe('ProductsMarketplacePage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    localStorage.setItem('yazoo-locale', 'fr')
     productService.fetchProducts.mockResolvedValue([])
     productService.createProduct.mockResolvedValue({ data: {} })
     productService.updateProduct.mockResolvedValue({ data: {} })

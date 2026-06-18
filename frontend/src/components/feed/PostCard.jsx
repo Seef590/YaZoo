@@ -174,11 +174,11 @@ function PostCard({
   }
 
   return (
-    <article className="group overflow-hidden rounded-[30px] border border-white/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.99),_rgba(246,239,255,0.94))] shadow-[0_24px_56px_rgba(124,58,237,0.08)] transition-all duration-200 hover:-translate-y-1 hover:border-violet-200 hover:shadow-[0_28px_60px_rgba(124,58,237,0.12)] dark:border-violet-300/12 dark:bg-[linear-gradient(180deg,_rgba(24,16,38,0.96),_rgba(36,20,61,0.92))] dark:shadow-[0_24px_60px_rgba(0,0,0,0.34)]">
+    <article className="group max-w-full overflow-hidden rounded-[30px] border border-white/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.99),_rgba(246,239,255,0.94))] shadow-[0_24px_56px_rgba(124,58,237,0.08)] transition-all duration-200 hover:-translate-y-1 hover:border-violet-200 hover:shadow-[0_28px_60px_rgba(124,58,237,0.12)] dark:border-violet-300/12 dark:bg-[linear-gradient(180deg,_rgba(24,16,38,0.96),_rgba(36,20,61,0.92))] dark:shadow-[0_24px_60px_rgba(0,0,0,0.34)]">
       <div className="h-1.5 bg-[linear-gradient(90deg,#7c3aed,#a855f7,#d8b4fe,#ede9fe)]" />
 
-      <div className="p-5">
-        <div className="flex items-start gap-3 sm:gap-4">
+      <div className="p-4 sm:p-5">
+        <div className="flex min-w-0 items-start gap-3 sm:gap-4">
           <Avatar name={post.author?.name} src={post.author?.avatar} />
 
           <div className="min-w-0 flex-1">
@@ -264,7 +264,7 @@ function PostCard({
             ) : null}
 
             {mediaUrl && !hasMediaError ? (
-              <div className="relative mt-4 overflow-hidden rounded-[24px] bg-stone-100 shadow-[0_18px_40px_rgba(124,58,237,0.08)] dark:bg-stone-900 sm:rounded-[28px]">
+              <div className="relative mt-5 w-full max-w-full overflow-hidden rounded-[24px] bg-stone-100 shadow-[0_18px_40px_rgba(124,58,237,0.08)] dark:bg-stone-900 sm:rounded-[28px]">
                 <span className="absolute right-3 top-3 z-10 rounded-full bg-violet-950/72 px-3 py-1 text-xs font-medium text-white backdrop-blur">
                   {mediaKind === 'video' ? t('post.video') : t('post.photo')}
                 </span>
@@ -273,14 +273,14 @@ function PostCard({
                   <video
                     src={mediaUrl}
                     controls
-                    className="h-64 w-full object-cover sm:h-96 md:h-[34rem] lg:h-[42rem] xl:h-[48rem]"
+                    className="h-64 max-h-[70vh] w-full max-w-full object-cover sm:h-96 md:h-[34rem] lg:h-[42rem] xl:h-[48rem]"
                     onError={() => setHasMediaError(true)}
                   />
                 ) : (
                   <img
                     src={mediaUrl}
                     alt={t('post.mediaAlt')}
-                    className="h-64 w-full object-cover transition duration-500 group-hover:scale-[1.02] sm:h-96 md:h-[34rem] lg:h-[42rem] xl:h-[48rem]"
+                    className="h-64 max-h-[70vh] w-full max-w-full object-cover transition duration-500 group-hover:scale-[1.02] sm:h-96 md:h-[34rem] lg:h-[42rem] xl:h-[48rem]"
                     onError={() => setHasMediaError(true)}
                   />
                 )}
@@ -291,8 +291,8 @@ function PostCard({
               </div>
             ) : null}
 
-            <div className="mt-5 flex flex-wrap gap-3">
-              <div className="flex flex-wrap items-center gap-2">
+            <div className="mt-5 flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+              <div className="yz-horizontal-scroll yz-no-scrollbar sm:flex sm:flex-wrap sm:overflow-visible">
                 {POST_REACTIONS.map((reaction) => (
                   <button
                     key={reaction.key}

@@ -444,13 +444,13 @@ function FeedPage() {
   }
 
   const storyRowItems = useMemo(
-    () => buildStoryRowItems(storyGroups, user),
-    [storyGroups, user],
+    () => buildStoryRowItems(storyGroups, user, t),
+    [storyGroups, t, user],
   )
 
   const viewerStories = useMemo(
-    () => asArray(storyGroups).map((group) => mapStoryGroupForViewer(group)),
-    [storyGroups],
+    () => asArray(storyGroups).map((group) => mapStoryGroupForViewer(group, t)),
+    [storyGroups, t],
   )
   const searchTerm = searchParams.get('q')?.trim() ?? ''
   const safePosts = asArray(posts)
@@ -484,12 +484,12 @@ function FeedPage() {
   const sidebarFollowingCount = profileSummary?.followingCount ?? 0
 
   return (
-    <section className="space-y-6">
-      <section className="overflow-hidden rounded-[30px] border border-white/80 bg-white/88 p-4 shadow-[0_20px_48px_rgba(124,58,237,0.08)] backdrop-blur">
+    <section className="max-w-full min-w-0 space-y-6 overflow-x-clip">
+      <section className="max-w-full min-w-0 overflow-hidden rounded-[30px] border border-white/80 bg-white/88 p-4 shadow-[0_20px_48px_rgba(124,58,237,0.08)] backdrop-blur">
         <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.18em] text-violet-700 dark:text-violet-200">
-              Partage rapide
+              {t('feed.quickShare')}
             </p>
           </div>
           <button
@@ -497,7 +497,7 @@ function FeedPage() {
             onClick={() => setIsStoryComposerOpen(true)}
             className="w-full rounded-full bg-violet-50 px-4 py-2 text-xs font-medium text-violet-700 transition hover:bg-violet-100 sm:w-auto"
           >
-            Partager
+            {t('post.share')}
           </button>
         </div>
 
@@ -520,6 +520,7 @@ function FeedPage() {
               <StoryCard
                 key={storyGroup.id}
                 storyGroup={storyGroup}
+                t={t}
                 onOpen={() => handleOpenStory(storyGroup)}
                 onAddStory={
                   storyGroup.isOwn && !storyGroup.isComposerShortcut
@@ -550,8 +551,8 @@ function FeedPage() {
         </div>
       ) : null}
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="space-y-6">
+      <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="min-w-0 space-y-6">
           <UserSuggestionsSection
             users={userSuggestions}
             currentUserId={user?.id}
@@ -563,19 +564,19 @@ function FeedPage() {
 
           {isLoading ? (
             <div className="rounded-[28px] border border-dashed border-violet-200 bg-white/84 px-5 py-12 text-center text-sm text-stone-500">
-              Chargement du feed...
+              {t('feed.loadingFeed')}
             </div>
           ) : null}
 
           {!isLoading && safePosts.length === 0 ? (
             <div className="rounded-[28px] border border-dashed border-violet-200 bg-white/84 px-5 py-12 text-center text-sm text-stone-500">
-              Aucun post pour le moment. Creez le premier contenu YaZoo.
+              {t('feed.emptyFeed')}
             </div>
           ) : null}
 
           {!isLoading && safePosts.length > 0 && visiblePosts.length === 0 ? (
             <div className="rounded-[28px] border border-dashed border-violet-200 bg-white/84 px-5 py-12 text-center text-sm text-stone-500">
-              Aucun post ne correspond a votre recherche.
+              {t('feed.noSearchResults')}
             </div>
           ) : null}
 
@@ -602,6 +603,7 @@ function FeedPage() {
                     onNavigate={navigate}
                     onJoinCommunity={handleJoinCommunity}
                     onReserveService={handleReserveService}
+                    t={t}
                   />
                 ),
               )}
@@ -800,7 +802,7 @@ function UserSuggestionsSection({ users, currentUserId, onNavigate, t }) {
   }
 
   return (
-    <section className="rounded-[28px] border border-white/80 bg-white/92 p-5 shadow-[0_18px_42px_rgba(124,58,237,0.08)] dark:border-violet-300/14 dark:bg-white/8">
+    <section className="max-w-full min-w-0 rounded-[28px] border border-white/80 bg-white/92 p-5 shadow-[0_18px_42px_rgba(124,58,237,0.08)] dark:border-violet-300/14 dark:bg-white/8">
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-xs uppercase tracking-[0.18em] text-violet-700 dark:text-violet-200">
@@ -813,7 +815,7 @@ function UserSuggestionsSection({ users, currentUserId, onNavigate, t }) {
         {safeUsers.map((suggestedUser) => (
           <article
             key={suggestedUser.id}
-            className="min-w-[220px] snap-start rounded-[22px] border border-violet-100 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.78))] p-4 dark:border-violet-300/14 dark:bg-white/8"
+            className="w-[220px] snap-start rounded-[22px] border border-violet-100 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.78))] p-4 dark:border-violet-300/14 dark:bg-white/8 sm:w-[240px]"
           >
             <button
               type="button"
@@ -858,10 +860,10 @@ function UserSuggestionsSection({ users, currentUserId, onNavigate, t }) {
   )
 }
 
-function StoryCard({ storyGroup, onOpen, onAddStory }) {
+function StoryCard({ storyGroup, onOpen, onAddStory, t }) {
   const hasStories = (storyGroup.stories?.length ?? 0) > 0
   const ringClass = getStoryRingClass(storyGroup)
-  const avatarName = storyGroup.user?.name ?? 'Votre story'
+  const avatarName = storyGroup.user?.name ?? t('story.yourStory')
   const avatarSrc = storyGroup.user?.avatar ?? ''
 
   return (
@@ -910,7 +912,7 @@ function StoryCard({ storyGroup, onOpen, onAddStory }) {
           onClick={onAddStory}
           className="mt-3 inline-flex w-full items-center justify-center rounded-full bg-violet-50 px-3 py-2 text-[11px] font-medium text-violet-700 transition hover:bg-violet-100"
         >
-          Ajouter une autre story
+          {t('story.addAnother')}
         </button>
       ) : null}
     </article>
@@ -923,6 +925,7 @@ function OrganicSuggestionCard({
   onNavigate,
   onJoinCommunity,
   onReserveService,
+  t,
 }) {
   if (item.type === 'service') {
     const service = item.service
@@ -931,7 +934,7 @@ function OrganicSuggestionCard({
     return (
       <article className="rounded-[28px] border border-violet-100 bg-[linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.88))] p-5 shadow-[0_18px_42px_rgba(124,58,237,0.08)] dark:border-violet-300/14 dark:bg-[linear-gradient(135deg,_rgba(24,6,44,0.92),_rgba(8,5,13,0.96))]">
         <p className="text-xs uppercase tracking-[0.18em] text-violet-700 dark:text-violet-200">
-          Service recommande
+          {t('feed.recommendedService')}
         </p>
         <h3 className="mt-2 text-lg font-semibold text-stone-950 dark:text-white">
           {service.title}
@@ -941,10 +944,10 @@ function OrganicSuggestionCard({
         </p>
         <div className="mt-4 flex flex-wrap gap-2 text-xs">
           <span className="rounded-full bg-violet-50 px-3 py-1 font-medium text-violet-800 dark:bg-white/10 dark:text-violet-50">
-            {service.type === 'training' ? 'Dresseur/Dresseuse' : 'Gardien/Gardienne'}
+            {service.type === 'training' ? t('services.petTraining') : t('services.petSitting')}
           </span>
           <span className="rounded-full bg-white px-3 py-1 font-medium text-stone-700 dark:bg-white/10 dark:text-violet-50">
-            {service.city || 'Ville non renseignee'}
+            {service.city || t('profile.locationMissing')}
           </span>
         </div>
         <div className="mt-4 flex flex-wrap gap-3">
@@ -953,7 +956,7 @@ function OrganicSuggestionCard({
             onClick={() => onNavigate('/marketplace/services')}
             className="rounded-full border border-violet-100 bg-white px-4 py-2 text-sm font-semibold text-violet-900 transition hover:bg-violet-50 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-50"
           >
-            Voir le service
+            {t('services.viewService')}
           </button>
           {!service.isOwner ? (
             <button
@@ -962,7 +965,7 @@ function OrganicSuggestionCard({
               disabled={isProcessing}
               className="rounded-full bg-[linear-gradient(135deg,#7c3aed,#a855f7)] px-4 py-2 text-sm font-semibold text-white transition hover:brightness-105 disabled:opacity-60"
             >
-              {isProcessing ? 'Envoi...' : 'Reserver'}
+              {isProcessing ? t('common.sending') : t('reservations.bookSession')}
             </button>
           ) : null}
         </div>
@@ -977,13 +980,13 @@ function OrganicSuggestionCard({
     return (
       <article className="rounded-[28px] border border-violet-100 bg-white/94 p-5 shadow-[0_18px_42px_rgba(124,58,237,0.08)] dark:border-violet-300/14 dark:bg-white/8">
         <p className="text-xs uppercase tracking-[0.18em] text-violet-700 dark:text-violet-200">
-          Communaute a decouvrir
+          {t('feed.recommendedCommunity')}
         </p>
         <h3 className="mt-2 text-lg font-semibold text-stone-950 dark:text-white">
           {community.name}
         </h3>
         <p className="mt-2 text-sm leading-6 text-stone-600 dark:text-violet-100/76">
-          {community.description || 'Un espace pour echanger autour des animaux.'}
+          {community.description || t('feed.communityFallback')}
         </p>
         <div className="mt-4 flex flex-wrap gap-3">
           <button
@@ -991,7 +994,7 @@ function OrganicSuggestionCard({
             onClick={() => onNavigate(`/communities/${community.id}`)}
             className="rounded-full border border-violet-100 bg-white px-4 py-2 text-sm font-semibold text-violet-900 transition hover:bg-violet-50 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-50"
           >
-            Voir
+            {t('common.show')}
           </button>
           {!community.isMember && community.membershipStatus !== 'pending' ? (
             <button
@@ -1000,7 +1003,11 @@ function OrganicSuggestionCard({
               disabled={isProcessing}
               className="rounded-full bg-[linear-gradient(135deg,#7c3aed,#a855f7)] px-4 py-2 text-sm font-semibold text-white transition hover:brightness-105 disabled:opacity-60"
             >
-              {isProcessing ? 'Envoi...' : community.isPrivate ? "Demander l'acces" : 'Rejoindre'}
+              {isProcessing
+                ? t('common.sending')
+                : community.isPrivate
+                  ? t('communities.requestAccess')
+                  : t('communities.join')}
             </button>
           ) : null}
         </div>
@@ -1013,7 +1020,7 @@ function OrganicSuggestionCard({
   return (
     <article className="rounded-[28px] border border-violet-100 bg-white/94 p-5 shadow-[0_18px_42px_rgba(124,58,237,0.08)] dark:border-violet-300/14 dark:bg-white/8">
       <p className="text-xs uppercase tracking-[0.18em] text-violet-700 dark:text-violet-200">
-        Marketplace recommande
+        {t('feed.recommendedMarketplace')}
       </p>
       <h3 className="mt-2 text-lg font-semibold text-stone-950 dark:text-white">
         {listing.title}
@@ -1026,13 +1033,13 @@ function OrganicSuggestionCard({
         onClick={() => onNavigate(listing.href)}
         className="mt-4 rounded-full bg-[linear-gradient(135deg,#7c3aed,#a855f7)] px-4 py-2 text-sm font-semibold text-white transition hover:brightness-105"
       >
-        Voir l'annonce
+        {t('marketplace.viewListing')}
       </button>
     </article>
   )
 }
 
-function buildStoryRowItems(storyGroups, user) {
+function buildStoryRowItems(storyGroups, user, t) {
   const safeStoryGroups = asArray(storyGroups)
   const ownGroup = safeStoryGroups.find((group) => group.isOwn)
   const otherGroups = safeStoryGroups.filter((group) => !group.isOwn)
@@ -1057,16 +1064,16 @@ function buildStoryRowItems(storyGroups, user) {
   return [
     {
       ...normalizedOwnGroup,
-      title: 'Votre story',
+      title: t('story.yourStory'),
       caption:
         (normalizedOwnGroup.stories?.length ?? 0) > 0
-          ? `${normalizedOwnGroup.stories.length} story active`
-          : 'Partager',
+          ? t('story.activeCount', { count: normalizedOwnGroup.stories.length })
+          : t('post.share'),
     },
     ...otherGroups.map((group) => ({
       ...group,
-      title: group.user?.name ?? 'Story',
-      caption: getStoryGroupCaption(group),
+      title: group.user?.name ?? t('common.story'),
+      caption: getStoryGroupCaption(group, t),
     })),
   ]
 }
@@ -1091,29 +1098,31 @@ function getStoryRingClass(storyGroup) {
   return 'bg-violet-100'
 }
 
-function getStoryGroupCaption(group) {
+function getStoryGroupCaption(group, t) {
   if (group.hasUnviewed) {
-    return 'Nouveau'
+    return t('story.new')
   }
 
   const storyCount = group.stories?.length ?? 0
 
-  return `${storyCount} story${storyCount > 1 ? 's' : ''}`
+  return t('story.count', { count: storyCount })
 }
 
-function mapStoryGroupForViewer(group) {
-  const title = group.isOwn ? 'Votre story' : group.user?.name ?? 'Story'
+function mapStoryGroupForViewer(group, t) {
+  const title = group.isOwn ? t('story.yourStory') : group.user?.name ?? t('common.story')
 
   return {
     id: group.id,
     title,
-    caption: group.isOwn ? 'Publiee par vous' : `Story de ${group.user?.name ?? 'YaZoo'}`,
+    caption: group.isOwn
+      ? t('story.publishedByYou')
+      : t('story.byUser', { name: group.user?.name ?? 'YaZoo' }),
     slides: (group.stories ?? []).map((story) => ({
       id: story.id,
       title: story.content ? truncateText(story.content, 72) : title,
       body:
         story.content ||
-        'Une story YaZoo partagee dans votre espace social pendant 24 heures.',
+        t('story.defaultBody'),
       authorName: group.user?.name ?? 'YaZoo',
       authorAvatar: group.user?.avatar ?? '',
       location: story.location ?? '',
@@ -1201,6 +1210,7 @@ StoryCard.propTypes = {
   storyGroup: PropTypes.object,
   onOpen: PropTypes.func,
   onAddStory: PropTypes.func,
+  t: PropTypes.func,
 }
 
 OrganicSuggestionCard.propTypes = {
@@ -1209,6 +1219,7 @@ OrganicSuggestionCard.propTypes = {
   onNavigate: PropTypes.func,
   onJoinCommunity: PropTypes.func,
   onReserveService: PropTypes.func,
+  t: PropTypes.func,
 }
 
 UserSuggestionsSection.propTypes = {
