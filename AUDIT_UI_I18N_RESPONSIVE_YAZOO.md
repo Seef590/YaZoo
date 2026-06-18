@@ -41,6 +41,7 @@ Date: 2026-06-18
 - `frontend/src/lib/i18n.js`: locales actives, fallback, detection navigateur, variables, dates.
 - `frontend/src/contexts/I18nContext.jsx`: `lang`, `dir`, classes `rtl/ltr`, persistance seulement au choix utilisateur.
 - `backend/app/Http/Middleware/SetApiLocale.php`: support `Accept-Language` et locales `fr/ar/en/es/nl/pt/it`.
+- `backend/composer.lock`: mise a jour `phpseclib/phpseclib` `3.0.53` vers `3.0.55` pour corriger l'audit securite Composer.
 - `frontend/src/pages/LandingPage.jsx`: image "Partage" via `hero1.webp` et textes principaux i18n.
 - `frontend/src/components/feed/PostCard.jsx`: media URL robuste, fallback, menu post traduit et position logique RTL.
 - `frontend/src/components/feed/CreatePost.jsx`: tags en scroll horizontal mobile.
@@ -63,19 +64,24 @@ Date: 2026-06-18
 - `php artisan config:clear`: OK.
 - `php artisan cache:clear`: echec local initial avec `Class "Redis" not found`; relance OK avec `CACHE_STORE=file`.
 - `php artisan test`: OK, 78 tests / 460 assertions.
+- `composer audit --no-interaction`: OK apres mise a jour `phpseclib/phpseclib`.
+- Revalidation apres correctifs CI: `npm.cmd run lint`, `npm.cmd run test -- --run`, `npm.cmd run build`, `php artisan test`, `php artisan route:list`, `php artisan config:clear`: OK.
 
 ## Reprise apres execution incomplete precedente
 
 - Ce qui avait ete fait: corrections partielles UI mobile, scroll horizontal, image "Partage" vers `hero1.webp`, detection navigateur, `Accept-Language`, fallback media, suppression du pill sync/realtime.
 - Ce qui etait incomplet: support russe `ru` ajoute par erreur, absence de commit/push, absence de push DockerHub, absence de verification/deploiement Azure.
 - Ce qui a ete corrige maintenant: suppression complete de `ru`, langues finales limitees a `fr/ar/en/es/nl/pt/it`, audit relu via `git status`, `git diff --stat` et `git diff`.
-- Ce qui a ete deploye reellement: a completer apres les commandes Git, DockerHub et Azure de cette reprise.
+- Correctif CI ajoute: fallback API explicite en francais quand aucune locale n'est fournie, pour conserver les attentes des tests backend.
+- Correctif securite ajoute: `phpseclib/phpseclib` mis a jour vers `3.0.55` apres echec GitHub Actions sur `composer audit`.
+- DockerHub deja pousse pendant cette reprise: `5eef/yazoo-api:latest`, digest `sha256:fbf11973dac053c91d47a52e7b12d6ae13f550092c8c1e3b1648616d754584b2`.
+- Azure deja verifie pendant cette reprise: backend configure sur `DOCKER|5eef/yazoo-api:latest`, `WEBSITES_PORT=8080`, `/health` HTTP 200; frontend `https://yazoo.azurewebsites.net` HTTP 200.
 
-## Commandes non executees au moment de cette mise a jour
+## Commandes restantes au moment de cette mise a jour
 
-- `git add`, `git commit`, `git push`: en attente apres tests finaux OK.
-- DockerHub `5eef/yazoo-api:latest`: en attente apres tests finaux OK.
-- Commandes Azure: en attente apres tests finaux OK; aucune ressource Azure creee.
+- Commit/push du correctif CI et de `composer.lock`.
+- Nouveau build/push DockerHub apres ce dernier correctif backend.
+- Reverification Azure apres le nouveau push image et apres le workflow GitHub.
 
 ## Erreurs restantes / limites
 
