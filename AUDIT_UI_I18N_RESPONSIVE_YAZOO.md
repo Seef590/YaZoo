@@ -52,6 +52,7 @@ Date: 2026-06-18
 - `frontend/src/components/ui/OptimizedImage.jsx`: fallback en cas d'erreur image.
 - `frontend/src/index.css`: utilitaires `yz-horizontal-scroll` et `yz-no-scrollbar`.
 - `frontend/src/components/ui/HorizontalScrollSection.jsx`: composant reusable ajoute.
+- `frontend/package-lock.json`: correctifs d'audit production npm (`form-data`, `engine.io-client`, `ws`).
 
 ## Tests executes
 
@@ -66,6 +67,7 @@ Date: 2026-06-18
 - `php artisan test`: OK, 78 tests / 460 assertions.
 - `composer audit --no-interaction`: OK apres mise a jour `phpseclib/phpseclib`.
 - Revalidation apres correctifs CI: `npm.cmd run lint`, `npm.cmd run test -- --run`, `npm.cmd run build`, `php artisan test`, `php artisan route:list`, `php artisan config:clear`: OK.
+- Revalidation apres correctif audit npm: `npm.cmd audit --omit=dev`: OK, 0 vulnerabilite production; `npm.cmd run lint`, `npm.cmd run test -- --run`, `npm.cmd run build`: OK.
 
 ## Reprise apres execution incomplete precedente
 
@@ -74,13 +76,13 @@ Date: 2026-06-18
 - Ce qui a ete corrige maintenant: suppression complete de `ru`, langues finales limitees a `fr/ar/en/es/nl/pt/it`, audit relu via `git status`, `git diff --stat` et `git diff`.
 - Correctif CI ajoute: fallback API explicite en francais quand aucune locale n'est fournie, pour conserver les attentes des tests backend.
 - Correctif securite ajoute: `phpseclib/phpseclib` mis a jour vers `3.0.55` apres echec GitHub Actions sur `composer audit`.
+- Correctif securite frontend ajoute: `form-data` vers `4.0.6`, `engine.io-client` vers `6.6.6`, `ws` vers `8.21.0` apres echec GitHub Actions sur `npm audit --omit=dev`.
 - DockerHub deja pousse pendant cette reprise: `5eef/yazoo-api:latest`, digest `sha256:fbf11973dac053c91d47a52e7b12d6ae13f550092c8c1e3b1648616d754584b2`.
 - Azure deja verifie pendant cette reprise: backend configure sur `DOCKER|5eef/yazoo-api:latest`, `WEBSITES_PORT=8080`, `/health` HTTP 200; frontend `https://yazoo.azurewebsites.net` HTTP 200.
 
 ## Commandes restantes au moment de cette mise a jour
 
-- Commit/push du correctif CI et de `composer.lock`.
-- Nouveau build/push DockerHub apres ce dernier correctif backend.
+- Commit/push du correctif audit npm.
 - Reverification Azure apres le nouveau push image et apres le workflow GitHub.
 
 ## Erreurs restantes / limites
