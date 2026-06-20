@@ -44,7 +44,7 @@ function SettingsPage() {
       <section className="min-w-0 overflow-hidden rounded-[26px] border border-white/80 bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.18),_transparent_30%),linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(246,239,255,0.9))] p-4 shadow-[0_24px_60px_rgba(124,58,237,0.1)] dark:border-violet-300/16 dark:bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.28),_transparent_30%),linear-gradient(135deg,_rgba(5,3,10,0.98),_rgba(30,15,52,0.92))] sm:rounded-[30px] sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <Avatar name={user?.name ?? 'Utilisateur'} src={user?.avatar || ''} className="h-16 w-16" />
+            <Avatar name={user?.name ?? t('common.user')} src={user?.avatar || ''} className="h-16 w-16" />
             <div>
               <p className="text-xs uppercase tracking-[0.22em] text-violet-700 dark:text-violet-200">
                 {t('common.settings')}

@@ -57,4 +57,13 @@ describe('i18n', () => {
     expect(translate('fr', 'services.training')).toBe("Dresseur/Dresseuse d'animaux")
     expect(translate('ar', 'reservations.bookSession')).toBe('حجز حصة تدريب')
   })
+
+  it('contains complete settings and marketplace labels in supported locales', () => {
+    expect(translate('fr', 'settings.title')).toBe('Gérer mon expérience YaZoo')
+    expect(translate('ar', 'settings.title')).toBe('إدارة تجربتي في YaZoo')
+    expect(translate('en', 'settings.title')).toBe('Manage my YaZoo experience')
+    expect(translate('fr', 'common.marketplace')).toBe('Marché YaZoo')
+    expect(translate('ar', 'common.marketplace')).toBe('سوق YaZoo')
+    expect(translate('en', 'common.marketplace')).toBe('YaZoo Market')
+  })
 })

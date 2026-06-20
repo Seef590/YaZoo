@@ -33,7 +33,7 @@ function PostCard({
   onUpdatePost,
   isLikePending = false,
 }) {
-  const { isRtl, t } = useI18n()
+  const { t } = useI18n()
   const menuRef = useRef(null)
   const [showComments, setShowComments] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -193,8 +193,8 @@ function PostCard({
   }
 
   return (
-    <article className="group max-w-full overflow-hidden rounded-[30px] border border-white/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.99),_rgba(246,239,255,0.94))] shadow-[0_24px_56px_rgba(124,58,237,0.08)] transition-all duration-200 hover:-translate-y-1 hover:border-violet-200 hover:shadow-[0_28px_60px_rgba(124,58,237,0.12)] dark:border-violet-300/12 dark:bg-[linear-gradient(180deg,_rgba(24,16,38,0.96),_rgba(36,20,61,0.92))] dark:shadow-[0_24px_60px_rgba(0,0,0,0.34)]">
-      <div className="h-1.5 bg-[linear-gradient(90deg,#7c3aed,#a855f7,#d8b4fe,#ede9fe)]" />
+    <article className={`group relative max-w-full overflow-visible rounded-[30px] border border-white/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.99),_rgba(246,239,255,0.94))] shadow-[0_24px_56px_rgba(124,58,237,0.08)] transition-all duration-200 hover:-translate-y-1 hover:border-violet-200 hover:shadow-[0_28px_60px_rgba(124,58,237,0.12)] dark:border-violet-300/12 dark:bg-[linear-gradient(180deg,_rgba(24,16,38,0.96),_rgba(36,20,61,0.92))] dark:shadow-[0_24px_60px_rgba(0,0,0,0.34)] ${isMenuOpen ? 'z-40' : 'z-0'}`}>
+      <div className="h-1.5 rounded-t-[30px] bg-[linear-gradient(90deg,#7c3aed,#a855f7,#d8b4fe,#ede9fe)]" />
 
       <div className="p-4 sm:p-5">
         <div className="flex min-w-0 items-start gap-3 sm:gap-4">
@@ -237,7 +237,6 @@ function PostCard({
                 onToggleMenu={() => setIsMenuOpen((current) => !current)}
                 onVisibilityChange={handleVisibilityChange}
                 menuRef={menuRef}
-                isRtl={isRtl}
                 t={t}
               />
             </div>
@@ -431,7 +430,6 @@ function PostActionsMenu({
   onToggleMenu,
   onVisibilityChange,
   menuRef,
-  isRtl,
   t,
 }) {
   return (
@@ -447,7 +445,7 @@ function PostActionsMenu({
       </button>
 
       {isMenuOpen ? (
-        <div className={`absolute top-[calc(100%+0.5rem)] z-50 max-h-[min(70vh,34rem)] w-[min(18rem,calc(100vw-2rem))] overflow-y-auto rounded-[24px] border border-violet-100 bg-white/98 p-2 text-sm shadow-[0_24px_60px_rgba(76,29,149,0.22)] backdrop-blur-xl dark:border-violet-300/14 dark:bg-stone-950/96 ${isRtl ? 'start-0' : 'end-0'}`}>
+        <div className="absolute end-0 top-[calc(100%+0.5rem)] z-50 max-h-[min(70vh,34rem)] w-[min(18rem,calc(100vw-3rem))] overflow-y-auto rounded-[24px] border border-violet-100 bg-white/98 p-2 text-sm shadow-[0_24px_60px_rgba(76,29,149,0.22)] backdrop-blur-xl dark:border-violet-300/14 dark:bg-stone-950/96">
           <PostMenuButton onClick={onSharePost}>{t('post.share')}</PostMenuButton>
           <PostMenuButton onClick={onSavePost}>{t('post.saveLink')}</PostMenuButton>
 
@@ -545,7 +543,6 @@ PostActionsMenu.propTypes = {
   onToggleMenu: PropTypes.func,
   onVisibilityChange: PropTypes.func,
   menuRef: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
-  isRtl: PropTypes.bool,
   t: PropTypes.func,
 }
 
