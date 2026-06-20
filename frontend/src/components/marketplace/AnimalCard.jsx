@@ -9,8 +9,10 @@ import {
   uniqueUrls,
 } from '../../features/marketplace/marketplaceUtils'
 import { formatDate } from '../../utils/formatDate'
+import { useI18n } from '../../hooks/useI18n'
 
 function AnimalCard({ animal, onDelete, onEdit }) {
+  const { t } = useI18n()
   const gallery = uniqueUrls([animal.photoUrl, ...(animal.galleryUrls ?? [])])
 
   return (
@@ -19,7 +21,7 @@ function AnimalCard({ animal, onDelete, onEdit }) {
         {gallery[0] ? (
           <img src={gallery[0]} alt={animal.name} loading="lazy" decoding="async" className="h-full w-full object-cover" />
         ) : (
-          <div className="flex h-full items-center justify-center text-sm text-stone-400">Photo a ajouter</div>
+          <div className="flex h-full items-center justify-center text-sm text-stone-400">{t('animals.photoMissing')}</div>
         )}
       </div>
 
@@ -28,10 +30,10 @@ function AnimalCard({ animal, onDelete, onEdit }) {
           <div>
             <div className="flex flex-wrap gap-2">
               <span className="rounded-full bg-[linear-gradient(135deg,#7c3aed,#a855f7)] px-3 py-1 text-xs font-medium text-white">
-                {formatAnimalStatus(animal.listingStatus)}
+                {formatAnimalStatus(animal.listingStatus, t)}
               </span>
               <span className="rounded-full bg-violet-50 px-3 py-1 text-xs font-medium text-violet-800">
-                {formatAnimalCategory(animal.category)}
+                {formatAnimalCategory(animal.category, t)}
               </span>
             </div>
             <h3 className="mt-3 text-lg font-semibold text-stone-950">{animal.name}</h3>
@@ -39,7 +41,7 @@ function AnimalCard({ animal, onDelete, onEdit }) {
           </div>
 
           <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium ${animal.isForAdoption ? 'bg-violet-100 text-violet-800' : 'bg-[linear-gradient(135deg,#7c3aed,#a855f7)] text-white'}`}>
-            {animal.isForAdoption ? 'Adoption' : `${animal.price ?? 0} MAD`}
+            {animal.isForAdoption ? t('animals.adoption') : `${animal.price ?? 0} MAD`}
           </span>
         </div>
 
@@ -60,13 +62,13 @@ function AnimalCard({ animal, onDelete, onEdit }) {
         ) : null}
 
         <div className="grid grid-cols-2 gap-3 text-sm text-stone-600">
-          <Info label="Sexe" value={formatAnimalSex(animal.sex)} />
-          <Info label="Age" value={animal.age ?? '-'} />
-          <Info label="Statut" value={formatAnimalStatus(animal.listingStatus)} />
-          <Info label="Categorie" value={formatAnimalCategory(animal.category)} />
+          <Info label={t('common.sex')} value={formatAnimalSex(animal.sex, t)} />
+          <Info label={t('common.age')} value={animal.age ?? '-'} />
+          <Info label={t('common.status')} value={formatAnimalStatus(animal.listingStatus, t)} />
+          <Info label={t('common.category')} value={formatAnimalCategory(animal.category, t)} />
         </div>
 
-        <p className="text-sm leading-6 text-stone-600">{animal.description || 'Aucune description pour le moment.'}</p>
+        <p className="text-sm leading-6 text-stone-600">{animal.description || t('marketplace.noDescription')}</p>
         <AnimalActions animal={animal} onDelete={onDelete} onEdit={onEdit} />
       </div>
     </article>
@@ -74,21 +76,23 @@ function AnimalCard({ animal, onDelete, onEdit }) {
 }
 
 function AnimalActions({ animal, onDelete, onEdit }) {
+  const { t } = useI18n()
+
   if (animal.isOwner) {
     return (
       <div className="grid gap-3 sm:flex sm:flex-wrap">
-        <LinkButton to={`/marketplace/animals/${animal.id}`} variant="ghost" className="w-full sm:w-auto">Voir details</LinkButton>
-        <Button type="button" variant="secondary" onClick={() => onEdit(animal)} className="w-full sm:w-auto">Modifier</Button>
-        <Button type="button" variant="ghost" onClick={() => onDelete(animal.id)} className="w-full sm:w-auto">Supprimer</Button>
+        <LinkButton to={`/marketplace/animals/${animal.id}`} variant="ghost" className="w-full sm:w-auto">{t('common.details')}</LinkButton>
+        <Button type="button" variant="secondary" onClick={() => onEdit(animal)} className="w-full sm:w-auto">{t('common.edit')}</Button>
+        <Button type="button" variant="ghost" onClick={() => onDelete(animal.id)} className="w-full sm:w-auto">{t('common.delete')}</Button>
       </div>
     )
   }
 
   return (
     <div className="grid gap-3 sm:flex sm:flex-wrap">
-      <LinkButton to={`/marketplace/animals/${animal.id}`} variant="secondary" className="w-full sm:w-auto">Voir details</LinkButton>
+      <LinkButton to={`/marketplace/animals/${animal.id}`} variant="secondary" className="w-full sm:w-auto">{t('common.details')}</LinkButton>
       {animal.author?.email ? (
-        <LinkButton to={buildAnimalContactPath(animal)} variant="ghost" className="w-full sm:w-auto">Contacter</LinkButton>
+        <LinkButton to={buildAnimalContactPath(animal, t)} variant="ghost" className="w-full sm:w-auto">{t('common.contact')}</LinkButton>
       ) : null}
     </div>
   )

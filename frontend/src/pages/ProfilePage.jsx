@@ -22,13 +22,6 @@ import { asArray, extractDataArray, extractDataObject } from '../utils/apiData'
 import { getErrorMessage } from '../utils/getErrorMessage'
 import { normalizeAuthUserMedia, normalizeProfileMediaPayload } from '../utils/media'
 
-const PROFILE_TABS = [
-  { key: 'posts', label: 'Publications' },
-  { key: 'about', label: 'A propos' },
-  { key: 'media', label: 'Medias' },
-  { key: 'communities', label: 'Communautes' },
-]
-
 function ProfilePage() {
   const { setUser, user } = useAuth()
   const { t } = useI18n()
@@ -64,6 +57,12 @@ function ProfilePage() {
     routeUserId ?? searchParams.get('userId') ?? searchParams.get('id') ?? user?.id
   const isOwnProfile =
     Boolean(user?.id) && String(requestedProfileId ?? user.id) === String(user.id)
+  const profileTabs = [
+    { key: 'posts', label: t('profile.publications') },
+    { key: 'about', label: t('common.about') },
+    { key: 'media', label: t('profile.media') },
+    { key: 'communities', label: t('profile.communities') },
+  ]
 
   useEffect(() => {
     let cancelled = false
@@ -102,7 +101,7 @@ function ProfilePage() {
         if (!cancelled) {
           setRecentPublications([])
           setErrorMessage(
-            getErrorMessage(error, 'Impossible de charger le profil.'),
+            getErrorMessage(error, t('profile.loadError')),
           )
         }
       } finally {
@@ -117,7 +116,7 @@ function ProfilePage() {
     return () => {
       cancelled = true
     }
-  }, [requestedProfileId, user?.id])
+  }, [requestedProfileId, t, user?.id])
 
   useEffect(() => {
     return () => {
@@ -252,11 +251,11 @@ function ProfilePage() {
           updated_at: data.updatedAt ?? new Date().toISOString(),
         }),
       )
-      setSuccessMessage('Profil mis a jour avec succes.')
+      setSuccessMessage(t('profile.updated'))
       setIsEditOpen(false)
     } catch (error) {
       setErrorMessage(
-        getErrorMessage(error, 'Impossible de mettre a jour le profil.'),
+        getErrorMessage(error, t('profile.updateError')),
       )
     } finally {
       setIsSubmitting(false)
@@ -312,10 +311,10 @@ function ProfilePage() {
 
     try {
       await navigator.clipboard.writeText(profileUrl)
-      setSuccessMessage('Lien du profil copie dans le presse-papiers.')
+      setSuccessMessage(t('profile.copied'))
       setErrorMessage('')
     } catch {
-      setErrorMessage('Impossible de partager le profil pour le moment.')
+      setErrorMessage(t('profile.shareError'))
     }
   }
 
@@ -341,7 +340,7 @@ function ProfilePage() {
       navigate(`/messages?conversation=${conversation.id}`)
     } catch (error) {
       setErrorMessage(
-        getErrorMessage(error, 'Impossible de demarrer la conversation.'),
+        getErrorMessage(error, t('profile.startConversationError')),
       )
     } finally {
       setIsMessageStarting(false)
@@ -390,7 +389,7 @@ function ProfilePage() {
       }
 
       setErrorMessage(
-        getErrorMessage(error, 'Impossible de mettre a jour le like.'),
+        getErrorMessage(error, t('profile.likeError')),
       )
       throw error
     } finally {
@@ -470,13 +469,13 @@ function ProfilePage() {
           {coverImage ? (
             <img
               src={coverImage}
-              alt="Photo de couverture du profil"
+              alt={t('profile.coverAlt')}
               className="absolute inset-0 h-full w-full object-cover"
             />
           ) : null}
           <div className="absolute inset-x-0 bottom-0 h-28 bg-[linear-gradient(180deg,transparent,rgba(17,12,28,0.22))]" />
           <div className="absolute bottom-5 right-5 z-10 rounded-full bg-white/18 px-4 py-2 text-xs font-medium uppercase tracking-[0.18em] text-white backdrop-blur">
-            Profil YaZoo
+            {t('profile.profileBadge')}
           </div>
           <div className="absolute -bottom-12 left-1/2 z-20 -translate-x-1/2">
             <Avatar
@@ -505,7 +504,7 @@ function ProfilePage() {
                 </p>
                 <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-600 dark:text-violet-100/76">
                   {profile?.bio ||
-                    'Bienvenue sur mon profil YaZoo. Retrouvez ici mes publications, mes annonces et mes moments autour des animaux.'}
+                    t('profile.defaultBio')}
                 </p>
               </div>
             </div>
@@ -518,7 +517,7 @@ function ProfilePage() {
                   onClick={handleEditToggle}
                   className="w-full sm:w-auto"
                 >
-                  {isEditOpen ? 'Fermer' : 'Modifier'}
+                  {isEditOpen ? t('profile.close') : t('profile.edit')}
                 </Button>
             ) : (
               <>
@@ -553,9 +552,9 @@ function ProfilePage() {
           </div>
 
           <div className="mt-6 grid grid-cols-3 gap-3">
-            <StatCard label="Posts" value={profile?.postsCount ?? 0} />
-            <StatCard label="Abonnes" value={followersCount} />
-            <StatCard label="Abonnements" value={followingCount} />
+            <StatCard label={t('feed.postsCount')} value={profile?.postsCount ?? 0} />
+            <StatCard label={t('feed.followers')} value={followersCount} />
+            <StatCard label={t('feed.followingCount')} value={followingCount} />
           </div>
         </div>
       </section>
@@ -574,7 +573,7 @@ function ProfilePage() {
 
       <section className="rounded-[30px] border border-white/80 bg-white/90 p-5 shadow-[0_20px_48px_rgba(124,58,237,0.08)] dark:border-violet-300/12 dark:bg-white/8">
         <div className="flex gap-2 overflow-x-auto pb-1">
-          {PROFILE_TABS.map((tab) => (
+          {profileTabs.map((tab) => (
             <button
               key={tab.key}
               type="button"
@@ -593,11 +592,11 @@ function ProfilePage() {
         {activeTab === 'posts' ? (
           <div className="mt-5 space-y-4">
             {recentPublications.length === 0 ? (
-              <EmptyProfileState>Aucune publication pour le moment.</EmptyProfileState>
+              <EmptyProfileState>{t('profile.noPublication')}</EmptyProfileState>
             ) : null}
 
             {recentPublications.length > 0 && visibleRecentPublications.length === 0 ? (
-              <EmptyProfileState>Aucune publication ne correspond a votre recherche.</EmptyProfileState>
+              <EmptyProfileState>{t('profile.noPublicationSearch')}</EmptyProfileState>
             ) : null}
 
             {visibleRecentPublications.map((post) => (
@@ -618,14 +617,14 @@ function ProfilePage() {
 
         {activeTab === 'about' ? (
           <div className="mt-5 grid gap-4 lg:grid-cols-2">
-            <ProfileInfo label="Nom" value={profile?.name ?? user?.name ?? 'Utilisateur'} />
-            <ProfileInfo label="Ville" value={profileLocation || 'Non renseignee'} />
-            <ProfileInfo label="Pays" value={profile?.country || user?.country || 'Non renseigne'} />
-            <ProfileInfo label="Membre depuis" value={formatProfileDate(profile?.createdAt)} />
+            <ProfileInfo label={t('common.name')} value={profile?.name ?? user?.name ?? t('common.user')} />
+            <ProfileInfo label={t('common.city')} value={profileLocation || t('common.notProvided')} />
+            <ProfileInfo label={t('common.country')} value={profile?.country || user?.country || t('common.notProvided')} />
+            <ProfileInfo label={t('profile.memberSince')} value={formatProfileDate(profile?.createdAt)} />
             <div className="rounded-[24px] border border-violet-100 bg-white/78 p-4 lg:col-span-2 dark:border-violet-300/12 dark:bg-white/8">
-              <p className="text-xs uppercase tracking-[0.16em] text-stone-500 dark:text-violet-100/52">Bio</p>
+              <p className="text-xs uppercase tracking-[0.16em] text-stone-500 dark:text-violet-100/52">{t('common.bio')}</p>
               <p className="mt-2 text-sm leading-7 text-stone-700 dark:text-violet-100/76">
-                {profile?.bio || 'Ce membre partage son univers animalier sur YaZoo.'}
+                {profile?.bio || t('profile.defaultAbout')}
               </p>
             </div>
           </div>
@@ -634,7 +633,7 @@ function ProfilePage() {
         {activeTab === 'media' ? (
           <div className="mt-5">
             {mediaPublications.length === 0 ? (
-              <EmptyProfileState>Aucune photo ou video publiee pour le moment.</EmptyProfileState>
+              <EmptyProfileState>{t('profile.noMedia')}</EmptyProfileState>
             ) : (
               <div className="grid gap-3 sm:grid-cols-2">
                 {mediaPublications.map((post) => (
@@ -648,7 +647,7 @@ function ProfilePage() {
         {activeTab === 'communities' ? (
           <div className="mt-5">
             <EmptyProfileState>
-              Les communautes liees a ce profil seront affichees ici lorsqu elles seront disponibles.
+              {t('profile.communitiesEmpty')}
             </EmptyProfileState>
           </div>
         ) : null}
@@ -662,22 +661,21 @@ function ProfilePage() {
         >
           <div className="mb-4">
             <h3 className="text-xl font-semibold text-stone-950">
-              Modifier mon profil
+              {t('profile.editProfile')}
             </h3>
             <p className="mt-1 text-sm text-stone-500">
-              Mettez a jour votre presentation publique et vos informations de
-              contact.
+              {t('profile.editText')}
             </p>
           </div>
 
           {isLoading ? (
-            <p className="text-sm text-stone-500">Chargement du profil...</p>
+            <p className="text-sm text-stone-500">{t('profile.loading')}</p>
           ) : (
             <div className="space-y-4">
               <div className="grid gap-4 lg:grid-cols-[220px_1fr]">
                 <div className="rounded-[24px] border border-violet-100 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.78))] p-4">
                   <p className="text-sm font-medium text-stone-800">
-                    Photo de profil
+                    {t('profile.photo')}
                   </p>
                   <div className="mt-4 flex justify-center">
                     <Avatar
@@ -688,7 +686,7 @@ function ProfilePage() {
                   </div>
                   <div className="mt-4 flex flex-wrap gap-2">
                     <label className="inline-flex cursor-pointer items-center justify-center rounded-full border border-violet-100 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-violet-50">
-                      Changer la photo
+                      {t('profile.changePhoto')}
                       <input
                         type="file"
                         accept="image/*"
@@ -702,7 +700,7 @@ function ProfilePage() {
                         onClick={handleRemoveAvatar}
                         className="inline-flex items-center justify-center rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-100"
                       >
-                        Retirer
+                        {t('profile.remove')}
                       </button>
                     ) : null}
                   </div>
@@ -715,13 +713,13 @@ function ProfilePage() {
 
                 <div className="rounded-[24px] border border-violet-100 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.82),_rgba(237,233,254,0.74))] p-4">
                   <p className="text-sm font-medium text-stone-800">
-                    Photo de couverture
+                    {t('profile.cover')}
                   </p>
                   <div className="relative mt-4 h-40 overflow-hidden rounded-[24px] bg-[linear-gradient(135deg,#5b21b6_0%,#8b5cf6_45%,#ddd6fe_100%)]">
                     {coverPreview ? (
                       <img
                         src={coverPreview}
-                        alt="Apercu de la photo de couverture"
+                        alt={t('profile.coverPreview')}
                         className="absolute inset-0 h-full w-full object-cover"
                       />
                     ) : null}
@@ -729,7 +727,7 @@ function ProfilePage() {
                   </div>
                   <div className="mt-4 flex flex-wrap gap-2">
                     <label className="inline-flex cursor-pointer items-center justify-center rounded-full border border-violet-100 bg-white px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-violet-50">
-                      Changer la couverture
+                      {t('profile.changeCover')}
                       <input
                         type="file"
                         accept="image/*"
@@ -743,7 +741,7 @@ function ProfilePage() {
                         onClick={handleRemoveCoverPhoto}
                         className="inline-flex items-center justify-center rounded-full border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-medium text-rose-700 transition hover:bg-rose-100"
                       >
-                        Retirer
+                        {t('profile.remove')}
                       </button>
                     ) : null}
                   </div>
@@ -757,27 +755,27 @@ function ProfilePage() {
 
               <div className="grid gap-4 md:grid-cols-2">
                 <Field
-                  label="Nom"
+                  label={t('common.name')}
                   value={form.name}
                   onChange={handleChange('name')}
                   inputRef={nameInputRef}
                 />
                 <Field label="Email" value={profile?.email ?? user?.email ?? ''} readOnly />
-                <Field label="Telephone" value={form.phone} onChange={handleChange('phone')} />
-                <Field label="Pays" value={form.country} onChange={handleChange('country')} />
-                <Field label="Ville" value={form.city} onChange={handleChange('city')} />
+                <Field label={t('common.phone')} value={form.phone} onChange={handleChange('phone')} />
+                <Field label={t('common.country')} value={form.country} onChange={handleChange('country')} />
+                <Field label={t('common.city')} value={form.city} onChange={handleChange('city')} />
               </div>
 
               <label className="block">
                 <span className="mb-2 block text-sm font-medium text-stone-700">
-                  Bio
+                  {t('common.bio')}
                 </span>
                 <textarea
                   rows={5}
                   value={form.bio}
                   onChange={handleChange('bio')}
                   className="w-full rounded-2xl border border-violet-100 bg-violet-50/50 px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-400 focus:bg-white"
-                  placeholder="Parlez de vous, de vos animaux et de ce que vous partagez sur YaZoo."
+                  placeholder={t('profile.bioPlaceholder')}
                 />
               </label>
 
@@ -796,10 +794,10 @@ function ProfilePage() {
                   }}
                   className="w-full sm:w-auto"
                 >
-                  Annuler
+                  {t('common.cancel')}
                 </Button>
                 <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto">
-                  {isSubmitting ? 'Enregistrement...' : 'Enregistrer les changements'}
+                  {isSubmitting ? t('common.sending') : t('profile.saveChanges')}
                 </Button>
               </div>
             </div>
@@ -854,6 +852,7 @@ function ProfileInfo({ label, value }) {
 }
 
 function ProfileMediaPreview({ post }) {
+  const { t } = useI18n()
   const mediaUrl = post.mediaUrl ?? post.imageUrl
   const isVideo = post.mediaKind === 'video'
 
@@ -862,10 +861,10 @@ function ProfileMediaPreview({ post }) {
       {isVideo ? (
         <video src={mediaUrl} controls className="h-64 w-full object-cover sm:h-80" />
       ) : (
-        <img src={mediaUrl} alt={post.content || 'Media du profil'} className="h-64 w-full object-cover sm:h-80" />
+        <img src={mediaUrl} alt={post.content || t('profile.mediaAlt')} className="h-64 w-full object-cover sm:h-80" />
       )}
       <p className="line-clamp-2 px-4 py-3 text-sm text-stone-600 dark:text-violet-100/72">
-        {post.content || 'Publication YaZoo'}
+        {post.content || t('post.shareFallback')}
       </p>
     </article>
   )

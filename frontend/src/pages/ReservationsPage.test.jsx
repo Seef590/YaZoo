@@ -11,6 +11,7 @@ import {
   rejectReservationRequest,
   updateReservationDeliveryStatusRequest,
 } from '../api/reservations'
+import { I18nProvider } from '../contexts/I18nContext'
 import ReservationsPage from './ReservationsPage'
 
 vi.mock('../api/reservations', () => ({
@@ -91,14 +92,16 @@ describe('ReservationsPage', () => {
     const user = userEvent.setup()
 
     render(
-      <MemoryRouter
-        future={{
-          v7_startTransition: true,
-          v7_relativeSplatPath: true,
-        }}
-      >
-        <ReservationsPage />
-      </MemoryRouter>,
+      <I18nProvider>
+        <MemoryRouter
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true,
+          }}
+        >
+          <ReservationsPage />
+        </MemoryRouter>
+      </I18nProvider>,
     )
 
     await screen.findByRole('heading', { name: 'Centre de commandes' })

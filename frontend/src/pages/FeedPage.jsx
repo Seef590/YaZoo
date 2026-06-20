@@ -73,11 +73,11 @@ function FeedPage() {
       setPosts(extractDataArray(response))
       setErrorMessage('')
     } catch (error) {
-      setErrorMessage(getErrorMessage(error, 'Impossible de charger le feed.'))
+      setErrorMessage(getErrorMessage(error, t('errors.generic')))
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [t])
 
   const loadSidebarData = useCallback(async () => {
     if (!user?.id) {
@@ -133,7 +133,7 @@ function FeedPage() {
       : []
 
     setMarketplaceHighlights(
-      buildMarketplaceHighlights(animals, products, user.id, { onlyOwn: false }),
+      buildMarketplaceHighlights(animals, products, user.id, { onlyOwn: false, t }),
     )
     setCommunityHighlights(
       communities
@@ -146,7 +146,7 @@ function FeedPage() {
       seller: reservations.sellerReservations?.length ?? 0,
     })
     setUserSuggestions(suggestions)
-  }, [user?.id])
+  }, [t, user?.id])
 
   const loadStories = useCallback(async ({ silent = false } = {}) => {
     if (!silent) {
@@ -160,14 +160,14 @@ function FeedPage() {
       setStoryErrorMessage('')
     } catch (error) {
       setStoryErrorMessage(
-        getErrorMessage(error, 'Impossible de charger les stories.'),
+        getErrorMessage(error, t('errors.generic')),
       )
     } finally {
       if (!silent) {
         setIsStoriesLoading(false)
       }
     }
-  }, [])
+  }, [t])
 
   useEffect(() => {
     void loadPosts()
@@ -240,7 +240,7 @@ function FeedPage() {
       }
 
       setErrorMessage(
-        getErrorMessage(error, 'Impossible de mettre a jour le like.'),
+        getErrorMessage(error, t('profile.likeError')),
       )
 
       throw error
@@ -323,7 +323,7 @@ function FeedPage() {
       )
     } catch (error) {
       setErrorMessage(
-        getErrorMessage(error, "Impossible de rejoindre la communaute."),
+        getErrorMessage(error, t('errors.generic')),
       )
     } finally {
       setOrganicActionId('')
@@ -342,7 +342,7 @@ function FeedPage() {
       navigate('/reservations')
     } catch (error) {
       setErrorMessage(
-        getErrorMessage(error, "Impossible d'envoyer la demande de reservation."),
+        getErrorMessage(error, t('errors.generic')),
       )
     } finally {
       setOrganicActionId('')
@@ -356,12 +356,12 @@ function FeedPage() {
 
     try {
       await createStoryRequest(payload)
-      setStorySuccessMessage('Story publiee avec succes pour 24 heures.')
+      setStorySuccessMessage(t('feed.storyPublished'))
       setIsStoryComposerOpen(false)
       await loadStories()
     } catch (error) {
       setStoryErrorMessage(
-        getErrorMessage(error, 'Impossible de publier la story.'),
+        getErrorMessage(error, t('feed.storyPublishError')),
       )
       throw error
     } finally {
@@ -405,13 +405,13 @@ function FeedPage() {
         )
       } catch (error) {
         setStoryErrorMessage(
-          getErrorMessage(error, 'Impossible de marquer la story comme vue.'),
+          getErrorMessage(error, t('feed.storyViewedError')),
         )
       } finally {
         viewingStoryIdsRef.current.delete(storyId)
       }
     },
-    [],
+    [t],
   )
 
   const handleDeleteStory = async (story) => {
@@ -419,7 +419,7 @@ function FeedPage() {
       return
     }
 
-    const confirmed = globalThis.confirm('Supprimer cette story maintenant ?')
+    const confirmed = globalThis.confirm(t('feed.deleteStoryConfirm'))
 
     if (!confirmed) {
       return
@@ -432,11 +432,11 @@ function FeedPage() {
     try {
       await deleteStoryRequest(story.id)
       setActiveStoryIndex(null)
-      setStorySuccessMessage('Story supprimee avec succes.')
+      setStorySuccessMessage(t('feed.storyDeleted'))
       await loadStories({ silent: true })
     } catch (error) {
       setStoryErrorMessage(
-        getErrorMessage(error, 'Impossible de supprimer cette story.'),
+        getErrorMessage(error, t('feed.storyDeleteError')),
       )
     } finally {
       setIsDeletingStoryId('')
@@ -634,19 +634,19 @@ function FeedPage() {
                 <p className="font-semibold text-stone-900">
                   {sidebarFollowingCount}
                 </p>
-                <p>Abonnements</p>
+                <p>{t('feed.followingCount')}</p>
               </div>
               <div className="rounded-xl bg-violet-50 px-2 py-2">
                 <p className="font-semibold text-stone-900">
                   {sidebarFollowersCount}
                 </p>
-                <p>Abonnes</p>
+                <p>{t('feed.followers')}</p>
               </div>
               <div className="rounded-xl bg-violet-50 px-2 py-2">
                 <p className="font-semibold text-stone-900">
                   {sidebarPostsCount}
                 </p>
-                <p>Posts</p>
+                <p>{t('feed.postsCount')}</p>
               </div>
             </div>
             <div className="mt-4 grid gap-2 sm:grid-cols-2">
@@ -655,21 +655,21 @@ function FeedPage() {
                 onClick={() => navigate('/profile')}
                 className="rounded-full border border-violet-100 bg-white px-3 py-2 text-xs font-medium text-stone-700 transition hover:bg-violet-50"
               >
-                Modifier
+                {t('feed.editProfile')}
               </button>
               <button
                 type="button"
                 onClick={() => navigate('/profile')}
                 className="rounded-full bg-[linear-gradient(135deg,#7c3aed,#a855f7)] px-3 py-2 text-xs font-medium text-white transition hover:brightness-105"
               >
-                Partager
+                {t('feed.shareProfile')}
               </button>
             </div>
           </article>
 
           <article className="rounded-[28px] border border-white/80 bg-white/95 p-5 shadow-[0_18px_42px_rgba(124,58,237,0.08)]">
             <p className="text-xs uppercase tracking-[0.18em] text-violet-700">
-              Mes publications
+              {t('feed.myPublications')}
             </p>
             {ownPosts.slice(0, 3).map((post) => (
               <button
@@ -679,13 +679,13 @@ function FeedPage() {
                 className="mt-3 block w-full rounded-[18px] bg-violet-50/70 px-3 py-3 text-left text-sm text-stone-700 transition hover:bg-violet-100"
               >
                 <span className="line-clamp-2">
-                  {post.content || 'Publication avec media'}
+                  {post.content || t('feed.mediaPublication')}
                 </span>
               </button>
             ))}
             {ownPosts.length === 0 ? (
               <p className="mt-3 text-sm leading-6 text-stone-600">
-                Vos prochains posts apparaitront ici automatiquement.
+                {t('feed.nextPostsHere')}
               </p>
             ) : null}
           </article>
@@ -711,14 +711,14 @@ function FeedPage() {
             ))}
             {marketplaceHighlights.length === 0 ? (
               <p className="mt-3 text-sm leading-6 text-stone-600">
-                Vos annonces animaux et produits s'afficheront ici apres publication.
+                {t('feed.marketplaceSidebarEmpty')}
               </p>
             ) : null}
           </article>
 
           <article className="rounded-[28px] border border-white/80 bg-white/95 p-5 shadow-[0_18px_42px_rgba(124,58,237,0.08)]">
             <p className="text-xs uppercase tracking-[0.18em] text-violet-700">
-              Activite
+              {t('feed.activity')}
             </p>
             <div className="mt-3 grid grid-cols-2 gap-2 text-center text-xs text-stone-600">
               <button
@@ -729,7 +729,7 @@ function FeedPage() {
                 <p className="font-semibold text-stone-900">
                   {reservationSummary.buyer}
                 </p>
-                <p>Achats</p>
+                <p>{t('common.purchases')}</p>
               </button>
               <button
                 type="button"
@@ -739,7 +739,7 @@ function FeedPage() {
                 <p className="font-semibold text-stone-900">
                   {reservationSummary.seller}
                 </p>
-                <p>Ventes</p>
+                <p>{t('common.sales')}</p>
               </button>
             </div>
             {communityHighlights.map((community) => (
@@ -753,14 +753,16 @@ function FeedPage() {
                   {community.name}
                 </p>
                 <p className="mt-1 text-xs text-stone-500">
-                  {community.membersCount ?? 0} membre
-                  {(community.membersCount ?? 0) > 1 ? 's' : ''}
+                  {t('feed.membersCount', {
+                    count: community.membersCount ?? 0,
+                    plural: (community.membersCount ?? 0) > 1 ? 's' : '',
+                  })}
                 </p>
               </button>
             ))}
             {communityHighlights.length === 0 ? (
               <p className="mt-3 text-sm leading-6 text-stone-600">
-                Les communautes que vous rejoignez s'afficheront ici.
+                {t('feed.joinedCommunitiesHere')}
               </p>
             ) : null}
           </article>
@@ -1237,7 +1239,7 @@ function buildMarketplaceHighlights(animals, products, userId, options = {}) {
       id: animal.id,
       kind: 'animal',
       title: animal.name,
-      priceLabel: animal.isForAdoption ? 'Adoption' : `${animal.price ?? 0} MAD`,
+      priceLabel: animal.isForAdoption ? options.t?.('animals.adoption') ?? 'Adoption' : `${animal.price ?? 0} MAD`,
       location: animal.location,
       createdAt: animal.createdAt,
       href: `/marketplace/animals/${animal.id}`,

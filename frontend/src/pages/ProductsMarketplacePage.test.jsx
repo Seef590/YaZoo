@@ -36,7 +36,7 @@ describe('ProductsMarketplacePage', () => {
     )
 
     await user.click(await screen.findByRole('button', { name: /Ajouter un produit/i }))
-    const heading = await screen.findByRole('heading', { name: 'Creer un produit' })
+    const heading = await screen.findByRole('heading', { name: 'Créer un produit' })
     const publicationForm = heading.closest('form')
 
     expect(publicationForm).not.toBeNull()

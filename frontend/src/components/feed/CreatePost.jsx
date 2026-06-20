@@ -164,7 +164,7 @@ function CreatePost({ onCreate, focusToken = 0 }) {
             <input
               value={location}
               onChange={(event) => setLocation(event.target.value)}
-              placeholder="Casablanca"
+              placeholder={t('feed.locationPlaceholder')}
               className="w-full rounded-2xl border border-violet-100 bg-violet-50/55 px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-400 focus:bg-white"
             />
           </label>
@@ -176,7 +176,7 @@ function CreatePost({ onCreate, focusToken = 0 }) {
             <input
               value={tagsInput}
               onChange={(event) => setTagsInput(event.target.value)}
-              placeholder="animaux, chats, adoption"
+              placeholder={t('feed.tagsPlaceholder')}
               className="w-full rounded-2xl border border-violet-100 bg-violet-50/55 px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-400 focus:bg-white"
             />
           </label>
@@ -206,7 +206,7 @@ function CreatePost({ onCreate, focusToken = 0 }) {
 
           {mediaPreviewUrl ? (
             <div className="mt-4 overflow-hidden rounded-[24px] border border-white/80 bg-white p-3 shadow-[0_16px_36px_rgba(124,58,237,0.08)]">
-              {renderPostMediaPreview(mediaPreviewUrl, mediaPreviewKind)}
+              {renderPostMediaPreview(mediaPreviewUrl, mediaPreviewKind, t)}
 
               <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
                 <p className="text-xs text-stone-500">
@@ -244,7 +244,7 @@ function CreatePost({ onCreate, focusToken = 0 }) {
   )
 }
 
-function renderPostMediaPreview(mediaPreviewUrl, mediaPreviewKind) {
+function renderPostMediaPreview(mediaPreviewUrl, mediaPreviewKind, t) {
   if (mediaPreviewKind === 'video') {
     return (
       <video
@@ -258,7 +258,7 @@ function renderPostMediaPreview(mediaPreviewUrl, mediaPreviewKind) {
   return (
     <img
       src={mediaPreviewUrl}
-      alt="Apercu du media"
+      alt={t('feed.mediaPreviewAlt')}
       className="h-64 w-full rounded-[20px] object-cover sm:h-80 md:h-96 lg:h-[28rem]"
     />
   )

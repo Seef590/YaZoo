@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import PropTypes from 'prop-types'
 
 import { formatDate } from '../../utils/formatDate'
@@ -33,7 +33,8 @@ function PostCard({
   onUpdatePost,
   isLikePending = false,
 }) {
-  const { t } = useI18n()
+  const { isRtl, t } = useI18n()
+  const menuRef = useRef(null)
   const [showComments, setShowComments] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
@@ -52,7 +53,25 @@ function PostCard({
 
   const metadata = [post.location, formatDate(post.createdAt)]
     .filter(Boolean)
-        .join(' - ')
+    .join(' - ')
+
+  useEffect(() => {
+    if (!isMenuOpen) {
+      return undefined
+    }
+
+    const handlePointerDown = (event) => {
+      if (!menuRef.current?.contains(event.target)) {
+        setIsMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown)
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown)
+    }
+  }, [isMenuOpen])
 
   const handleSubmitComment = async (event) => {
     event.preventDefault()
@@ -184,10 +203,10 @@ function PostCard({
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0 flex-1">
-                <h3 className="text-base font-semibold text-stone-900 dark:text-violet-50">
+                <h3 className="truncate text-base font-semibold text-stone-900 dark:text-violet-50">
                   {post.author?.name}
                 </h3>
-                <p className="text-sm text-stone-500 dark:text-violet-100/60">{metadata}</p>
+                <p className="truncate text-sm text-stone-500 dark:text-violet-100/60">{metadata}</p>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <span className="inline-flex rounded-full border border-violet-100 bg-white/70 px-2.5 py-1 text-[11px] font-semibold text-violet-800 dark:border-violet-300/15 dark:bg-white/8 dark:text-violet-100">
                     {visibilityLabel}
@@ -217,6 +236,8 @@ function PostCard({
                 onSharePost={handleSharePost}
                 onToggleMenu={() => setIsMenuOpen((current) => !current)}
                 onVisibilityChange={handleVisibilityChange}
+                menuRef={menuRef}
+                isRtl={isRtl}
                 t={t}
               />
             </div>
@@ -252,7 +273,7 @@ function PostCard({
                 </div>
               </form>
             ) : (
-              <p className="mt-4 text-sm leading-7 text-stone-700 dark:text-violet-50/86">
+              <p className="mt-4 break-words text-sm leading-7 text-stone-700 dark:text-violet-50/86">
                 {post.content}
               </p>
             )}
@@ -264,8 +285,9 @@ function PostCard({
             ) : null}
 
             {mediaUrl && !hasMediaError ? (
-              <div className="relative mt-5 w-full max-w-full overflow-hidden rounded-[24px] bg-stone-100 shadow-[0_18px_40px_rgba(124,58,237,0.08)] dark:bg-stone-900 sm:rounded-[28px]">
-                <span className="absolute right-3 top-3 z-10 rounded-full bg-violet-950/72 px-3 py-1 text-xs font-medium text-white backdrop-blur">
+              <div className="-mx-2 mt-5 px-2 sm:-mx-3 sm:px-3">
+                <div className="relative w-full max-w-full overflow-hidden rounded-[24px] bg-stone-100 shadow-[0_18px_40px_rgba(124,58,237,0.08)] dark:bg-stone-900 sm:rounded-[28px]">
+                <span className="absolute end-3 top-3 z-10 rounded-full bg-violet-950/72 px-3 py-1 text-xs font-medium text-white backdrop-blur">
                   {mediaKind === 'video' ? t('post.video') : t('post.photo')}
                 </span>
 
@@ -273,17 +295,18 @@ function PostCard({
                   <video
                     src={mediaUrl}
                     controls
-                    className="h-64 max-h-[70vh] w-full max-w-full object-cover sm:h-96 md:h-[34rem] lg:h-[42rem] xl:h-[48rem]"
+                    className="aspect-[4/3] max-h-[70vh] w-full object-cover sm:aspect-[16/10] md:max-h-[34rem]"
                     onError={() => setHasMediaError(true)}
                   />
                 ) : (
                   <img
                     src={mediaUrl}
                     alt={t('post.mediaAlt')}
-                    className="h-64 max-h-[70vh] w-full max-w-full object-cover transition duration-500 group-hover:scale-[1.02] sm:h-96 md:h-[34rem] lg:h-[42rem] xl:h-[48rem]"
+                    className="aspect-[4/3] max-h-[70vh] w-full object-cover transition duration-500 group-hover:scale-[1.02] sm:aspect-[16/10] md:max-h-[34rem]"
                     onError={() => setHasMediaError(true)}
                   />
                 )}
+                </div>
               </div>
             ) : mediaUrl && hasMediaError ? (
               <div className="mt-4 rounded-[24px] border border-dashed border-violet-200 bg-violet-50 px-4 py-8 text-center text-sm text-violet-800 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-100">
@@ -291,7 +314,7 @@ function PostCard({
               </div>
             ) : null}
 
-            <div className="mt-5 flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+            <div className="mt-5 flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
               <div className="yz-horizontal-scroll yz-no-scrollbar sm:flex sm:flex-wrap sm:overflow-visible">
                 {POST_REACTIONS.map((reaction) => (
                   <button
@@ -319,12 +342,13 @@ function PostCard({
                 type="button"
                 variant="ghost"
                 onClick={() => setShowComments((current) => !current)}
+                className="justify-center"
               >
                 {showComments ? t('common.hide') : t('post.comments')} |{' '}
                 {post.commentsCount ?? post.comments?.length ?? 0}
               </Button>
 
-              <span className="inline-flex items-center rounded-full border border-violet-100 bg-white/70 px-4 py-2 text-sm font-semibold text-stone-600 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-100/80">
+              <span className="inline-flex items-center justify-center rounded-full border border-violet-100 bg-white/70 px-4 py-2 text-sm font-semibold text-stone-600 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-100/80">
                 {t('post.shares')} | {post.sharesCount ?? 0}
               </span>
             </div>
@@ -406,10 +430,12 @@ function PostActionsMenu({
   onSharePost,
   onToggleMenu,
   onVisibilityChange,
+  menuRef,
+  isRtl,
   t,
 }) {
   return (
-    <div className="relative z-30 ms-auto shrink-0 self-start">
+    <div ref={menuRef} className="relative z-30 ms-auto shrink-0 self-start">
       <button
         type="button"
         onClick={onToggleMenu}
@@ -417,11 +443,11 @@ function PostActionsMenu({
         aria-label={t('post.options')}
         aria-expanded={isMenuOpen}
       >
-        ...
+        <span aria-hidden="true">...</span>
       </button>
 
       {isMenuOpen ? (
-        <div className="absolute end-0 top-[calc(100%+0.5rem)] z-50 max-h-[min(70vh,34rem)] w-[min(18rem,calc(100vw-2rem))] overflow-y-auto rounded-[24px] border border-violet-100 bg-white/98 p-2 text-sm shadow-[0_24px_60px_rgba(76,29,149,0.22)] backdrop-blur-xl dark:border-violet-300/14 dark:bg-stone-950/96">
+        <div className={`absolute top-[calc(100%+0.5rem)] z-50 max-h-[min(70vh,34rem)] w-[min(18rem,calc(100vw-2rem))] overflow-y-auto rounded-[24px] border border-violet-100 bg-white/98 p-2 text-sm shadow-[0_24px_60px_rgba(76,29,149,0.22)] backdrop-blur-xl dark:border-violet-300/14 dark:bg-stone-950/96 ${isRtl ? 'start-0' : 'end-0'}`}>
           <PostMenuButton onClick={onSharePost}>{t('post.share')}</PostMenuButton>
           <PostMenuButton onClick={onSavePost}>{t('post.saveLink')}</PostMenuButton>
 
@@ -438,7 +464,7 @@ function PostActionsMenu({
                   type="button"
                   onClick={() => onVisibilityChange(option.key)}
                   disabled={isUpdatingPost}
-                  className={`block w-full rounded-2xl px-3 py-2 text-left transition disabled:opacity-60 ${
+                  className={`block w-full rounded-2xl px-3 py-2 text-start transition disabled:opacity-60 ${
                     visibility === option.key
                       ? 'bg-violet-600 text-white'
                       : 'text-stone-700 hover:bg-violet-50 dark:text-violet-50 dark:hover:bg-white/10'
@@ -518,6 +544,8 @@ PostActionsMenu.propTypes = {
   onSharePost: PropTypes.func,
   onToggleMenu: PropTypes.func,
   onVisibilityChange: PropTypes.func,
+  menuRef: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
+  isRtl: PropTypes.bool,
   t: PropTypes.func,
 }
 

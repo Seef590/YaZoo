@@ -2,11 +2,11 @@
 
 namespace App\Http\Requests\Feed;
 
+use App\Models\Post;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
-use App\Models\Post;
 
 class StorePostRequest extends FormRequest
 {

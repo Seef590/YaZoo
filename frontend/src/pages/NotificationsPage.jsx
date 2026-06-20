@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import {
@@ -7,12 +7,14 @@ import {
   markNotificationReadRequest,
 } from '../api/notifications'
 import Button from '../components/ui/Button'
+import { useI18n } from '../hooks/useI18n'
 import { useNotifications } from '../hooks/useNotifications'
 import { asArray, extractDataArray, extractDataObject } from '../utils/apiData'
 import { formatDate } from '../utils/formatDate'
 import { getErrorMessage } from '../utils/getErrorMessage'
 
 function NotificationsPage() {
+  const { t } = useI18n()
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const queryFromUrl = searchParams.get('q') ?? ''
@@ -28,9 +30,9 @@ function NotificationsPage() {
   const safeNotifications = asArray(notifications)
   const unreadCount = safeNotifications.filter((notification) => !notification.isRead).length
   const readCount = safeNotifications.length - unreadCount
-  const visibleNotifications = filterNotifications(safeNotifications, queryFromUrl)
+  const visibleNotifications = filterNotifications(safeNotifications, queryFromUrl, t)
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     try {
       const response = await getNotificationsRequest()
 
@@ -38,16 +40,16 @@ function NotificationsPage() {
       setErrorMessage('')
     } catch (error) {
       setErrorMessage(
-        getErrorMessage(error, 'Impossible de charger les notifications.'),
+        getErrorMessage(error, t('notifications.loadError')),
       )
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [t])
 
   useEffect(() => {
     fetchNotifications()
-  }, [])
+  }, [fetchNotifications])
 
   useEffect(() => {
     setSearch(queryFromUrl)
@@ -94,7 +96,7 @@ function NotificationsPage() {
       await refreshUnreadCount()
     } catch (error) {
       setErrorMessage(
-        getErrorMessage(error, 'Impossible de marquer la notification comme lue.'),
+        getErrorMessage(error, t('notifications.markReadError')),
       )
     } finally {
       setProcessingIds((current) => current.filter((id) => id !== notificationId))
@@ -119,7 +121,7 @@ function NotificationsPage() {
       await refreshUnreadCount()
     } catch (error) {
       setErrorMessage(
-        getErrorMessage(error, 'Impossible de marquer toutes les notifications.'),
+        getErrorMessage(error, t('notifications.markAllError')),
       )
     } finally {
       setIsMarkingAll(false)
@@ -155,21 +157,20 @@ function NotificationsPage() {
         <div className="grid gap-6 xl:grid-cols-[1.12fr_0.88fr] xl:items-center">
           <div>
             <p className="inline-flex rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-violet-700">
-              Notifications
+              {t('notifications.title')}
             </p>
             <h2 className="mt-4 text-2xl font-semibold leading-tight text-stone-950 sm:text-3xl">
-              Vos alertes importantes ressortent mieux dans un espace plus calme et plus net.
+              {t('notifications.heroTitle')}
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-600">
-              Messages, likes, commandes et rappels arrivent dans une presentation
-              plus lisible, plus respiree et plus agreable a traiter au quotidien.
+              {t('notifications.heroDescription')}
             </p>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
-            <HeroStatCard label="Total" value={notifications.length} />
-            <HeroStatCard label="Non lues" value={unreadCount} />
-            <HeroStatCard label="Traitees" value={readCount} />
+            <HeroStatCard label={t('common.total')} value={notifications.length} />
+            <HeroStatCard label={t('notifications.unread')} value={unreadCount} />
+            <HeroStatCard label={t('notifications.processed')} value={readCount} />
           </div>
         </div>
       </section>
@@ -190,20 +191,19 @@ function NotificationsPage() {
         <div className="flex flex-col gap-4 border-b border-violet-100 pb-5 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.18em] text-violet-700">
-              Centre d alertes
+              {t('notifications.center')}
             </p>
             <h2 className="mt-2 text-xl font-semibold text-stone-950">
-              Notifications
+              {t('notifications.title')}
             </h2>
             <p className="mt-1 text-sm text-stone-500">
-              {unreadCount} notification{unreadCount > 1 ? 's' : ''} non lue
-              {unreadCount > 1 ? 's' : ''}
+              {t('notifications.unreadCount', { count: unreadCount, plural: unreadCount > 1 ? 's' : '' })}
             </p>
           </div>
 
           <div className="grid gap-3 sm:flex sm:flex-wrap">
             <div className="rounded-full bg-violet-50 px-4 py-2 text-sm font-medium text-violet-700">
-              {readCount} deja traitee{readCount > 1 ? 's' : ''}
+              {t('notifications.processedCount', { count: readCount, plural: readCount > 1 ? 's' : '' })}
             </div>
             <Button
               type="button"
@@ -212,7 +212,7 @@ function NotificationsPage() {
               disabled={isMarkingAll || unreadCount === 0}
               className="w-full sm:w-auto"
             >
-              {isMarkingAll ? 'Mise a jour...' : 'Tout marquer comme lu'}
+              {isMarkingAll ? t('common.updating') : t('notifications.markAllRead')}
             </Button>
           </div>
         </div>
@@ -222,29 +222,29 @@ function NotificationsPage() {
             type="search"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Rechercher une notification..."
+            placeholder={t('notifications.searchPlaceholder')}
             className="flex-1 rounded-[22px] border border-violet-100 bg-[linear-gradient(135deg,_rgba(248,245,255,0.98),_rgba(255,255,255,0.94))] px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-300 focus:bg-white"
           />
           <div className="grid gap-3 sm:flex sm:flex-wrap">
             <Button type="submit" className="w-full sm:w-auto">
-              Rechercher
+              {t('common.search')}
             </Button>
             {queryFromUrl ? (
               <Button type="button" variant="ghost" onClick={handleResetSearch} className="w-full sm:w-auto">
-                Reinitialiser
+                {t('common.reset')}
               </Button>
             ) : null}
           </div>
         </form>
 
-        {isLoading ? <StateBox>Chargement des notifications...</StateBox> : null}
+        {isLoading ? <StateBox>{t('notifications.loading')}</StateBox> : null}
 
         {!isLoading && notifications.length === 0 ? (
-          <StateBox>Aucune notification pour le moment.</StateBox>
+          <StateBox>{t('notifications.empty')}</StateBox>
         ) : null}
 
         {!isLoading && notifications.length > 0 && visibleNotifications.length === 0 ? (
-          <StateBox>Aucune notification ne correspond a votre recherche.</StateBox>
+          <StateBox>{t('notifications.noSearchResults')}</StateBox>
         ) : null}
 
         {!isLoading && visibleNotifications.length > 0 ? (
@@ -266,15 +266,15 @@ function NotificationsPage() {
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-3">
                         <span className="rounded-full bg-[linear-gradient(135deg,#7c3aed,#a855f7,#c4b5fd)] px-3 py-1 text-xs font-medium text-white shadow-[0_10px_20px_rgba(124,58,237,0.16)]">
-                          {formatNotificationType(notification.type)}
+                          {formatNotificationType(notification.type, t)}
                         </span>
                         {isUnread ? (
                           <span className="rounded-full bg-white/88 px-3 py-1 text-xs font-medium text-violet-700 ring-1 ring-inset ring-violet-200">
-                            Nouveau
+                            {t('common.new')}
                           </span>
                         ) : (
                           <span className="rounded-full bg-violet-50 px-3 py-1 text-xs font-medium text-violet-700">
-                            Lu
+                            {t('notifications.read')}
                           </span>
                         )}
                       </div>
@@ -296,7 +296,7 @@ function NotificationsPage() {
                         onClick={() => handleOpenNotification(notification)}
                         className="w-full sm:w-auto"
                       >
-                        Ouvrir
+                        {t('common.open')}
                       </Button>
 
                       {!notification.isRead ? (
@@ -307,7 +307,7 @@ function NotificationsPage() {
                           disabled={isProcessing}
                           className="w-full sm:w-auto"
                         >
-                          {isProcessing ? 'Mise a jour...' : 'Marquer comme lu'}
+                          {isProcessing ? t('common.updating') : t('notifications.markRead')}
                         </Button>
                       ) : null}
                     </div>
@@ -339,22 +339,22 @@ function StateBox({ children }) {
   )
 }
 
-function formatNotificationType(type) {
+function formatNotificationType(type, t) {
   const labels = {
-    new_message: 'Message',
-    post_comment: 'Commentaire',
+    new_message: t('messages.title'),
+    post_comment: t('comments.title'),
     post_like: 'Like',
-    community_request_approved: 'Communaute',
-    community_request_rejected: 'Communaute',
-    reservation_requested: 'Reservation',
-    reservation_approved: 'Reservation',
-    reservation_rejected: 'Reservation',
-    reservation_delivery_updated: 'Livraison',
-    reservation_completed: 'Reservation',
-    reservation_cancelled: 'Reservation',
+    community_request_approved: t('communities.title'),
+    community_request_rejected: t('communities.title'),
+    reservation_requested: t('reservations.title'),
+    reservation_approved: t('reservations.title'),
+    reservation_rejected: t('reservations.title'),
+    reservation_delivery_updated: t('marketplace.delivery'),
+    reservation_completed: t('reservations.title'),
+    reservation_cancelled: t('reservations.title'),
   }
 
-  return labels[type] ?? 'Notification'
+  return labels[type] ?? t('notifications.title')
 }
 
 function upsertNotification(currentNotifications, nextNotification) {
@@ -373,7 +373,7 @@ function upsertNotification(currentNotifications, nextNotification) {
   )
 }
 
-function filterNotifications(notifications, searchTerm) {
+function filterNotifications(notifications, searchTerm, t) {
   const safeNotifications = asArray(notifications)
 
   if (!searchTerm) {
@@ -387,7 +387,7 @@ function filterNotifications(notifications, searchTerm) {
       notification.title,
       notification.body,
       notification.type,
-      formatNotificationType(notification.type),
+      formatNotificationType(notification.type, t),
       notification.actionUrl,
     ].some((value) => normalizeSearchText(value).includes(normalizedSearch)),
   )

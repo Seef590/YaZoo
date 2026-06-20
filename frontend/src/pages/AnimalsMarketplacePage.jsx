@@ -18,14 +18,14 @@ function AnimalsMarketplacePage() {
     <section className="space-y-6">
       <MarketplaceHero
         active="animals"
-        title="Decouvrez, publiez et valorisez des annonces animales dans un espace plus desirant."
-        description="YaZoo met les animaux en avant avec une lecture plus douce, des cartes plus vivantes et un parcours plus rassurant pour vendre, adopter ou entrer en contact."
+        title={t('marketplace.animalsHeroTitle')}
+        description={t('marketplace.animalsHeroDescription')}
         imageSrc={animalFamilyImage}
-        imageAlt="Illustration animale du marketplace YaZoo."
+        imageAlt={t('marketplace.animalsImageAlt')}
         imageClass="mx-auto h-24 w-auto object-contain sm:h-28"
         stats={[
-          { label: 'Annonces visibles', value: marketplace.animals.length },
-          { label: 'Filtres actifs', value: marketplace.activeFiltersCount },
+          { label: t('common.visibleListings'), value: marketplace.animals.length },
+          { label: t('common.filtersActive'), value: marketplace.activeFiltersCount },
         ]}
       />
 
@@ -70,8 +70,8 @@ function AnimalsMarketplacePage() {
       <MarketplaceGrid
         isLoading={marketplace.isLoading}
         items={marketplace.animals}
-        loadingText="Chargement des annonces animaliers..."
-        emptyText="Aucune annonce animal ne correspond aux filtres actuels."
+        loadingText={t('marketplace.loadingAnimals')}
+        emptyText={t('marketplace.emptyAnimals')}
         renderItem={(animal) => (
           <AnimalCard
             key={animal.id}

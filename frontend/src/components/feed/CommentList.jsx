@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { formatDate } from '../../utils/formatDate'
+import { useI18n } from '../../hooks/useI18n'
 import Avatar from '../ui/Avatar'
 import Button from '../ui/Button'
 
@@ -11,10 +12,12 @@ function CommentList({
   onCreateReply,
   onReactToComment,
 }) {
+  const { t } = useI18n()
+
   if (!comments.length) {
     return (
       <p className="rounded-2xl border border-dashed border-violet-200 bg-white/80 px-4 py-3 text-sm text-stone-500">
-        Aucun commentaire pour l'instant.
+        {t('comments.empty')}
       </p>
     )
   }
@@ -43,6 +46,7 @@ function CommentItem({
   onReactToComment,
   isReply = false,
 }) {
+  const { t } = useI18n()
   const [isReplyOpen, setIsReplyOpen] = useState(false)
   const [replyBody, setReplyBody] = useState('')
   const [replyReaction, setReplyReaction] = useState('')
@@ -72,7 +76,7 @@ function CommentItem({
       setReplyReaction('')
       setIsReplyOpen(false)
     } catch {
-      setErrorMessage('Impossible de repondre au commentaire.')
+      setErrorMessage(t('comments.replyError'))
     } finally {
       setIsSubmitting(false)
     }
@@ -81,7 +85,7 @@ function CommentItem({
   return (
     <div
       className={`rounded-[22px] border border-violet-100 bg-[linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.84))] px-4 py-3 shadow-[0_12px_28px_rgba(124,58,237,0.06)] ${
-        isReply ? 'ml-8' : ''
+        isReply ? 'ms-8' : ''
       }`}
     >
       <div className="flex items-start gap-3">
@@ -110,7 +114,7 @@ function CommentItem({
                 type="button"
                 onClick={() => onReactToComment(postId, comment.id, reaction.key)}
                 className="rounded-full border border-violet-100 bg-white px-2.5 py-1 text-sm transition hover:bg-violet-50"
-                aria-label={`Reagir avec ${reaction.label}`}
+                aria-label={t('comments.reactWith', { reaction: reaction.label })}
                 title={reaction.label}
               >
                 {reaction.icon}
@@ -123,7 +127,7 @@ function CommentItem({
                 onClick={() => setIsReplyOpen((current) => !current)}
                 className="rounded-full border border-violet-100 bg-white px-3 py-1 text-xs font-semibold text-violet-900 transition hover:bg-violet-50"
               >
-                Repondre
+                {t('comments.reply')}
               </button>
             ) : null}
           </div>
@@ -131,7 +135,7 @@ function CommentItem({
       </div>
 
       {isReplyOpen ? (
-        <form onSubmit={handleSubmitReply} className="mt-3 space-y-3 pl-12">
+        <form onSubmit={handleSubmitReply} className="mt-3 space-y-3 ps-12">
           <div className="flex flex-wrap gap-2">
             {reactions.slice(1).map((reaction) => (
               <button
@@ -156,7 +160,7 @@ function CommentItem({
             value={replyBody}
             onChange={(event) => setReplyBody(event.target.value)}
             rows={2}
-            placeholder="Repondre a ce commentaire..."
+            placeholder={t('comments.replyPlaceholder')}
             className="w-full rounded-2xl border border-violet-100 bg-white px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-400"
           />
           {errorMessage ? (
@@ -166,7 +170,7 @@ function CommentItem({
           ) : null}
           <div className="flex justify-end">
             <Button type="submit" disabled={isSubmitting || !replyBody.trim()}>
-              {isSubmitting ? 'Envoi...' : 'Repondre'}
+              {isSubmitting ? t('common.sending') : t('comments.reply')}
             </Button>
           </div>
         </form>

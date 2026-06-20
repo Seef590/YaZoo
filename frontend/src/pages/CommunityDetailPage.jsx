@@ -21,18 +21,13 @@ import PostCard from '../components/feed/PostCard'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import { useAuth } from '../hooks/useAuth'
+import { useI18n } from '../hooks/useI18n'
 import { asArray, extractDataArray, extractDataObject } from '../utils/apiData'
 import { formatDate } from '../utils/formatDate'
 import { getErrorMessage } from '../utils/getErrorMessage'
 
-const COMMUNITY_TABS = [
-  { key: 'about', label: 'A propos' },
-  { key: 'discussion', label: 'Discussion' },
-  { key: 'members', label: 'Membres' },
-  { key: 'media', label: 'Medias' },
-]
-
 function CommunityDetailPage() {
+  const { t } = useI18n()
   const { communityId } = useParams()
   const { user } = useAuth()
   const [community, setCommunity] = useState(null)
@@ -51,11 +46,11 @@ function CommunityDetailPage() {
       setCommunity(extractDataObject(response, null))
       setErrorMessage('')
     } catch (error) {
-      setErrorMessage(getErrorMessage(error, 'Impossible de charger ce groupe.'))
+      setErrorMessage(getErrorMessage(error, t('communities.detailLoadError')))
     } finally {
       setIsLoading(false)
     }
-  }, [communityId])
+  }, [communityId, t])
 
   const loadCommunityPosts = useCallback(async () => {
     setIsPostsLoading(true)
@@ -65,12 +60,12 @@ function CommunityDetailPage() {
       setPosts(extractDataArray(response))
       setErrorMessage('')
     } catch (error) {
-      setErrorMessage(getErrorMessage(error, 'Impossible de charger les posts du groupe.'))
+      setErrorMessage(getErrorMessage(error, t('communities.postsLoadError')))
       setPosts([])
     } finally {
       setIsPostsLoading(false)
     }
-  }, [communityId])
+  }, [communityId, t])
 
   useEffect(() => {
     void loadCommunity()
@@ -116,15 +111,15 @@ function CommunityDetailPage() {
       if (navigator.share) {
         await navigator.share({
           title: community.name,
-          text: community.description || 'Groupe YaZoo',
+          text: community.description || t('communities.shareFallback'),
           url,
         })
       } else {
         await navigator.clipboard.writeText(url)
-        setSuccessMessage('Lien du groupe copie.')
+        setSuccessMessage(t('communities.linkCopied'))
       }
     } catch {
-      setErrorMessage('Partage annule ou indisponible.')
+      setErrorMessage(t('communities.shareError'))
     }
   }
 
@@ -213,7 +208,7 @@ function CommunityDetailPage() {
   }
 
   if (isLoading) {
-    return <StateBox>Chargement du groupe...</StateBox>
+    return <StateBox>{t('communities.detailLoading')}</StateBox>
   }
 
   if (!community) {
@@ -229,6 +224,12 @@ function CommunityDetailPage() {
   const mediaPosts = safePosts.filter((post) => post.mediaUrl || post.imageUrl)
   const canViewDiscussion = !community.isPrivate || community.isMember || community.isAdmin
   const memberPreview = getUniqueMembers([community.owner, community.isMember ? user : null])
+  const communityTabs = [
+    { key: 'about', label: t('communities.about') },
+    { key: 'discussion', label: t('feed.discussion') },
+    { key: 'members', label: t('common.members') },
+    { key: 'media', label: t('common.media') },
+  ]
 
   return (
     <section className="space-y-5">
@@ -269,7 +270,7 @@ function CommunityDetailPage() {
 
         <div className="border-t border-violet-100/70 px-5 py-4 dark:border-violet-300/12">
           <div className="flex gap-2 overflow-x-auto">
-            {COMMUNITY_TABS.map((tab) => (
+            {communityTabs.map((tab) => (
               <button
                 key={tab.key}
                 type="button"
@@ -295,7 +296,7 @@ function CommunityDetailPage() {
           {activeTab === 'discussion' ? (
             <>
               {!canViewDiscussion ? (
-                <StateBox>Ce groupe est prive. Rejoignez-le pour consulter la discussion.</StateBox>
+                <StateBox>{t('communities.privateDiscussion')}</StateBox>
               ) : null}
 
               {canViewDiscussion && community.isMember ? (
@@ -308,10 +309,10 @@ function CommunityDetailPage() {
                 </section>
               ) : null}
 
-              {canViewDiscussion && isPostsLoading ? <StateBox>Chargement des publications du groupe...</StateBox> : null}
+              {canViewDiscussion && isPostsLoading ? <StateBox>{t('communities.postsLoading')}</StateBox> : null}
 
               {canViewDiscussion && !isPostsLoading && safePosts.length === 0 ? (
-                <StateBox>Aucune publication dans ce groupe pour le moment.</StateBox>
+                <StateBox>{t('communities.postsEmpty')}</StateBox>
               ) : null}
 
               {canViewDiscussion && !isPostsLoading && safePosts.length > 0 ? (
@@ -336,7 +337,7 @@ function CommunityDetailPage() {
 
           {activeTab === 'about' ? (
             <section className="rounded-[28px] border border-white/80 bg-white/92 p-5 shadow-[0_20px_48px_rgba(124,58,237,0.08)] dark:border-violet-300/12 dark:bg-white/8">
-              <h2 className="text-xl font-semibold text-stone-950 dark:text-violet-50">A propos du groupe</h2>
+              <h2 className="text-xl font-semibold text-stone-950 dark:text-violet-50">{t('communities.aboutGroup')}</h2>
               <p className="mt-3 text-sm leading-7 text-stone-600 dark:text-violet-100/72">
                 {community.description || 'Ce groupe attend encore sa description.'}
               </p>
@@ -350,7 +351,7 @@ function CommunityDetailPage() {
 
           {activeTab === 'members' ? (
             <section className="rounded-[28px] border border-white/80 bg-white/92 p-5 shadow-[0_20px_48px_rgba(124,58,237,0.08)] dark:border-violet-300/12 dark:bg-white/8">
-              <h2 className="text-xl font-semibold text-stone-950 dark:text-violet-50">Membres du groupe</h2>
+              <h2 className="text-xl font-semibold text-stone-950 dark:text-violet-50">{t('communities.membersGroup')}</h2>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 {memberPreview.map((member) => (
                   <div key={member.id ?? member.name} className="flex items-center gap-3 rounded-[22px] border border-violet-100 bg-white/80 p-3 dark:border-violet-300/12 dark:bg-white/8">
@@ -364,15 +365,15 @@ function CommunityDetailPage() {
                   </div>
                 ))}
               </div>
-              {memberPreview.length === 0 ? <StateBox>Aucun membre affiche pour le moment.</StateBox> : null}
+              {memberPreview.length === 0 ? <StateBox>{t('communities.membersEmpty')}</StateBox> : null}
             </section>
           ) : null}
 
           {activeTab === 'media' ? (
             <section className="rounded-[28px] border border-white/80 bg-white/92 p-5 shadow-[0_20px_48px_rgba(124,58,237,0.08)] dark:border-violet-300/12 dark:bg-white/8">
-              <h2 className="text-xl font-semibold text-stone-950 dark:text-violet-50">Medias du groupe</h2>
+              <h2 className="text-xl font-semibold text-stone-950 dark:text-violet-50">{t('communities.mediaGroup')}</h2>
               {mediaPosts.length === 0 ? (
-                <StateBox>Aucune photo ou video publiee dans ce groupe.</StateBox>
+                <StateBox>{t('communities.mediaEmpty')}</StateBox>
               ) : (
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   {mediaPosts.map((post) => (
@@ -386,19 +387,19 @@ function CommunityDetailPage() {
 
         <aside className="space-y-5">
           <section className="rounded-[28px] border border-white/80 bg-white/92 p-5 shadow-[0_20px_48px_rgba(124,58,237,0.08)] dark:border-violet-300/12 dark:bg-white/8">
-            <h2 className="text-lg font-semibold text-stone-950 dark:text-violet-50">A propos</h2>
+            <h2 className="text-lg font-semibold text-stone-950 dark:text-violet-50">{t('communities.about')}</h2>
             <p className="mt-3 text-sm leading-6 text-stone-600 dark:text-violet-100/70">
               {community.description || 'Aucune description pour le moment.'}
             </p>
             <div className="mt-4 space-y-3 text-sm text-stone-600 dark:text-violet-100/70">
-              <p><strong className="text-stone-950 dark:text-violet-50">Visibilite :</strong> {community.isPrivate ? 'Prive' : 'Public'}</p>
-              <p><strong className="text-stone-950 dark:text-violet-50">Proprietaire :</strong> {community.owner?.name}</p>
-              <p><strong className="text-stone-950 dark:text-violet-50">Statut :</strong> {getMembershipLabel(community)}</p>
+              <p><strong className="text-stone-950 dark:text-violet-50">{t('communities.visibilityLabel')}</strong> {community.isPrivate ? t('common.private') : t('common.public')}</p>
+              <p><strong className="text-stone-950 dark:text-violet-50">{t('communities.ownerLabel')}</strong> {community.owner?.name}</p>
+              <p><strong className="text-stone-950 dark:text-violet-50">{t('communities.statusLabel')}</strong> {getMembershipLabel(community)}</p>
             </div>
           </section>
 
           <section className="rounded-[28px] border border-white/80 bg-white/92 p-5 shadow-[0_20px_48px_rgba(124,58,237,0.08)] dark:border-violet-300/12 dark:bg-white/8">
-            <h2 className="text-lg font-semibold text-stone-950 dark:text-violet-50">Membres recents</h2>
+            <h2 className="text-lg font-semibold text-stone-950 dark:text-violet-50">{t('communities.recentMembers')}</h2>
             <div className="mt-4 flex -space-x-3">
               {memberPreview.map((member, index) => (
                 <Avatar

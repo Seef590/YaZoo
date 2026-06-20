@@ -103,7 +103,7 @@ function SettingsPage() {
         <SettingsCard title={t('settings.accountTitle')} description={t('settings.accountDescription')}>
           <div className="grid gap-3 text-sm text-stone-600 dark:text-violet-100/70">
             <p>{t('common.name')} : <span className="font-semibold text-stone-950 dark:text-violet-50">{user?.name ?? t('common.user')}</span></p>
-            <p>Email : <span className="font-semibold text-stone-950 dark:text-violet-50">{user?.email ?? t('common.notProvided')}</span></p>
+            <p>{t('common.email')} : <span className="font-semibold text-stone-950 dark:text-violet-50">{user?.email ?? t('common.notProvided')}</span></p>
             <p>{t('common.city')} : <span className="font-semibold text-stone-950 dark:text-violet-50">{user?.city ?? t('common.notProvided')}</span></p>
           </div>
         </SettingsCard>

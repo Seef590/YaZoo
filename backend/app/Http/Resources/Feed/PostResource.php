@@ -6,6 +6,7 @@ use App\Models\Post;
 use App\Support\MediaStorage;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Collection;
 
 /**
  * @mixin Post
@@ -23,7 +24,7 @@ class PostResource extends JsonResource
         $resolvedMediaKind = $this->media_kind ?: ($resolvedMediaPath ? 'image' : null);
         $viewerId = $request->user()?->id;
         $likes = $this->whenLoaded('likes');
-        $likeCollection = $likes instanceof \Illuminate\Support\Collection ? $likes : collect();
+        $likeCollection = $likes instanceof Collection ? $likes : collect();
         $viewerLike = $viewerId
             ? $likeCollection->firstWhere('user_id', $viewerId)
             : null;

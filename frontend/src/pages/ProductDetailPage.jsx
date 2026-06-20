@@ -5,10 +5,18 @@ import { getProductRequest } from '../api/products'
 import { createProductReservationRequest } from '../api/reservations'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
+import {
+  buildProductContactPath,
+  formatCondition,
+  formatProductCategory,
+  formatProductStatus,
+} from '../features/marketplace/marketplaceUtils'
+import { useI18n } from '../hooks/useI18n'
 import { formatDate } from '../utils/formatDate'
 import { getErrorMessage } from '../utils/getErrorMessage'
 
 function ProductDetailPage() {
+  const { t } = useI18n()
   const { productId } = useParams()
   const [product, setProduct] = useState(null)
   const [errorMessage, setErrorMessage] = useState('')
@@ -37,7 +45,7 @@ function ProductDetailPage() {
     } catch (error) {
       if (!silent) {
         setErrorMessage(
-          getErrorMessage(error, "Impossible de charger cette annonce produit."),
+          getErrorMessage(error, t('marketplace.detailProductLoadError')),
         )
       }
     } finally {
@@ -61,7 +69,7 @@ function ProductDetailPage() {
       } catch (error) {
         if (!cancelled) {
           setErrorMessage(
-            getErrorMessage(error, "Impossible de charger cette annonce produit."),
+            getErrorMessage(error, t('marketplace.detailProductLoadError')),
           )
         }
       } finally {
@@ -76,7 +84,7 @@ function ProductDetailPage() {
     return () => {
       cancelled = true
     }
-  }, [productId])
+  }, [productId, t])
 
   const gallery = useMemo(
     () => uniqueUrls([product?.imageUrl, ...(product?.galleryUrls ?? [])]),
@@ -84,17 +92,17 @@ function ProductDetailPage() {
   )
 
   if (isLoading) {
-    return <StateBox>Chargement de l'annonce...</StateBox>
+    return <StateBox>{t('marketplace.detailLoading')}</StateBox>
   }
 
   if (errorMessage || !product) {
     return (
       <section className="space-y-4">
         <div className="rounded-[28px] border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-700">
-          {errorMessage || 'Annonce introuvable.'}
+          {errorMessage || t('marketplace.detailNotFound')}
         </div>
         <LinkButton to="/marketplace/products" variant="secondary">
-          Retour au marketplace produits
+          {t('marketplace.backToProducts')}
         </LinkButton>
       </section>
     )
@@ -118,9 +126,7 @@ function ProductDetailPage() {
 
     try {
       await createProductReservationRequest(product.id, reservationForm)
-      setReservationSuccess(
-        'Demande de reservation envoyee. Vous pouvez suivre la suite dans Reservations.',
-      )
+      setReservationSuccess(t('marketplace.reservationSent'))
       setReservationForm({
         quantity: 1,
         delivery_method: 'pickup',
@@ -135,7 +141,7 @@ function ProductDetailPage() {
       await loadProduct({ silent: true })
     } catch (error) {
       setReservationError(
-        getErrorMessage(error, "Impossible d'envoyer la reservation."),
+        getErrorMessage(error, t('marketplace.reservationError')),
       )
     } finally {
       setIsSubmittingReservation(false)
@@ -149,36 +155,36 @@ function ProductDetailPage() {
           <div>
             <div className="flex flex-wrap gap-3">
               <LinkButton to="/marketplace/products" variant="ghost">
-                Retour aux produits
+                {t('marketplace.backToProducts')}
               </LinkButton>
               {!product.isOwner && product.author?.id ? (
-                <LinkButton to={buildProductContactPath(product)} variant="secondary">
-                  Contacter le vendeur
+                <LinkButton to={buildProductContactPath(product, t)} variant="secondary">
+                  {t('marketplace.contactSeller')}
                 </LinkButton>
               ) : null}
             </div>
 
             <div className="mt-5 flex flex-wrap gap-2">
-              <Chip tone="dark">{formatProductStatus(product.listingStatus)}</Chip>
-              <Chip>{formatProductCategory(product.category)}</Chip>
-              <Chip>{formatCondition(product.conditionStatus)}</Chip>
+              <Chip tone="dark">{formatProductStatus(product.listingStatus, t)}</Chip>
+              <Chip>{formatProductCategory(product.category, t)}</Chip>
+              <Chip>{formatCondition(product.conditionStatus, t)}</Chip>
             </div>
 
             <h1 className="mt-4 text-2xl font-semibold leading-tight text-stone-950 sm:text-3xl">
               {product.name}
             </h1>
             <p className="mt-2 text-sm text-stone-500">
-              Publie le {formatDate(product.createdAt)}
+              {t('marketplace.publishedOn', { date: formatDate(product.createdAt) })}
             </p>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-600">
-              {product.description || 'Une fiche produit presentee pour rassurer, informer et donner envie de passer a l action.'}
+              {product.description || t('marketplace.productDetailFallbackDescription')}
             </p>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
-            <HeroStatCard label="Prix" value={`${product.price} MAD`} />
-            <HeroStatCard label="Stock" value={product.stock} />
-            <HeroStatCard label="Ville" value={product.location || 'Non renseignee'} />
+            <HeroStatCard label={t('common.price')} value={`${product.price} MAD`} />
+            <HeroStatCard label={t('common.stock')} value={product.stock} />
+            <HeroStatCard label={t('common.city')} value={product.location || t('common.notProvided')} />
           </div>
         </div>
       </section>
@@ -197,7 +203,7 @@ function ProductDetailPage() {
                 />
               ) : (
                 <div className="flex h-[280px] items-center justify-center bg-[linear-gradient(135deg,_rgba(124,58,237,0.14),_rgba(216,180,254,0.22),_rgba(255,255,255,0.92))] text-sm font-medium text-violet-700 sm:h-[360px]">
-                  Image a ajouter
+                  {t('products.imageMissing')}
                 </div>
               )}
             </div>
@@ -221,7 +227,7 @@ function ProductDetailPage() {
           <div className="space-y-5">
             <div className="rounded-[24px] bg-[linear-gradient(135deg,_rgba(124,58,237,0.1),_rgba(216,180,254,0.22),_rgba(255,255,255,0.94))] px-5 py-4">
               <p className="text-xs uppercase tracking-[0.16em] text-stone-500">
-                Prix
+                {t('common.price')}
               </p>
               <p className="mt-2 text-2xl font-semibold text-stone-950">
                 {product.price} MAD
@@ -229,16 +235,16 @@ function ProductDetailPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <Info label="Categorie" value={formatProductCategory(product.category)} />
-              <Info label="Etat" value={formatCondition(product.conditionStatus)} />
-              <Info label="Statut" value={formatProductStatus(product.listingStatus)} />
-              <Info label="Stock" value={product.stock} />
-              <Info label="Ville" value={product.location} />
-              <Info label="Publie" value={formatDate(product.createdAt)} />
+              <Info label={t('common.category')} value={formatProductCategory(product.category, t)} />
+              <Info label={t('common.condition')} value={formatCondition(product.conditionStatus, t)} />
+              <Info label={t('common.status')} value={formatProductStatus(product.listingStatus, t)} />
+              <Info label={t('common.stock')} value={product.stock} />
+              <Info label={t('common.city')} value={product.location || t('common.notProvided')} />
+              <Info label={t('common.published')} value={formatDate(product.createdAt)} />
             </div>
 
             <div className="rounded-[24px] border border-violet-100 bg-[linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.82))] p-4">
-              <p className="text-sm font-semibold text-stone-950">Vendeur</p>
+              <p className="text-sm font-semibold text-stone-950">{t('common.seller')}</p>
               <div className="mt-3 flex items-center gap-3">
                 <Avatar name={product.author.name} />
                 <div>
@@ -259,16 +265,16 @@ function ProductDetailPage() {
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="text-sm font-semibold text-stone-950">
-                      Reservation
+                      {t('marketplace.reservation')}
                     </p>
                     <p className="mt-1 text-sm text-stone-500">
-                      Reservez le produit puis suivez la validation et le statut de paiement.
+                      {t('marketplace.productReservationHelp')}
                     </p>
                   </div>
 
                   {product.author?.id ? (
-                    <LinkButton to={buildProductContactPath(product)} variant="ghost">
-                      Envoyer un message prive
+                    <LinkButton to={buildProductContactPath(product, t)} variant="ghost">
+                      {t('marketplace.sendPrivateMessage')}
                     </LinkButton>
                   ) : null}
                 </div>
@@ -290,7 +296,7 @@ function ProductDetailPage() {
                     <div className="grid gap-4 md:grid-cols-2">
                       <label className="block">
                         <span className="mb-2 block text-sm font-medium text-stone-700">
-                          Quantite
+                          {t('common.quantity')}
                         </span>
                         <input
                           type="number"
@@ -304,29 +310,29 @@ function ProductDetailPage() {
 
                       <label className="block">
                         <span className="mb-2 block text-sm font-medium text-stone-700">
-                          Mode de retrait
+                          {t('marketplace.deliveryMethod')}
                         </span>
                         <select
                           value={reservationForm.delivery_method}
                           onChange={handleReservationChange('delivery_method')}
                           className="w-full rounded-[22px] border border-violet-100 bg-white px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-300"
                         >
-                          <option value="pickup">Retrait sur place</option>
-                          <option value="delivery">Livraison</option>
+                          <option value="pickup">{t('marketplace.pickup')}</option>
+                          <option value="delivery">{t('marketplace.delivery')}</option>
                         </select>
                       </label>
 
                       <label className="block">
                         <span className="mb-2 block text-sm font-medium text-stone-700">
-                          Mode de paiement
+                          {t('marketplace.paymentMethod')}
                         </span>
                         <select
                           value={reservationForm.payment_method}
                           onChange={handleReservationChange('payment_method')}
                           className="w-full rounded-[22px] border border-violet-100 bg-white px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-300"
                         >
-                          <option value="cash_on_pickup">Paiement a la remise</option>
-                          <option value="bank_transfer">Virement bancaire</option>
+                          <option value="cash_on_pickup">{t('marketplace.cashOnPickup')}</option>
+                          <option value="bank_transfer">{t('marketplace.bankTransfer')}</option>
                         </select>
                       </label>
                     </div>
@@ -334,49 +340,49 @@ function ProductDetailPage() {
                     {reservationForm.delivery_method === 'delivery' ? (
                       <div className="grid gap-4 md:grid-cols-2">
                         <Field
-                          label="Nom du contact"
+                          label={t('marketplace.contactName')}
                           value={reservationForm.delivery_contact_name}
                           onChange={handleReservationChange('delivery_contact_name')}
                         />
                         <Field
-                          label="Telephone"
+                          label={t('common.phone')}
                           value={reservationForm.delivery_phone}
                           onChange={handleReservationChange('delivery_phone')}
                         />
                         <Field
-                          label="Ville"
+                          label={t('common.city')}
                           value={reservationForm.delivery_city}
                           onChange={handleReservationChange('delivery_city')}
                         />
                         <label className="block md:col-span-2">
                           <span className="mb-2 block text-sm font-medium text-stone-700">
-                            Adresse
+                            {t('common.address')}
                           </span>
                           <textarea
                             rows={3}
                             value={reservationForm.delivery_address}
                             onChange={handleReservationChange('delivery_address')}
                             className="w-full rounded-[22px] border border-violet-100 bg-white px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-300"
-                            placeholder="Adresse complete de livraison"
+                            placeholder={t('marketplace.deliveryAddressPlaceholder')}
                           />
                         </label>
                         <label className="block md:col-span-2">
                           <span className="mb-2 block text-sm font-medium text-stone-700">
-                            Instructions de livraison
+                            {t('marketplace.deliveryInstructions')}
                           </span>
                           <textarea
                             rows={3}
                             value={reservationForm.delivery_notes}
                             onChange={handleReservationChange('delivery_notes')}
                             className="w-full rounded-[22px] border border-violet-100 bg-white px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-300"
-                            placeholder="Acces, horaires, indications..."
+                            placeholder={t('marketplace.productDeliveryNotesPlaceholder')}
                           />
                         </label>
                       </div>
                     ) : null}
 
                     <div className="rounded-[20px] bg-violet-50 px-4 py-3 text-sm text-violet-900">
-                      Total estime: {formatProductReservationTotal(
+                      {t('marketplace.estimatedTotal')}: {formatProductReservationTotal(
                         product,
                         reservationForm.quantity,
                         reservationForm.delivery_method,
@@ -385,35 +391,35 @@ function ProductDetailPage() {
 
                     <label className="block">
                       <span className="mb-2 block text-sm font-medium text-stone-700">
-                        Note pour le vendeur
+                        {t('marketplace.noteForSeller')}
                       </span>
                       <textarea
                         rows={4}
                         value={reservationForm.note}
                         onChange={handleReservationChange('note')}
                         className="w-full rounded-[22px] border border-violet-100 bg-white px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-300"
-                        placeholder="Precision sur la livraison, disponibilite, questions..."
+                        placeholder={t('marketplace.productNotePlaceholder')}
                       />
                     </label>
 
                     <div className="grid gap-3 sm:flex sm:flex-wrap">
                       <Button type="submit" disabled={isSubmittingReservation} className="w-full sm:w-auto">
-                        {isSubmittingReservation ? 'Envoi...' : 'Reserver ce produit'}
+                        {isSubmittingReservation ? t('common.sending') : t('marketplace.reserveProduct')}
                       </Button>
                       <LinkButton to="/reservations" variant="secondary" className="w-full sm:w-auto">
-                        Voir mes reservations
+                        {t('marketplace.viewMyReservations')}
                       </LinkButton>
                     </div>
                   </form>
                 ) : (
                   <div className="rounded-[20px] border border-violet-100 bg-white/84 px-4 py-3 text-sm text-stone-600">
-                    Ce produit n'est pas reservable pour le moment.
+                    {t('marketplace.productNotReservable')}
                   </div>
                 )}
               </div>
             ) : (
               <div className="rounded-[24px] border border-violet-100 bg-violet-50/70 px-4 py-3 text-sm text-violet-900">
-                Vous etes le proprietaire de cette annonce.
+                {t('marketplace.ownerListingNotice')}
               </div>
             )}
           </div>
@@ -438,12 +444,6 @@ function HeroStatCard({ label, value }) {
       <p className="mt-2 text-2xl font-semibold text-stone-950">{value}</p>
     </div>
   )
-}
-
-function buildProductContactPath(product) {
-  const message = `Bonjour, je vous contacte a propos de votre produit "${product.name}". Est-il toujours disponible ?`
-
-  return `/messages?user=${encodeURIComponent(product.author.id)}&message=${encodeURIComponent(message)}`
 }
 
 function LinkButton({ children, to, variant = 'primary', className = '' }) {
@@ -505,34 +505,6 @@ function Field({ label, ...props }) {
 
 function uniqueUrls(urls) {
   return [...new Set(urls.filter(Boolean))]
-}
-
-function formatProductCategory(category) {
-  const labels = {
-    food: 'Alimentation',
-    toy: 'Jouets',
-    accessory: 'Accessoires',
-    hygiene: 'Hygiene',
-    health: 'Sante',
-    habitat: 'Habitat',
-    other: 'Autres',
-  }
-
-  return labels[category] ?? 'Autres'
-}
-
-function formatProductStatus(status) {
-  const labels = {
-    available: 'Disponible',
-    reserved: 'Reserve',
-    sold: 'Vendu',
-  }
-
-  return labels[status] ?? 'Disponible'
-}
-
-function formatCondition(conditionStatus) {
-  return conditionStatus === 'used' ? 'Occasion' : 'Neuf'
 }
 
 function formatProductReservationTotal(product, quantity, deliveryMethod) {

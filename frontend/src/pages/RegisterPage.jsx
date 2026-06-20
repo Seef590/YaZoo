@@ -6,6 +6,7 @@ import Button from '../components/ui/Button'
 import Footer from '../components/ui/Footer'
 import PasswordField from '../components/ui/PasswordField'
 import { useAuth } from '../hooks/useAuth'
+import { useI18n } from '../hooks/useI18n'
 import { getErrorMessage } from '../utils/getErrorMessage'
 
 const onboardingNotes = [
@@ -15,6 +16,7 @@ const onboardingNotes = [
 ]
 
 function RegisterPage() {
+  const { t } = useI18n()
   const { isAuthenticated, isBootstrapping, register } = useAuth()
   const [searchParams] = useSearchParams()
   const [form, setForm] = useState({
@@ -142,7 +144,7 @@ function RegisterPage() {
               name="name"
               value={form.name}
               onChange={handleChange('name')}
-              placeholder="Votre nom"
+              placeholder={t('feedback.namePlaceholder')}
               autoComplete="name"
             />
             <Field
@@ -186,7 +188,7 @@ function RegisterPage() {
                 name="country"
                 value={form.country}
                 onChange={handleChange('country')}
-                placeholder="Maroc"
+                placeholder={t('auth.countryPlaceholder')}
                 autoComplete="country-name"
               />
               <Field
@@ -194,7 +196,7 @@ function RegisterPage() {
                 name="city"
                 value={form.city}
                 onChange={handleChange('city')}
-                placeholder="Casablanca"
+                placeholder={t('feed.locationPlaceholder')}
                 autoComplete="address-level2"
               />
             </div>

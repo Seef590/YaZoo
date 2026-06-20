@@ -32,7 +32,7 @@ class StoreConversationRequest extends FormRequest
                 'exists:users,id',
                 function (string $attribute, mixed $value, Closure $fail): void {
                     if ((int) $value === (int) $this->user()?->id) {
-                        $fail('Vous ne pouvez pas vous envoyer un message.');
+                        $fail(__('messages.messages.self_message'));
                     }
                 },
             ],
@@ -51,13 +51,13 @@ class StoreConversationRequest extends FormRequest
                         ->first();
 
                     if (! $recipient) {
-                        $fail('Aucun utilisateur ne correspond a ce contact.');
+                        $fail(__('messages.messages.contact_not_found'));
 
                         return;
                     }
 
                     if ($recipient->is($this->user())) {
-                        $fail('Vous ne pouvez pas vous envoyer un message.');
+                        $fail(__('messages.messages.self_message'));
                     }
                 },
             ],

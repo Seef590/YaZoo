@@ -18,14 +18,14 @@ function ProductsMarketplacePage() {
     <section className="space-y-6">
       <MarketplaceHero
         active="products"
-        title="Publiez vos produits et aidez les proprietaires a trouver ce qu il leur faut."
-        description="Des annonces claires facilitent la comparaison, le contact et l achat en confiance."
+        title={t('marketplace.productsHeroTitle')}
+        description={t('marketplace.productsHeroDescription')}
         imageSrc={companionImage}
-        imageAlt="Scene complice autour des animaux sur YaZoo."
+        imageAlt={t('marketplace.productsImageAlt')}
         imageClass="mx-auto h-24 w-auto rounded-[20px] object-cover sm:h-28 xl:w-[180px]"
         stats={[
-          { label: 'Produits visibles', value: marketplace.products.length },
-          { label: 'Filtres actifs', value: marketplace.activeFiltersCount },
+          { label: t('common.visibleProducts'), value: marketplace.products.length },
+          { label: t('common.filtersActive'), value: marketplace.activeFiltersCount },
         ]}
       />
 
@@ -70,8 +70,8 @@ function ProductsMarketplacePage() {
       <MarketplaceGrid
         isLoading={marketplace.isLoading}
         items={marketplace.products}
-        loadingText="Chargement des produits..."
-        emptyText="Aucun produit ne correspond aux filtres actuels."
+        loadingText={t('marketplace.loadingProducts')}
+        emptyText={t('marketplace.emptyProducts')}
         renderItem={(product) => (
           <ProductCard
             key={product.id}

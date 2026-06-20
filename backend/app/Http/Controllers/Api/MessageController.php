@@ -40,7 +40,7 @@ class MessageController extends Controller
         event((new ConversationMessageSent($conversation, $message))->dontBroadcastToCurrentUser());
 
         return response()->json([
-            'message' => 'Message envoye.',
+            'message' => __('messages.messages.sent'),
             'data' => MessageResource::make($message)->resolve(),
             'conversation' => ConversationResource::make($conversation)->resolve(),
         ], 201);

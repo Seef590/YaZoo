@@ -134,7 +134,7 @@ function Layout() {
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.18),_transparent_24%),radial-gradient(circle_at_top_right,_rgba(244,208,255,0.24),_transparent_20%),linear-gradient(180deg,_#fffaff_0%,_#f7f1ff_100%)] transition-colors dark:bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.26),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(76,29,149,0.28),_transparent_24%),linear-gradient(180deg,_#08050d_0%,_#12091f_54%,_#1b1030_100%)]">
-      <div className="w-full overflow-x-clip px-3 pb-32 pt-3 sm:px-4 sm:pt-4 lg:px-6 lg:pb-8">
+      <div className="w-full overflow-x-clip px-3 pb-[calc(8rem+env(safe-area-inset-bottom))] pt-3 sm:px-4 sm:pt-4 lg:px-6 lg:pb-8">
         <header className="sticky top-3 z-30 rounded-[26px] border border-white/55 bg-[linear-gradient(135deg,_rgba(255,255,255,0.52),_rgba(248,240,255,0.36),_rgba(255,255,255,0.24))] p-3 shadow-[0_20px_48px_rgba(124,58,237,0.1)] backdrop-blur-2xl transition-colors dark:border-violet-300/15 dark:bg-[linear-gradient(135deg,_rgba(24,16,38,0.82),_rgba(49,24,83,0.54),_rgba(12,8,20,0.72))] dark:shadow-[0_24px_60px_rgba(0,0,0,0.38)] sm:p-4">
           <div className="flex items-center gap-3">
             <NavLink to="/feed" className="flex min-w-0 items-center gap-3">
@@ -197,7 +197,7 @@ function Layout() {
 
         <DesktopNav items={navigationItems} />
 
-        <main className="mt-4 min-w-0 rounded-[30px] border border-white/55 bg-[linear-gradient(180deg,_rgba(255,255,255,0.6),_rgba(248,241,255,0.42),_rgba(255,255,255,0.28))] p-4 pb-24 shadow-[0_24px_70px_rgba(124,58,237,0.1)] backdrop-blur-2xl transition-colors dark:border-violet-300/14 dark:bg-[linear-gradient(180deg,_rgba(5,3,10,0.9),_rgba(24,11,43,0.82),_rgba(8,5,13,0.88))] dark:shadow-[0_30px_80px_rgba(0,0,0,0.44)] sm:rounded-[34px] sm:p-5 sm:pb-24 lg:pb-5">
+        <main className="mt-4 min-w-0 rounded-[30px] border border-white/55 bg-[linear-gradient(180deg,_rgba(255,255,255,0.6),_rgba(248,241,255,0.42),_rgba(255,255,255,0.28))] p-4 pb-[calc(6rem+env(safe-area-inset-bottom))] shadow-[0_24px_70px_rgba(124,58,237,0.1)] backdrop-blur-2xl transition-colors dark:border-violet-300/14 dark:bg-[linear-gradient(180deg,_rgba(5,3,10,0.9),_rgba(24,11,43,0.82),_rgba(8,5,13,0.88))] dark:shadow-[0_30px_80px_rgba(0,0,0,0.44)] sm:rounded-[34px] sm:p-5 sm:pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-5">
           <Outlet />
           <Footer mode="app" className="mt-8" />
         </main>

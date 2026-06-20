@@ -2,7 +2,7 @@ import axios from 'axios'
 
 import { getErrorMessage } from '../utils/getErrorMessage'
 import { getApiBaseUrl, getBackendBaseUrl } from '../lib/appConfig'
-import { getCurrentLocale } from '../lib/i18n'
+import { getCurrentLocale, translate } from '../lib/i18n'
 import { getCurrentSocketId } from '../lib/realtime'
 import { emitErrorToast } from '../lib/toastBus'
 
@@ -115,19 +115,21 @@ function shouldShowGlobalErrorToast(error) {
 }
 
 function getGlobalFallbackMessage(status) {
+  const locale = getCurrentLocale()
+
   if (status === 401) {
-    return 'Votre session a expire. Reconnectez-vous pour continuer.'
+    return translate(locale, 'errors.sessionExpired')
   }
 
   if (status === 429) {
-    return 'Trop de requetes ont ete envoyees. Reessayez dans quelques instants.'
+    return translate(locale, 'errors.tooManyRequests')
   }
 
   if (status && status >= 500) {
-    return 'Le serveur rencontre un probleme temporaire.'
+    return translate(locale, 'errors.serverTemporary')
   }
 
-  return 'Impossible de joindre le serveur pour le moment.'
+  return translate(locale, 'errors.network')
 }
 
 export default api

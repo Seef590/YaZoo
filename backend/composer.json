@@ -19,6 +19,7 @@
         "laravel/socialite": "^5.27",
         "laravel/tinker": "^2.10.1",
         "mongodb/mongodb": "^2.2",
+        "predis/predis": "^3.5",
         "pusher/pusher-php-server": "^7.2"
     },
     "require-dev": {

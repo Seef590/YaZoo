@@ -99,7 +99,7 @@ class PostController extends Controller
             abort_unless(
                 $this->canPostInCommunity($request, $community),
                 403,
-                "Vous devez etre membre approuve du groupe pour publier.",
+                'Vous devez etre membre approuve du groupe pour publier.',
             );
         }
 
@@ -165,7 +165,7 @@ class PostController extends Controller
         $post->delete();
 
         return response()->json([
-            'message' => 'Post supprime avec succes.',
+            'message' => __('messages.posts.deleted'),
         ]);
     }
 

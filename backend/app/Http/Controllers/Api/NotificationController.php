@@ -44,7 +44,7 @@ class NotificationController extends Controller
         $databaseNotification = $notifications->firstOrFail();
 
         return response()->json([
-            'message' => 'Notification marquee comme lue.',
+            'message' => __('messages.notifications.read'),
             'data' => NotificationResource::make($databaseNotification)->resolve(),
         ]);
     }
@@ -56,7 +56,7 @@ class NotificationController extends Controller
             ->update(['read_at' => now()]);
 
         return response()->json([
-            'message' => 'Toutes les notifications ont ete marquees comme lues.',
+            'message' => __('messages.notifications.all_read'),
             'data' => [
                 'markedCount' => $markedCount,
                 'unreadCount' => 0,

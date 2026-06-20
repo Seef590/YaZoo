@@ -8,11 +8,6 @@ function LanguageSwitcher({ className = '', compact = false, onLocaleChange }) {
     { value: 'fr', label: LOCALE_LABELS.fr, ariaLabel: t('common.french'), shortLabel: 'FR' },
     { value: 'ar', label: LOCALE_LABELS.ar, ariaLabel: t('common.arabic'), shortLabel: 'AR' },
     { value: 'en', label: LOCALE_LABELS.en, ariaLabel: t('common.english'), shortLabel: 'EN' },
-    { value: 'es', label: LOCALE_LABELS.es, ariaLabel: t('common.spanish'), shortLabel: 'ES' },
-    { value: 'nl', label: LOCALE_LABELS.nl, ariaLabel: t('common.dutch'), shortLabel: 'NL' },
-    { value: 'pt', label: LOCALE_LABELS.pt, ariaLabel: t('common.portuguese'), shortLabel: 'PT' },
-    { value: 'it', label: LOCALE_LABELS.it, ariaLabel: t('common.italian'), shortLabel: 'IT' },
-    { value: 'ru', label: LOCALE_LABELS.ru, ariaLabel: t('common.russian'), shortLabel: 'RU' },
   ]
 
   return (

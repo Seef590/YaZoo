@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest'
 
 import AnimalCard from './AnimalCard'
 import ProductCard from './ProductCard'
+import { I18nProvider } from '../../contexts/I18nContext'
 
 const animal = {
   id: 1,
@@ -50,9 +51,11 @@ const product = {
 }
 
 function renderWithRouter(ui) {
+  localStorage.setItem('yazoo-locale', 'fr')
+
   return render(
     <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      {ui}
+      <I18nProvider>{ui}</I18nProvider>
     </MemoryRouter>,
   )
 }

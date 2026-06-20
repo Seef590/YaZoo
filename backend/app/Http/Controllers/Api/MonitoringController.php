@@ -36,7 +36,7 @@ class MonitoringController extends Controller
             ]);
 
         return response()->json([
-            'message' => 'Rapport frontend enregistre.',
+            'message' => __('messages.monitoring.frontend_report_saved'),
         ], 202);
     }
 }

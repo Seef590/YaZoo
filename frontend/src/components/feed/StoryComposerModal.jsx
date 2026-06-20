@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import PropTypes from 'prop-types'
 
+import { useI18n } from '../../hooks/useI18n'
 import Button from '../ui/Button'
 
 function StoryComposerModal({
@@ -10,6 +11,7 @@ function StoryComposerModal({
   onClose,
   onSubmit,
 }) {
+  const { t } = useI18n()
   const [content, setContent] = useState('')
   const [location, setLocation] = useState('')
   const [mediaFile, setMediaFile] = useState(null)
@@ -107,7 +109,7 @@ function StoryComposerModal({
     event.preventDefault()
 
     if (!mediaFile) {
-      setLocalErrorMessage('Ajoutez une image ou une video pour publier votre story.')
+      setLocalErrorMessage(t('story.composerNeedsMedia'))
       return
     }
 
@@ -131,7 +133,7 @@ function StoryComposerModal({
         type="button"
         className="absolute inset-0 h-full w-full cursor-default"
         onClick={handleClose}
-        aria-label="Fermer la creation de story"
+        aria-label={t('story.closeComposer')}
       />
       <div className="relative mx-auto w-full max-w-2xl">
         <form
@@ -147,13 +149,13 @@ function StoryComposerModal({
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-violet-700">
-                  Stories 24h
+                  {t('story.stories24h')}
                 </p>
                 <h2 id="story-composer-title" className="mt-2 text-[1.7rem] font-semibold leading-tight text-stone-950 sm:text-2xl">
-                  Ajouter une story
+                  {t('story.addStory')}
                 </h2>
                 <p id="story-composer-description" className="mt-2 text-sm text-stone-600">
-                  Publiez une image ou une video visible pendant 24 heures.
+                  {t('story.composerDescription')}
                 </p>
               </div>
 
@@ -162,7 +164,7 @@ function StoryComposerModal({
                 onClick={handleClose}
                 ref={closeButtonRef}
                 className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-violet-100 bg-white text-stone-700 transition hover:border-violet-200 hover:bg-violet-50"
-                aria-label="Fermer la creation de story"
+                aria-label={t('story.closeComposer')}
               >
                 <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
                   <path
@@ -181,15 +183,15 @@ function StoryComposerModal({
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
                   <p className="text-sm font-medium text-stone-900">
-                    Media de la story
+                    {t('story.mediaLabel')}
                   </p>
                   <p className="mt-1 text-xs leading-6 text-stone-500">
-                    Une image ou une video verticale donnera le meilleur rendu.
+                    {t('story.mediaHelp')}
                   </p>
                 </div>
 
                 <label className="inline-flex cursor-pointer items-center justify-center rounded-full border border-violet-100 bg-white px-4 py-2 text-sm font-medium text-violet-800 transition hover:bg-violet-50">
-                  Choisir un fichier
+                  {t('feed.chooseFile')}
                   <input
                     type="file"
                     accept="image/*,video/mp4,video/webm,video/quicktime"
@@ -200,33 +202,33 @@ function StoryComposerModal({
               </div>
 
               <div className="mt-3 overflow-hidden rounded-[24px] border border-white/80 bg-white/88">
-                {renderMediaPreview(mediaPreviewUrl, mediaPreviewKind)}
+                {renderMediaPreview(mediaPreviewUrl, mediaPreviewKind, t)}
               </div>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               <label className="block">
                 <span className="mb-2 block text-sm font-medium text-stone-700">
-                  Legende
+                  {t('story.caption')}
                 </span>
                 <textarea
                   rows={3}
                   value={content}
                   onChange={(event) => setContent(event.target.value)}
                   className="w-full rounded-[22px] border border-violet-100 bg-violet-50/55 px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-400 focus:bg-white"
-                  placeholder="Un mot, une humeur, une annonce, une astuce..."
+                  placeholder={t('story.captionPlaceholder')}
                 />
               </label>
 
               <label className="block">
                 <span className="mb-2 block text-sm font-medium text-stone-700">
-                  Localisation
+                  {t('feed.location')}
                 </span>
                 <input
                   value={location}
                   onChange={(event) => setLocation(event.target.value)}
                   className="w-full rounded-[22px] border border-violet-100 bg-violet-50/55 px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-400 focus:bg-white"
-                  placeholder="Casablanca"
+                  placeholder={t('feed.locationPlaceholder')}
                 />
               </label>
             </div>
@@ -239,10 +241,10 @@ function StoryComposerModal({
 
             <div className="sticky bottom-0 z-20 -mx-4 -mb-4 mt-2 flex flex-wrap justify-end gap-3 border-t border-violet-100 bg-white/97 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0_-8px_24px_rgba(15,23,42,0.06)] sm:-mx-5 sm:-mb-5 sm:px-5 sm:pb-3">
               <Button type="button" variant="ghost" onClick={handleClose}>
-                Annuler
+                {t('common.cancel')}
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Publication...' : 'Publier ma story'}
+                {isSubmitting ? t('feed.publishing') : t('story.publishStory')}
               </Button>
             </div>
           </div>
@@ -254,11 +256,11 @@ function StoryComposerModal({
   return createPortal(modalContent, document.body)
 }
 
-function renderMediaPreview(mediaPreviewUrl, mediaPreviewKind) {
+function renderMediaPreview(mediaPreviewUrl, mediaPreviewKind, t) {
   if (!mediaPreviewUrl) {
     return (
       <div className="flex h-[150px] items-center justify-center bg-[linear-gradient(180deg,_rgba(124,58,237,0.14),_rgba(216,180,254,0.22),_rgba(255,255,255,0.94))] px-6 text-center text-sm leading-7 text-violet-900 sm:h-[210px] lg:h-[240px]">
-        Ajoutez votre media pour voir l apercu de la story.
+        {t('story.emptyPreview')}
       </div>
     )
   }
@@ -276,7 +278,7 @@ function renderMediaPreview(mediaPreviewUrl, mediaPreviewKind) {
   return (
     <img
       src={mediaPreviewUrl}
-      alt="Apercu story"
+      alt={t('story.previewAlt')}
       className="h-64 w-full object-cover sm:h-80 md:h-96 lg:h-[28rem]"
     />
   )

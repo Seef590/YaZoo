@@ -9,8 +9,10 @@ import {
   uniqueUrls,
 } from '../../features/marketplace/marketplaceUtils'
 import { formatDate } from '../../utils/formatDate'
+import { useI18n } from '../../hooks/useI18n'
 
 function ProductCard({ product, onDelete, onEdit }) {
+  const { t } = useI18n()
   const gallery = uniqueUrls([product.imageUrl, ...(product.galleryUrls ?? [])])
 
   return (
@@ -19,7 +21,7 @@ function ProductCard({ product, onDelete, onEdit }) {
         {gallery[0] ? (
           <img src={gallery[0]} alt={product.name} loading="lazy" decoding="async" className="h-full w-full object-cover" />
         ) : (
-          <div className="flex h-full items-center justify-center text-sm text-stone-400">Image a ajouter</div>
+          <div className="flex h-full items-center justify-center text-sm text-stone-400">{t('products.imageMissing')}</div>
         )}
       </div>
 
@@ -28,14 +30,14 @@ function ProductCard({ product, onDelete, onEdit }) {
           <div>
             <div className="flex flex-wrap gap-2">
               <span className="rounded-full bg-[linear-gradient(135deg,#7c3aed,#a855f7)] px-3 py-1 text-xs font-medium text-white">
-                {formatProductStatus(product.listingStatus)}
+                {formatProductStatus(product.listingStatus, t)}
               </span>
               <span className="rounded-full bg-violet-50 px-3 py-1 text-xs font-medium text-violet-800">
-                {formatProductCategory(product.category)}
+                {formatProductCategory(product.category, t)}
               </span>
             </div>
             <h3 className="mt-3 text-lg font-semibold text-stone-950">{product.name}</h3>
-            <p className="text-sm text-stone-500">{formatCondition(product.conditionStatus)}</p>
+            <p className="text-sm text-stone-500">{formatCondition(product.conditionStatus, t)}</p>
           </div>
 
           <span className="rounded-full bg-[linear-gradient(135deg,#7c3aed,#a855f7)] px-3 py-1 text-xs font-medium text-white">
@@ -60,10 +62,10 @@ function ProductCard({ product, onDelete, onEdit }) {
         ) : null}
 
         <div className="grid grid-cols-2 gap-3">
-          <Info label="Categorie" value={formatProductCategory(product.category)} />
-          <Info label="Statut" value={formatProductStatus(product.listingStatus)} />
-          <Info label="Etat" value={formatCondition(product.conditionStatus)} />
-          <Info label="Stock" value={product.stock} />
+          <Info label={t('common.category')} value={formatProductCategory(product.category, t)} />
+          <Info label={t('common.status')} value={formatProductStatus(product.listingStatus, t)} />
+          <Info label={t('common.condition')} value={formatCondition(product.conditionStatus, t)} />
+          <Info label={t('common.stock')} value={product.stock} />
         </div>
 
         <p className="text-sm leading-6 text-stone-600">{product.description}</p>
@@ -74,21 +76,23 @@ function ProductCard({ product, onDelete, onEdit }) {
 }
 
 function ProductActions({ product, onDelete, onEdit }) {
+  const { t } = useI18n()
+
   if (product.isOwner) {
     return (
       <div className="grid gap-3 sm:flex sm:flex-wrap">
-        <LinkButton to={`/marketplace/products/${product.id}`} variant="ghost" className="w-full sm:w-auto">Voir details</LinkButton>
-        <Button type="button" variant="secondary" onClick={() => onEdit(product)} className="w-full sm:w-auto">Modifier</Button>
-        <Button type="button" variant="ghost" onClick={() => onDelete(product.id)} className="w-full sm:w-auto">Supprimer</Button>
+        <LinkButton to={`/marketplace/products/${product.id}`} variant="ghost" className="w-full sm:w-auto">{t('common.details')}</LinkButton>
+        <Button type="button" variant="secondary" onClick={() => onEdit(product)} className="w-full sm:w-auto">{t('common.edit')}</Button>
+        <Button type="button" variant="ghost" onClick={() => onDelete(product.id)} className="w-full sm:w-auto">{t('common.delete')}</Button>
       </div>
     )
   }
 
   return (
     <div className="grid gap-3 sm:flex sm:flex-wrap">
-      <LinkButton to={`/marketplace/products/${product.id}`} variant="secondary" className="w-full sm:w-auto">Voir details</LinkButton>
+      <LinkButton to={`/marketplace/products/${product.id}`} variant="secondary" className="w-full sm:w-auto">{t('common.details')}</LinkButton>
       {product.author?.email ? (
-        <LinkButton to={buildProductContactPath(product)} variant="ghost" className="w-full sm:w-auto">Contacter</LinkButton>
+        <LinkButton to={buildProductContactPath(product, t)} variant="ghost" className="w-full sm:w-auto">{t('common.contact')}</LinkButton>
       ) : null}
     </div>
   )

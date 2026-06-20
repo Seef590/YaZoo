@@ -522,7 +522,7 @@ function MessagesPage() {
                 value={conversationForm.body}
                 onChange={handleConversationFormChange('body')}
                 className="w-full rounded-[22px] border border-violet-100 bg-[linear-gradient(135deg,_rgba(248,245,255,0.98),_rgba(255,255,255,0.94))] px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-300 focus:bg-white"
-                placeholder="Bonjour, je vous contacte a propos de..."
+                placeholder={t('messages.defaultMessagePlaceholder')}
               />
             </label>
 
@@ -561,7 +561,7 @@ function MessagesPage() {
                 type="search"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                placeholder="Rechercher une conversation..."
+                placeholder={t('messages.searchPlaceholder')}
                 className="w-full rounded-[22px] border border-violet-100 bg-[linear-gradient(135deg,_rgba(248,245,255,0.98),_rgba(255,255,255,0.94))] px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-300 focus:bg-white"
               />
               <div className="grid gap-3 sm:flex sm:flex-wrap">

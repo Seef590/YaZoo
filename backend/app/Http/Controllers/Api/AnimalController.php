@@ -70,7 +70,7 @@ class AnimalController extends Controller
         $this->animals->delete($animal);
 
         return response()->json([
-            'message' => 'Annonce supprimee avec succes.',
+            'message' => __('messages.marketplace.animal_deleted'),
         ]);
     }
 }

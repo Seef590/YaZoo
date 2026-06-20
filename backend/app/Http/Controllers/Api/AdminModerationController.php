@@ -176,7 +176,7 @@ class AdminModerationController extends Controller
         $post->delete();
 
         return response()->json([
-            'message' => 'Post supprime par moderation admin.',
+            'message' => __('messages.admin.post_deleted'),
         ]);
     }
 
@@ -196,7 +196,7 @@ class AdminModerationController extends Controller
         $animal->delete();
 
         return response()->json([
-            'message' => 'Annonce animal supprimee par moderation admin.',
+            'message' => __('messages.admin.animal_deleted'),
         ]);
     }
 
@@ -216,7 +216,7 @@ class AdminModerationController extends Controller
         $product->delete();
 
         return response()->json([
-            'message' => 'Produit supprime par moderation admin.',
+            'message' => __('messages.admin.product_deleted'),
         ]);
     }
 
@@ -230,7 +230,7 @@ class AdminModerationController extends Controller
         $community->delete();
 
         return response()->json([
-            'message' => 'Communaute supprimee par moderation admin.',
+            'message' => __('messages.admin.community_deleted'),
         ]);
     }
 

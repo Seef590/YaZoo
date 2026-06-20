@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 
+import { useI18n } from '../../hooks/useI18n'
+
 function ScrollTopButton() {
+  const { t } = useI18n()
   const previousScrollY = useRef(0)
   const driftResetTimeout = useRef(null)
   const [scrollState, setScrollState] = useState({
@@ -90,7 +93,7 @@ function ScrollTopButton() {
           ? 'pointer-events-auto opacity-100'
           : 'pointer-events-none opacity-0'
       } lg:bottom-8 lg:right-8 lg:h-12 lg:px-4`}
-      aria-label="Remonter en haut"
+      aria-label={t('common.scrollTop')}
     >
       <svg
         viewBox="0 0 24 24"
@@ -108,7 +111,7 @@ function ScrollTopButton() {
       </svg>
       <span className="h-2 w-2 rounded-full bg-violet-500/70" />
       <span className="hidden text-xs font-semibold uppercase tracking-[0.18em] text-violet-900 sm:inline">
-        Haut
+        {t('common.top')}
       </span>
     </button>
   )

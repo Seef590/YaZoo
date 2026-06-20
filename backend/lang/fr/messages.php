@@ -24,4 +24,56 @@ return [
         'already_submitted' => 'Vous avez deja laisse un avis pour cette mission.',
         'only_after_completion' => 'Un avis ne peut etre depose qu apres la fin de la mission.',
     ],
+    'stories' => [
+        'created' => 'Story ajoutee avec succes.',
+        'viewed' => 'Story marquee comme vue.',
+        'deleted' => 'Story supprimee avec succes.',
+    ],
+    'services' => [
+        'deleted' => 'Service supprime avec succes.',
+    ],
+    'profile' => [
+        'followed' => 'Profil suivi avec succes.',
+        'unfollowed' => 'Abonnement retire avec succes.',
+        'not_found' => 'Profil introuvable.',
+    ],
+    'marketplace' => [
+        'animal_deleted' => 'Annonce supprimee avec succes.',
+        'product_deleted' => 'Produit supprime avec succes.',
+    ],
+    'posts' => [
+        'deleted' => 'Post supprime avec succes.',
+    ],
+    'communities' => [
+        'already_member' => 'Vous etes deja membre de cette communaute.',
+        'request_sent' => 'Demande d adhesion envoyee. En attente d approbation.',
+        'joined' => 'Vous avez rejoint la communaute.',
+        'left' => 'Vous avez quitte la communaute.',
+        'request_approved' => 'Demande approuvee avec succes.',
+        'request_rejected' => 'Demande refusee.',
+    ],
+    'notifications' => [
+        'read' => 'Notification marquee comme lue.',
+        'all_read' => 'Toutes les notifications ont ete marquees comme lues.',
+    ],
+    'contact' => [
+        'sent' => 'Message envoye avec succes.',
+    ],
+    'monitoring' => [
+        'frontend_report_saved' => 'Rapport frontend enregistre.',
+    ],
+    'messages' => [
+        'sent' => 'Message envoye.',
+        'self_message' => 'Vous ne pouvez pas vous envoyer un message.',
+        'contact_not_found' => 'Aucun utilisateur ne correspond a ce contact.',
+    ],
+    'admin' => [
+        'post_deleted' => 'Post supprime par moderation admin.',
+        'animal_deleted' => 'Annonce animal supprimee par moderation admin.',
+        'product_deleted' => 'Produit supprime par moderation admin.',
+        'community_deleted' => 'Communaute supprimee par moderation admin.',
+    ],
+    'security' => [
+        'https_required' => 'HTTPS est obligatoire.',
+    ],
 ];

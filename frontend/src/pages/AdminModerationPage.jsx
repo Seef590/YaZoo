@@ -11,6 +11,7 @@ import {
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import { useAuth } from '../hooks/useAuth'
+import { useI18n } from '../hooks/useI18n'
 import { formatDate } from '../utils/formatDate'
 import { getErrorMessage } from '../utils/getErrorMessage'
 
@@ -22,6 +23,7 @@ const moderationTabs = [
 ]
 
 function AdminModerationPage() {
+  const { t } = useI18n()
   const { user } = useAuth()
   const [dashboard, setDashboard] = useState({
     stats: {},
@@ -234,11 +236,11 @@ function AdminModerationPage() {
         </div>
 
         {isLoading ? (
-          <StateBox>Chargement des contenus a moderer...</StateBox>
+          <StateBox>{t('admin.moderationLoading')}</StateBox>
         ) : null}
 
         {!isLoading && items.length === 0 ? (
-          <StateBox>Aucun contenu a afficher dans cette section.</StateBox>
+          <StateBox>{t('admin.moderationEmpty')}</StateBox>
         ) : null}
 
         {!isLoading && items.length > 0 ? (

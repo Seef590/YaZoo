@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import PropTypes from 'prop-types'
 
+import { useI18n } from '../../hooks/useI18n'
 import { formatDate } from '../../utils/formatDate'
 import Avatar from '../ui/Avatar'
 
@@ -19,6 +20,7 @@ function StoryViewer({
   onDeleteStory = null,
   isDeletingStoryId = '',
 }) {
+  const { t } = useI18n()
   const story = getActiveStory(stories, activeStoryIndex)
   const [activeSlideIndex, setActiveSlideIndex] = useState(0)
   const [videoTiming, setVideoTiming] = useState({
@@ -118,10 +120,10 @@ function StoryViewer({
 
   const slideAuthorName = getSlideAuthorName(currentSlide, story)
   const slideSubtitle = getSlideSubtitle(currentSlide, story)
-  const viewsLabel = getViewsLabel(currentSlide.viewsCount)
+  const viewsLabel = getViewsLabel(currentSlide.viewsCount, t)
   const canDeleteSlide = Boolean(currentSlide.isOwn && onDeleteStory)
   const isDeletingCurrentSlide = isDeletingSlide(isDeletingStoryId, currentSlide)
-  const deleteButtonLabel = getDeleteButtonLabel(isDeletingCurrentSlide)
+  const deleteButtonLabel = getDeleteButtonLabel(isDeletingCurrentSlide, t)
 
   const handlePressStart = () => {
     setIsPaused(true)
@@ -189,7 +191,7 @@ function StoryViewer({
       className="fixed inset-0 z-[140] bg-stone-950/88 px-3 py-0 backdrop-blur-sm sm:px-6 sm:py-1"
       role="dialog"
       aria-modal="true"
-      aria-label="Visionneuse de stories"
+      aria-label={t('story.viewerLabel')}
     >
       <div className="mx-auto flex h-full w-full max-w-5xl items-start justify-center pt-[max(0px,env(safe-area-inset-top))] sm:pt-1">
         <div
@@ -203,7 +205,7 @@ function StoryViewer({
           onTouchCancel={handleTouchCancel}
           role="button"
           tabIndex={0}
-          aria-label="Maintenir pour mettre la story en pause"
+          aria-label={t('story.pauseHint')}
           onKeyDown={handleViewerPanelKeyDown}
           onKeyUp={handleViewerPanelKeyUp}
           style={{
@@ -246,7 +248,7 @@ function StoryViewer({
                   type="button"
                   onClick={onClose}
                   className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/18"
-                  aria-label="Fermer les stories"
+                  aria-label={t('story.closeStories')}
                 >
                   <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
                     <path
@@ -265,14 +267,14 @@ function StoryViewer({
             type="button"
             onClick={handlePrevious}
             className="absolute inset-y-0 left-0 z-10 w-1/3 cursor-w-resize"
-            aria-label="Story precedente"
+            aria-label={t('story.previousStory')}
           />
 
           <button
             type="button"
             onClick={handleNext}
             className="absolute inset-y-0 right-0 z-10 w-1/3 cursor-e-resize"
-            aria-label="Story suivante"
+            aria-label={t('story.nextStory')}
           />
 
           <div className="relative flex-1">
@@ -319,7 +321,7 @@ function StoryViewer({
                 {currentSlide.isOwn ? (
                   <div className="mt-4 rounded-[22px] bg-white/8 px-4 py-3">
                     <p className="text-xs uppercase tracking-[0.18em] text-white/65">
-                      Vues
+                      {t('story.views')}
                     </p>
                     {currentSlide.viewers?.length > 0 ? (
                       <div className="mt-3 flex flex-wrap gap-2">
@@ -340,7 +342,7 @@ function StoryViewer({
                       </div>
                     ) : (
                       <p className="mt-2 text-sm text-white/72">
-                        Personne n a encore vu cette story.
+                        {t('story.noViews')}
                       </p>
                     )}
                   </div>
@@ -354,7 +356,7 @@ function StoryViewer({
               type="button"
               onClick={handlePrevious}
               className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/18"
-              aria-label="Aller a la story precedente"
+              aria-label={t('story.goToPrevious')}
             >
               <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
                 <path
@@ -373,7 +375,7 @@ function StoryViewer({
               type="button"
               onClick={handleNext}
               className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/18"
-              aria-label="Aller a la story suivante"
+              aria-label={t('story.goToNext')}
             >
               <svg viewBox="0 0 24 24" fill="none" className="h-5 w-5">
                 <path
@@ -483,26 +485,26 @@ function getSlideSubtitle(currentSlide, story) {
   return subtitle || story.caption
 }
 
-function getViewsLabel(viewsCount = 0) {
+function getViewsLabel(viewsCount = 0, t) {
   const normalizedViewsCount = viewsCount ?? 0
 
   if (normalizedViewsCount > 1) {
-    return `${normalizedViewsCount} vues`
+    return t('story.viewsCountPlural', { count: normalizedViewsCount })
   }
 
-  return `${normalizedViewsCount} vue`
+  return t('story.viewsCount', { count: normalizedViewsCount })
 }
 
 function isDeletingSlide(isDeletingStoryId, currentSlide) {
   return String(isDeletingStoryId) === String(currentSlide.id)
 }
 
-function getDeleteButtonLabel(isDeletingCurrentSlide) {
+function getDeleteButtonLabel(isDeletingCurrentSlide, t) {
   if (isDeletingCurrentSlide) {
-    return 'Suppression...'
+    return t('common.deleting')
   }
 
-  return 'Supprimer'
+  return t('common.delete')
 }
 
 function getProgressWidth(index, activeSlideIndex) {

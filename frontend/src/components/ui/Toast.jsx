@@ -1,6 +1,9 @@
 import PropTypes from 'prop-types'
 
+import { useI18n } from '../../hooks/useI18n'
+
 function Toast({ toast, onClose }) {
+  const { t } = useI18n()
   const toneStyles = {
     info: {
       container:
@@ -35,7 +38,7 @@ function Toast({ toast, onClose }) {
           type="button"
           onClick={() => onClose(toast.id)}
           className="ml-auto inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/80 bg-white/80 text-stone-500 transition hover:text-stone-900"
-          aria-label="Fermer la notification"
+          aria-label={t('notifications.close')}
         >
           <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
             <path

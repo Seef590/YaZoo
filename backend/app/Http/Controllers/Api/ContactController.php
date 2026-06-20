@@ -18,15 +18,15 @@ class ContactController extends Controller
         ])->validate();
 
         Mail::raw(
-            "De : {$validated['email']}\n\nObjet : " . ($validated['objet'] ?? 'Sans objet') . "\n\nMessage :\n{$validated['message']}",
+            "De : {$validated['email']}\n\nObjet : ".($validated['objet'] ?? 'Sans objet')."\n\nMessage :\n{$validated['message']}",
             function ($mail) use ($validated): void {
                 $mail->to('bough.youssef@gmail.com')
                     ->from(config('mail.from.address'), config('mail.from.name'))
                     ->replyTo($validated['email'])
-                    ->subject('[YaZoo Contact] ' . ($validated['objet'] ?? 'Nouveau message'));
+                    ->subject('[YaZoo Contact] '.($validated['objet'] ?? 'Nouveau message'));
             },
         );
 
-        return response()->json(['message' => 'Message envoye avec succes.']);
+        return response()->json(['message' => __('messages.contact.sent')]);
     }
 }

@@ -1,6 +1,7 @@
 import axios from 'axios'
 
 import { getApiBaseUrl } from '../../lib/appConfig'
+import { getCurrentLocale } from '../../lib/i18n'
 
 export const apiClient = axios.create({
   baseURL: getApiBaseUrl(),
@@ -17,6 +18,17 @@ apiClient.interceptors.request.use((config) => {
       config.headers.delete('Content-Type')
     } else if (config.headers) {
       delete config.headers['Content-Type']
+    }
+  }
+
+  const locale = getCurrentLocale()
+
+  if (typeof config.headers?.set === 'function') {
+    config.headers.set('Accept-Language', locale)
+  } else {
+    config.headers = {
+      ...(config.headers ?? {}),
+      'Accept-Language': locale,
     }
   }
 

@@ -12,12 +12,16 @@ export function countActiveFilters(filters) {
   return Object.values(filters).filter((value) => value !== '').length
 }
 
-export function formatFiltersSummary(activeFiltersCount) {
+export function formatFiltersSummary(activeFiltersCount, t = null) {
   if (activeFiltersCount === 0) {
-    return 'Aucun filtre actif'
+    return t ? t('marketplace.filtersSummaryEmpty') : 'Aucun filtre actif'
   }
 
-  return `${activeFiltersCount} filtre${activeFiltersCount > 1 ? 's' : ''} actif${activeFiltersCount > 1 ? 's' : ''}`
+  const plural = activeFiltersCount > 1 ? 's' : ''
+
+  return t
+    ? t('marketplace.filtersSummaryCount', { count: activeFiltersCount, plural })
+    : `${activeFiltersCount} filtre${plural} actif${plural}`
 }
 
 export function buildAnimalFormData(form, photoFile, galleryFiles) {
@@ -71,8 +75,10 @@ export function buildProductFormData(form, imageFile, galleryFiles) {
   return formData
 }
 
-export function buildAnimalContactPath(animal) {
-  const message = `Bonjour, je vous contacte a propos de votre annonce "${animal.name}". Est-elle toujours disponible ?`
+export function buildAnimalContactPath(animal, t = null) {
+  const message = t
+    ? t('marketplace.contactAnimalMessage', { name: animal.name })
+    : `Bonjour, je vous contacte a propos de votre annonce "${animal.name}". Est-elle toujours disponible ?`
   const userId = animal.author?.id ?? animal.userId ?? animal.user_id
 
   if (userId) {
@@ -82,8 +88,10 @@ export function buildAnimalContactPath(animal) {
   return `/messages?message=${encodeURIComponent(message)}`
 }
 
-export function buildProductContactPath(product) {
-  const message = `Bonjour, je vous contacte a propos de votre produit "${product.name}". Est-il toujours disponible ?`
+export function buildProductContactPath(product, t = null) {
+  const message = t
+    ? t('marketplace.contactProductMessage', { name: product.name })
+    : `Bonjour, je vous contacte a propos de votre produit "${product.name}". Est-il toujours disponible ?`
   const userId = product.author?.id ?? product.userId ?? product.user_id
 
   if (userId) {
@@ -93,65 +101,67 @@ export function buildProductContactPath(product) {
   return `/messages?message=${encodeURIComponent(message)}`
 }
 
-export function formatAnimalCategory(category) {
+export function formatAnimalCategory(category, t = null) {
   const labels = {
-    dog: 'Chiens',
-    cat: 'Chats',
-    bird: 'Oiseaux',
-    fish: 'Poissons',
-    rabbit: 'Lapins',
-    reptile: 'Reptiles',
-    other: 'Autres',
+    dog: t?.('animals.labels.dog') ?? 'Chiens',
+    cat: t?.('animals.labels.cat') ?? 'Chats',
+    bird: t?.('animals.labels.bird') ?? 'Oiseaux',
+    fish: t?.('animals.labels.fish') ?? 'Poissons',
+    rabbit: t?.('animals.labels.rabbit') ?? 'Lapins',
+    reptile: t?.('animals.labels.reptile') ?? 'Reptiles',
+    other: t?.('animals.labels.other') ?? 'Autres',
   }
 
-  return labels[category] ?? 'Autres'
+  return labels[category] ?? labels.other
 }
 
-export function formatAnimalStatus(status) {
+export function formatAnimalStatus(status, t = null) {
   const labels = {
-    available: 'Disponible',
-    reserved: 'Reserve',
-    adopted: 'Adopte',
-    sold: 'Vendu',
+    available: t?.('animals.labels.available') ?? 'Disponible',
+    reserved: t?.('animals.labels.reserved') ?? 'Reserve',
+    adopted: t?.('animals.labels.adopted') ?? 'Adopte',
+    sold: t?.('animals.labels.sold') ?? 'Vendu',
   }
 
-  return labels[status] ?? 'Disponible'
+  return labels[status] ?? labels.available
 }
 
-export function formatAnimalSex(sex) {
+export function formatAnimalSex(sex, t = null) {
   const labels = {
-    male: 'Male',
-    female: 'Femelle',
-    unknown: 'Inconnu',
+    male: t?.('animals.labels.male') ?? 'Male',
+    female: t?.('animals.labels.female') ?? 'Femelle',
+    unknown: t?.('animals.labels.unknown') ?? 'Inconnu',
   }
 
-  return labels[sex] ?? 'Inconnu'
+  return labels[sex] ?? labels.unknown
 }
 
-export function formatProductCategory(category) {
+export function formatProductCategory(category, t = null) {
   const labels = {
-    food: 'Alimentation',
-    toy: 'Jouets',
-    accessory: 'Accessoires',
-    hygiene: 'Hygiene',
-    health: 'Sante',
-    habitat: 'Habitat',
-    other: 'Autres',
+    food: t?.('products.labels.food') ?? 'Alimentation',
+    toy: t?.('products.labels.toy') ?? 'Jouets',
+    accessory: t?.('products.labels.accessory') ?? 'Accessoires',
+    hygiene: t?.('products.labels.hygiene') ?? 'Hygiene',
+    health: t?.('products.labels.health') ?? 'Sante',
+    habitat: t?.('products.labels.habitat') ?? 'Habitat',
+    other: t?.('products.labels.other') ?? 'Autres',
   }
 
-  return labels[category] ?? 'Autres'
+  return labels[category] ?? labels.other
 }
 
-export function formatProductStatus(status) {
+export function formatProductStatus(status, t = null) {
   const labels = {
-    available: 'Disponible',
-    reserved: 'Reserve',
-    sold: 'Vendu',
+    available: t?.('products.labels.available') ?? 'Disponible',
+    reserved: t?.('products.labels.reserved') ?? 'Reserve',
+    sold: t?.('products.labels.sold') ?? 'Vendu',
   }
 
-  return labels[status] ?? 'Disponible'
+  return labels[status] ?? labels.available
 }
 
-export function formatCondition(conditionStatus) {
-  return conditionStatus === 'used' ? 'Occasion' : 'Neuf'
+export function formatCondition(conditionStatus, t = null) {
+  return conditionStatus === 'used'
+    ? (t?.('products.labels.used') ?? 'Occasion')
+    : (t?.('products.labels.new') ?? 'Neuf')
 }

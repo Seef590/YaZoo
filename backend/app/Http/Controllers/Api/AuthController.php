@@ -10,8 +10,8 @@ use App\Http\Requests\Auth\RequestOtpRequest;
 use App\Services\AuthService;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Laravel\Socialite\Facades\Socialite;
 use Throwable;
 

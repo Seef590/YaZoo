@@ -38,7 +38,7 @@ class StoryController extends Controller
         );
 
         return response()->json([
-            'message' => 'Story ajoutee avec succes.',
+            'message' => __('messages.stories.created'),
             'data' => StoryResource::make($story)->resolve($request),
         ], 201);
     }
@@ -48,7 +48,7 @@ class StoryController extends Controller
         $this->authorize('view', $story);
 
         return response()->json([
-            'message' => 'Story marquee comme vue.',
+            'message' => __('messages.stories.viewed'),
             'data' => StoryResource::make(
                 $this->stories->markAsViewed($request->user(), $story),
             )->resolve($request),
@@ -61,7 +61,7 @@ class StoryController extends Controller
         $this->stories->delete($story);
 
         return response()->json([
-            'message' => 'Story supprimee avec succes.',
+            'message' => __('messages.stories.deleted'),
         ]);
     }
 }

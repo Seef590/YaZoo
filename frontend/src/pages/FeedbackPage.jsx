@@ -2,8 +2,10 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import Footer from '../components/ui/Footer'
+import { useI18n } from '../hooks/useI18n'
 
 function FeedbackPage() {
+  const { t } = useI18n()
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -34,7 +36,7 @@ function FeedbackPage() {
         <section className="rounded-[30px] border border-white/80 bg-white/94 p-5 shadow-[0_28px_70px_rgba(124,58,237,0.1)] sm:rounded-[34px] sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-xs uppercase tracking-[0.24em] text-violet-700">Feedback</p>
+              <p className="text-xs uppercase tracking-[0.24em] text-violet-700">{t('feedback.title')}</p>
               <h1 className="mt-2 text-3xl font-semibold text-stone-950">
                 Votre avis compte pour YaZoo
               </h1>
@@ -53,13 +55,13 @@ function FeedbackPage() {
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <Field
-              label="Nom"
+              label={t('common.name')}
               value={form.name}
               onChange={handleChange('name')}
-              placeholder="Votre nom"
+              placeholder={t('feedback.namePlaceholder')}
             />
             <Field
-              label="Email"
+              label={t('common.email')}
               type="email"
               value={form.email}
               onChange={handleChange('email')}
@@ -67,12 +69,12 @@ function FeedbackPage() {
             />
 
             <label className="block">
-              <span className="mb-2 block text-sm font-medium text-stone-700">Message</span>
+              <span className="mb-2 block text-sm font-medium text-stone-700">{t('feedback.message')}</span>
               <textarea
                 value={form.message}
                 onChange={handleChange('message')}
                 rows={6}
-                placeholder="Votre message"
+                placeholder={t('feedback.messagePlaceholder')}
                 className="w-full rounded-2xl border border-violet-100 bg-violet-50/55 px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-400 focus:bg-white"
                 required
               />

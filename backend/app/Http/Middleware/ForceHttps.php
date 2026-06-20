@@ -19,7 +19,7 @@ class ForceHttps
         }
 
         return response()->json([
-            'message' => 'HTTPS is required.',
+            'message' => __('messages.security.https_required'),
         ], Response::HTTP_UPGRADE_REQUIRED);
     }
 

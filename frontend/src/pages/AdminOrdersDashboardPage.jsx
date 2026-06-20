@@ -5,10 +5,12 @@ import { getAdminOrdersDashboardRequest } from '../api/admin'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import { useAuth } from '../hooks/useAuth'
+import { useI18n } from '../hooks/useI18n'
 import { formatDate } from '../utils/formatDate'
 import { getErrorMessage } from '../utils/getErrorMessage'
 
 function AdminOrdersDashboardPage() {
+  const { t } = useI18n()
   const { user } = useAuth()
   const [dashboard, setDashboard] = useState({
     stats: {},
@@ -177,11 +179,11 @@ function AdminOrdersDashboardPage() {
           </div>
 
           {isLoading ? (
-            <StateBox>Chargement des commandes actives...</StateBox>
+            <StateBox>{t('admin.activeOrdersLoading')}</StateBox>
           ) : null}
 
           {!isLoading && !(dashboard.activeOrders?.length > 0) ? (
-            <StateBox>Aucune commande active a surveiller pour le moment.</StateBox>
+            <StateBox>{t('admin.activeOrdersEmpty')}</StateBox>
           ) : null}
 
           {!isLoading && dashboard.activeOrders?.length > 0 ? (
@@ -197,15 +199,15 @@ function AdminOrdersDashboardPage() {
           <p className="text-xs uppercase tracking-[0.18em] text-violet-700">
             Performances
           </p>
-          <h3 className="mt-2 text-lg font-semibold text-stone-950">Top vendeurs</h3>
+          <h3 className="mt-2 text-lg font-semibold text-stone-950">{t('admin.topSellers')}</h3>
           <p className="mt-1 text-sm text-stone-500">
             Classement par chiffre d'affaires des commandes finalisees.
           </p>
 
-          {isLoading ? <StateBox>Calcul des performances...</StateBox> : null}
+          {isLoading ? <StateBox>{t('admin.performancesLoading')}</StateBox> : null}
 
           {!isLoading && !(dashboard.topSellers?.length > 0) ? (
-            <StateBox>Aucun vendeur classe pour le moment.</StateBox>
+            <StateBox>{t('admin.topSellersEmpty')}</StateBox>
           ) : null}
 
           {!isLoading && dashboard.topSellers?.length > 0 ? (
@@ -273,10 +275,10 @@ function AdminOrdersDashboardPage() {
           </span>
         </div>
 
-        {isLoading ? <StateBox>Chargement des commandes finalisees...</StateBox> : null}
+        {isLoading ? <StateBox>{t('admin.completedOrdersLoading')}</StateBox> : null}
 
         {!isLoading && !(dashboard.recentCompletedOrders?.length > 0) ? (
-          <StateBox>Aucune commande finalisee pour le moment.</StateBox>
+          <StateBox>{t('admin.completedOrdersEmpty')}</StateBox>
         ) : null}
 
         {!isLoading && dashboard.recentCompletedOrders?.length > 0 ? (

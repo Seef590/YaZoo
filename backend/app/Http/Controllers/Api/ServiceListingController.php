@@ -146,7 +146,7 @@ class ServiceListingController extends Controller
         $service->delete();
 
         return response()->json([
-            'message' => 'Service supprime avec succes.',
+            'message' => __('messages.services.deleted'),
         ]);
     }
 }

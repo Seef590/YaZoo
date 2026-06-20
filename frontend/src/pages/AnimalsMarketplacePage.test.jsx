@@ -36,7 +36,7 @@ describe('AnimalsMarketplacePage', () => {
     )
 
     await user.click(await screen.findByRole('button', { name: /Ajouter un animal/i }))
-    const heading = await screen.findByRole('heading', { name: 'Creer une annonce animal' })
+    const heading = await screen.findByRole('heading', { name: 'Créer une annonce animal' })
     const publicationForm = heading.closest('form')
 
     expect(publicationForm).not.toBeNull()

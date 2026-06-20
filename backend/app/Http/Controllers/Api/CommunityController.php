@@ -109,21 +109,21 @@ class CommunityController extends Controller
         ]);
 
         if ($membership->exists && $membership->status === 'approved') {
-            $message = 'Vous etes deja membre de cette communaute.';
+            $message = __('messages.communities.already_member');
         } elseif ($community->is_private) {
             $membership->fill([
                 'role' => $membership->role ?: 'member',
                 'status' => 'pending',
             ])->save();
 
-            $message = "Demande d'adhesion envoyee. En attente d'approbation.";
+            $message = __('messages.communities.request_sent');
         } else {
             $membership->fill([
                 'role' => $membership->role ?: 'member',
                 'status' => 'approved',
             ])->save();
 
-            $message = 'Vous avez rejoint la communaute.';
+            $message = __('messages.communities.joined');
         }
 
         $this->loadCommunityState($community, $request->user()->id);
@@ -160,7 +160,7 @@ class CommunityController extends Controller
         $this->loadCommunityState($community, $request->user()->id);
 
         return response()->json([
-            'message' => 'Vous avez quitte la communaute.',
+            'message' => __('messages.communities.left'),
             'data' => CommunityResource::make($community)->resolve(),
         ]);
     }
@@ -206,7 +206,7 @@ class CommunityController extends Controller
         $membership->refresh()->load('user:id,name,email,avatar,city,country');
 
         return response()->json([
-            'message' => 'Demande approuvee avec succes.',
+            'message' => __('messages.communities.request_approved'),
             'data' => CommunityMembershipRequestResource::make($membership)->resolve(),
             'community' => CommunityResource::make($community)->resolve(),
         ]);
@@ -234,7 +234,7 @@ class CommunityController extends Controller
         $this->loadCommunityState($community, $request->user()->id);
 
         return response()->json([
-            'message' => 'Demande refusee.',
+            'message' => __('messages.communities.request_rejected'),
             'data' => $membershipData,
             'community' => CommunityResource::make($community)->resolve(),
         ]);

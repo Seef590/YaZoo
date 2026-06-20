@@ -84,7 +84,7 @@ class ProfileController extends Controller
         $this->loadProfileAggregates($user);
 
         return response()->json([
-            'message' => 'Profil suivi avec succes.',
+            'message' => __('messages.profile.followed'),
             'data' => UserProfileResource::make($user)->resolve($request),
         ]);
     }
@@ -98,7 +98,7 @@ class ProfileController extends Controller
         $this->loadProfileAggregates($user);
 
         return response()->json([
-            'message' => 'Abonnement retire avec succes.',
+            'message' => __('messages.profile.unfollowed'),
             'data' => UserProfileResource::make($user)->resolve($request),
         ]);
     }
@@ -121,7 +121,7 @@ class ProfileController extends Controller
     private function resolveUser(string $user): User
     {
         return User::query()->whereKey($user)->firstOr(
-            fn () => abort(Response::HTTP_NOT_FOUND, 'Profil introuvable.'),
+            fn () => abort(Response::HTTP_NOT_FOUND, __('messages.profile.not_found')),
         );
     }
 }

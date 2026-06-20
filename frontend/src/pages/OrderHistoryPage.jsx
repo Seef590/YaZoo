@@ -3,11 +3,13 @@ import { Link, useSearchParams } from 'react-router-dom'
 
 import { getOrdersHistoryRequest } from '../api/reservations'
 import Avatar from '../components/ui/Avatar'
+import { useI18n } from '../hooks/useI18n'
 import { asArray } from '../utils/apiData'
 import { formatDate } from '../utils/formatDate'
 import { getErrorMessage } from '../utils/getErrorMessage'
 
 function OrderHistoryPage() {
+  const { t } = useI18n()
   const [searchParams, setSearchParams] = useSearchParams()
   const queryFromUrl = searchParams.get('q') ?? ''
   const [buyerHistory, setBuyerHistory] = useState([])
@@ -32,7 +34,7 @@ function OrderHistoryPage() {
       } catch (error) {
         if (!cancelled) {
           setErrorMessage(
-            getErrorMessage(error, "Impossible de charger l'historique des commandes."),
+            getErrorMessage(error, t('history.loadError')),
           )
         }
       } finally {
@@ -47,7 +49,7 @@ function OrderHistoryPage() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [t])
 
   const orders = activeTab === 'buyer' ? buyerHistory : sellerHistory
   const visibleOrders = filterOrders(orders, queryFromUrl)
@@ -147,7 +149,7 @@ function OrderHistoryPage() {
             type="search"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Rechercher une commande, une facture, un contact..."
+            placeholder={t('history.searchPlaceholder')}
             className="flex-1 rounded-[22px] border border-violet-100 bg-[linear-gradient(135deg,_rgba(248,245,255,0.98),_rgba(255,255,255,0.94))] px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-300 focus:bg-white"
           />
           <div className="grid gap-3 sm:flex sm:flex-wrap">
@@ -155,7 +157,7 @@ function OrderHistoryPage() {
               type="submit"
               className="w-full rounded-full bg-[linear-gradient(135deg,#7c3aed,#a855f7,#c4b5fd)] px-4 py-2 text-sm font-medium text-white transition hover:brightness-105 sm:w-auto"
             >
-              Rechercher
+              {t('common.search')}
             </button>
             {queryFromUrl ? (
               <button
@@ -163,22 +165,22 @@ function OrderHistoryPage() {
                 onClick={handleResetSearch}
                 className="w-full rounded-full bg-violet-50 px-4 py-2 text-sm font-medium text-violet-800 transition hover:bg-violet-100 sm:w-auto"
               >
-                Reinitialiser
+                {t('common.reset')}
               </button>
             ) : null}
           </div>
         </form>
 
         {isLoading ? (
-          <StateBox>Chargement de l'historique...</StateBox>
+          <StateBox>{t('history.loading')}</StateBox>
         ) : null}
 
         {!isLoading && orders.length === 0 ? (
-          <StateBox>Aucun historique disponible pour cette section.</StateBox>
+          <StateBox>{t('history.empty')}</StateBox>
         ) : null}
 
         {!isLoading && orders.length > 0 && visibleOrders.length === 0 ? (
-          <StateBox>Aucune commande ne correspond a votre recherche.</StateBox>
+          <StateBox>{t('history.emptySearch')}</StateBox>
         ) : null}
 
         {!isLoading && visibleOrders.length > 0 ? (
@@ -211,6 +213,7 @@ function StateBox({ children }) {
 }
 
 function OrderHistoryCard({ order }) {
+  const { t } = useI18n()
   const counterpart = order.isBuyer ? order.seller : order.buyer
 
   return (
@@ -243,7 +246,7 @@ function OrderHistoryCard({ order }) {
           </div>
 
           <div className="w-full rounded-[22px] bg-[linear-gradient(135deg,_rgba(124,58,237,0.1),_rgba(216,180,254,0.22),_rgba(255,255,255,0.94))] px-4 py-3 text-left sm:w-auto sm:text-right">
-            <p className="text-xs uppercase tracking-[0.16em] text-stone-500">Total</p>
+            <p className="text-xs uppercase tracking-[0.16em] text-stone-500">{t('common.total')}</p>
             <p className="mt-1 text-lg font-semibold text-stone-950">
               {formatPrice(order.grandTotal ?? order.totalPrice)}
             </p>

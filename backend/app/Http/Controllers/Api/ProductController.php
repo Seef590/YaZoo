@@ -70,7 +70,7 @@ class ProductController extends Controller
         $this->products->delete($product);
 
         return response()->json([
-            'message' => 'Produit supprime avec succes.',
+            'message' => __('messages.marketplace.product_deleted'),
         ]);
     }
 }

@@ -61,7 +61,7 @@ function ContactPage() {
         <section className="rounded-[30px] border border-white/80 bg-white/94 p-5 shadow-[0_28px_70px_rgba(124,58,237,0.1)] transition-colors dark:border-violet-300/16 dark:bg-[linear-gradient(135deg,_rgba(8,5,13,0.98),_rgba(28,13,49,0.92))] dark:shadow-[0_30px_80px_rgba(0,0,0,0.42)] sm:rounded-[34px] sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-xs uppercase tracking-[0.24em] text-violet-700">Contact</p>
+              <p className="text-xs uppercase tracking-[0.24em] text-violet-700">{t('contact.title')}</p>
               <h1 className="mt-2 text-3xl font-semibold text-stone-950 dark:text-white">
                 {t('contact.title')}
               </h1>
@@ -91,7 +91,7 @@ function ContactPage() {
               href={`mailto:${companyContact.email}`}
                 className="rounded-[24px] border border-violet-100 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.84))] px-5 py-5 transition hover:-translate-y-0.5 hover:border-violet-200 dark:border-violet-300/16 dark:bg-[linear-gradient(135deg,_rgba(5,3,10,0.98),_rgba(30,15,52,0.92))]"
             >
-              <p className="text-xs uppercase tracking-[0.18em] text-stone-500">Email</p>
+              <p className="text-xs uppercase tracking-[0.18em] text-stone-500">{t('common.email')}</p>
               <p className="mt-3 text-xl font-semibold text-stone-950">{companyContact.email}</p>
             </a>
           </div>

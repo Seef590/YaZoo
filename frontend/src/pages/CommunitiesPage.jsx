@@ -67,7 +67,7 @@ function CommunitiesPage() {
       setErrorMessage('')
     } catch (error) {
       setErrorMessage(
-        getErrorMessage(error, 'Impossible de charger les communautes.'),
+        getErrorMessage(error, t('communities.loadError')),
       )
     } finally {
       setIsLoading(false)
@@ -89,7 +89,7 @@ function CommunitiesPage() {
       } catch (error) {
         if (!cancelled) {
           setErrorMessage(
-            getErrorMessage(error, 'Impossible de charger les communautes.'),
+            getErrorMessage(error, t('communities.loadError')),
           )
         }
       } finally {
@@ -104,7 +104,7 @@ function CommunitiesPage() {
     return () => {
       cancelled = true
     }
-  }, [queryFromUrl])
+  }, [queryFromUrl, t])
 
   const heroStats = useMemo(() => {
     const safeCommunities = asArray(communities)
@@ -211,7 +211,7 @@ function CommunitiesPage() {
       setErrorMessage('')
     } catch (error) {
       setErrorMessage(
-        getErrorMessage(error, 'Impossible de charger les demandes en attente.'),
+        getErrorMessage(error, t('communities.pendingRequestsLoadError')),
       )
     } finally {
       setLoadingRequestCommunityIds((current) =>
@@ -367,7 +367,7 @@ function CommunitiesPage() {
         <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr] xl:items-center">
           <div>
             <p className="inline-flex rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-violet-700">
-              Communautes
+              {t('communities.titlePlural')}
             </p>
             <h2 className="mt-4 text-2xl font-semibold leading-tight text-stone-950 sm:text-3xl">
               Faites grandir des communautes animales qui donnent envie de rejoindre et de rester.
@@ -379,8 +379,8 @@ function CommunitiesPage() {
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
-            <HeroStatCard label="Communautes" value={asArray(communities).length} />
-            <HeroStatCard label="Privees" value={heroStats.privateCount} />
+            <HeroStatCard label={t('communities.titlePlural')} value={asArray(communities).length} />
+            <HeroStatCard label={t('common.private')} value={heroStats.privateCount} />
             <HeroStatCard label="Mes groupes" value={heroStats.joinedCount} />
           </div>
         </div>
@@ -388,7 +388,7 @@ function CommunitiesPage() {
 
       <CollapsiblePanel
         kicker="Explorer"
-        title="Rechercher des communautes"
+        title={t('communities.search')}
         description="Cherchez par nom ou description."
         summary={activeFiltersCount > 0 ? 'Recherche active' : 'Aucun filtre actif'}
         isOpen={isFiltersOpen}
@@ -406,10 +406,10 @@ function CommunitiesPage() {
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Ex: chats, adoption, education..."
+              placeholder={t('communities.searchPlaceholder')}
               className="flex-1 rounded-[22px] border border-violet-100 bg-[linear-gradient(135deg,_rgba(248,245,255,0.98),_rgba(255,255,255,0.94))] px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-300 focus:bg-white"
             />
-            <Button type="submit" className="w-full md:w-auto">Rechercher</Button>
+            <Button type="submit" className="w-full md:w-auto">{t('common.search')}</Button>
           </div>
         </form>
       </CollapsiblePanel>
@@ -479,7 +479,7 @@ function CommunitiesPage() {
                     ) : (
                       <img
                         src={communityMediaPreview}
-                        alt="Apercu de la communaute"
+                        alt={t('communities.previewAlt')}
                         className="h-44 w-full object-cover"
                       />
                     )}
@@ -525,7 +525,7 @@ function CommunitiesPage() {
               value={form.description}
               onChange={handleFormChange('description')}
               className="w-full rounded-[22px] border border-violet-100 bg-[linear-gradient(135deg,_rgba(248,245,255,0.98),_rgba(255,255,255,0.94))] px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-300 focus:bg-white"
-              placeholder="But du groupe, regles, ambiance, sujets couverts..."
+              placeholder={t('communities.descriptionPlaceholder')}
             />
           </label>
 
@@ -570,11 +570,11 @@ function CommunitiesPage() {
           </div>
 
           {isLoading ? (
-            <StateBox>Chargement des communautes...</StateBox>
+            <StateBox>{t('communities.loading')}</StateBox>
           ) : null}
 
           {!isLoading && safeCommunities.length === 0 ? (
-            <StateBox>Aucune communaute ne correspond a votre recherche.</StateBox>
+            <StateBox>{t('communities.emptySearch')}</StateBox>
           ) : null}
 
           {!isLoading && safeCommunities.length > 0 ? (

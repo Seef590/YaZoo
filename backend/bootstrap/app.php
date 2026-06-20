@@ -1,8 +1,8 @@
 <?php
 
 use App\Http\Controllers\HealthController;
-use App\Http\Middleware\ForceJsonResponse;
 use App\Http\Middleware\ForceHttps;
+use App\Http\Middleware\ForceJsonResponse;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\UseSanctumTokenFromCookie;
 use Illuminate\Auth\AuthenticationException;

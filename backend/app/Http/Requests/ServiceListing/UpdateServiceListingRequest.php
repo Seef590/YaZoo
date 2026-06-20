@@ -2,8 +2,6 @@
 
 namespace App\Http\Requests\ServiceListing;
 
-use App\Http\Requests\ServiceListing\StoreServiceListingRequest;
-
 class UpdateServiceListingRequest extends StoreServiceListingRequest
 {
     public function rules(): array

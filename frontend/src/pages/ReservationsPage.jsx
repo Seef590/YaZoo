@@ -11,11 +11,13 @@ import {
 } from '../api/reservations'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
+import { useI18n } from '../hooks/useI18n'
 import { asArray } from '../utils/apiData'
 import { formatDate } from '../utils/formatDate'
 import { getErrorMessage } from '../utils/getErrorMessage'
 
 function ReservationsPage() {
+  const { t } = useI18n()
   const [searchParams, setSearchParams] = useSearchParams()
   const queryFromUrl = searchParams.get('q') ?? ''
   const [buyerReservations, setBuyerReservations] = useState([])
@@ -200,7 +202,7 @@ function ReservationsPage() {
             type="search"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Rechercher une reservation, un contact, une ville..."
+            placeholder={t('reservations.searchPlaceholder')}
             className="flex-1 rounded-[22px] border border-violet-100 bg-[linear-gradient(135deg,_rgba(248,245,255,0.98),_rgba(255,255,255,0.94))] px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-300 focus:bg-white"
           />
           <div className="grid gap-3 sm:flex sm:flex-wrap">
@@ -260,6 +262,7 @@ function HeroStatCard({ label, value }) {
 }
 
 function ReservationCard({ reservation, processingId, onAction }) {
+  const { t } = useI18n()
   const counterpart = reservation.isBuyer ? reservation.seller : reservation.buyer
   const imageUrl = reservation.listing?.imageUrl
   const message = reservation.isBuyer
@@ -300,7 +303,7 @@ function ReservationCard({ reservation, processingId, onAction }) {
           </div>
 
         <div className="w-full rounded-[22px] bg-[linear-gradient(135deg,_rgba(124,58,237,0.1),_rgba(216,180,254,0.22),_rgba(255,255,255,0.94))] px-4 py-3 text-left sm:w-auto sm:text-right">
-            <p className="text-xs uppercase tracking-[0.16em] text-stone-500">Total TTC</p>
+            <p className="text-xs uppercase tracking-[0.16em] text-stone-500">{t('common.totalVat')}</p>
             <p className="mt-1 text-lg font-semibold text-stone-950">
               {formatPrice(reservation.grandTotal)}
             </p>

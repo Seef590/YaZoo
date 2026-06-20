@@ -1,12 +1,12 @@
 export const animalCategoryOptions = [
-  { value: '', label: 'Toutes les categories' },
-  { value: 'dog', label: 'Chiens' },
-  { value: 'cat', label: 'Chats' },
-  { value: 'bird', label: 'Oiseaux' },
-  { value: 'fish', label: 'Poissons' },
-  { value: 'rabbit', label: 'Lapins' },
-  { value: 'reptile', label: 'Reptiles' },
-  { value: 'other', label: 'Autres' },
+  { value: '', labelKey: 'animals.labels.allCategories' },
+  { value: 'dog', labelKey: 'animals.labels.dog' },
+  { value: 'cat', labelKey: 'animals.labels.cat' },
+  { value: 'bird', labelKey: 'animals.labels.bird' },
+  { value: 'fish', labelKey: 'animals.labels.fish' },
+  { value: 'rabbit', labelKey: 'animals.labels.rabbit' },
+  { value: 'reptile', labelKey: 'animals.labels.reptile' },
+  { value: 'other', labelKey: 'animals.labels.other' },
 ]
 
 export const animalFormCategoryOptions = animalCategoryOptions.filter(
@@ -14,11 +14,11 @@ export const animalFormCategoryOptions = animalCategoryOptions.filter(
 )
 
 export const animalStatusOptions = [
-  { value: '', label: 'Tous les statuts' },
-  { value: 'available', label: 'Disponible' },
-  { value: 'reserved', label: 'Reserve' },
-  { value: 'adopted', label: 'Adopte' },
-  { value: 'sold', label: 'Vendu' },
+  { value: '', labelKey: 'animals.labels.allStatuses' },
+  { value: 'available', labelKey: 'animals.labels.available' },
+  { value: 'reserved', labelKey: 'animals.labels.reserved' },
+  { value: 'adopted', labelKey: 'animals.labels.adopted' },
+  { value: 'sold', labelKey: 'animals.labels.sold' },
 ]
 
 export const animalFormStatusOptions = animalStatusOptions.filter(
@@ -56,14 +56,14 @@ export const defaultAnimalFilters = {
 }
 
 export const productCategoryOptions = [
-  { value: '', label: 'Toutes les categories' },
-  { value: 'food', label: 'Alimentation' },
-  { value: 'toy', label: 'Jouets' },
-  { value: 'accessory', label: 'Accessoires' },
-  { value: 'hygiene', label: 'Hygiene' },
-  { value: 'health', label: 'Sante' },
-  { value: 'habitat', label: 'Habitat' },
-  { value: 'other', label: 'Autres' },
+  { value: '', labelKey: 'products.labels.allCategories' },
+  { value: 'food', labelKey: 'products.labels.food' },
+  { value: 'toy', labelKey: 'products.labels.toy' },
+  { value: 'accessory', labelKey: 'products.labels.accessory' },
+  { value: 'hygiene', labelKey: 'products.labels.hygiene' },
+  { value: 'health', labelKey: 'products.labels.health' },
+  { value: 'habitat', labelKey: 'products.labels.habitat' },
+  { value: 'other', labelKey: 'products.labels.other' },
 ]
 
 export const productFormCategoryOptions = productCategoryOptions.filter(
@@ -71,10 +71,10 @@ export const productFormCategoryOptions = productCategoryOptions.filter(
 )
 
 export const productStatusOptions = [
-  { value: '', label: 'Tous les statuts' },
-  { value: 'available', label: 'Disponible' },
-  { value: 'reserved', label: 'Reserve' },
-  { value: 'sold', label: 'Vendu' },
+  { value: '', labelKey: 'products.labels.allStatuses' },
+  { value: 'available', labelKey: 'products.labels.available' },
+  { value: 'reserved', labelKey: 'products.labels.reserved' },
+  { value: 'sold', labelKey: 'products.labels.sold' },
 ]
 
 export const productFormStatusOptions = productStatusOptions.filter(

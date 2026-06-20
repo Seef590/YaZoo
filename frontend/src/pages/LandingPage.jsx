@@ -84,7 +84,7 @@ function LandingPage() {
             <a href="#top" className="flex min-w-0 items-center gap-3">
               <img
                 src="/yazoo-logo.svg"
-                alt="Logo YaZoo"
+                alt={t('landing.logoAlt')}
                 className="h-12 w-12 object-contain sm:h-14 sm:w-14"
               />
               <div className="min-w-0">
@@ -191,7 +191,7 @@ function LandingPage() {
             <div className="relative overflow-hidden rounded-[30px] border border-white/80 bg-white/92 p-4 shadow-[0_30px_80px_rgba(124,58,237,0.12)] backdrop-blur dark:border-violet-300/16 dark:bg-[linear-gradient(135deg,_rgba(5,3,10,0.98),_rgba(30,15,52,0.92))] sm:rounded-[36px] sm:p-5 lg:p-6">
               <img
                 src={heroImage}
-                alt="Scene animaliere YaZoo"
+                alt={t('landing.heroImageAlt')}
                 className="h-[350px] w-full rounded-[24px] object-cover sm:h-[410px] lg:h-[470px]"
                 loading="eager"
               />
@@ -254,7 +254,7 @@ function LandingPage() {
           <div className="overflow-hidden rounded-[28px] border border-violet-100 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.84))] p-4 dark:border-violet-300/16 dark:bg-[linear-gradient(135deg,_rgba(8,5,13,0.98),_rgba(24,11,43,0.96))]">
             <img
               src={companionImage}
-              alt="Communaute YaZoo"
+              alt={t('landing.communityImageAlt')}
               className="h-full min-h-[260px] w-full rounded-[22px] object-cover"
               loading="lazy"
             />

@@ -6,10 +6,12 @@ export function MarketplaceTabs({ active }) {
   const { t } = useI18n()
 
   return (
-    <div className="yz-horizontal-scroll yz-no-scrollbar inline-flex w-full gap-2 rounded-full border border-white/80 bg-white/82 p-1.5 shadow-[0_14px_30px_rgba(124,58,237,0.08)] sm:w-auto">
-      <TabLink to="/marketplace" active={active === 'animals'}>{t('common.animals')}</TabLink>
-      <TabLink to="/marketplace/products" active={active === 'products'}>{t('common.products')}</TabLink>
-      <TabLink to="/marketplace/services" active={active === 'services'}>{t('common.assistance')}</TabLink>
+    <div className="max-w-full overflow-x-auto overscroll-x-contain pb-1 yz-no-scrollbar" aria-label={t('common.marketplace')}>
+      <div className="inline-flex min-w-max gap-2 rounded-full border border-white/80 bg-white/82 p-1.5 shadow-[0_14px_30px_rgba(124,58,237,0.08)]">
+        <TabLink to="/marketplace" active={active === 'animals'}>{t('common.animals')}</TabLink>
+        <TabLink to="/marketplace/products" active={active === 'products'}>{t('common.products')}</TabLink>
+        <TabLink to="/marketplace/services" active={active === 'services'}>{t('common.assistance')}</TabLink>
+      </div>
     </div>
   )
 }
@@ -30,17 +32,19 @@ function TabLink({ to, active, children }) {
 }
 
 export function MarketplaceHero({ active, title, description, imageSrc, imageAlt, stats, imageClass = '' }) {
+  const { t } = useI18n()
+
   return (
-    <section className="overflow-hidden rounded-[30px] border border-white/80 bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.18),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(221,214,254,0.5),_transparent_26%),linear-gradient(135deg,_rgba(255,255,255,0.98)_0%,_rgba(247,241,255,0.9)_48%,_rgba(237,233,254,0.84)_100%)] p-5 shadow-[0_24px_60px_rgba(124,58,237,0.1)] sm:rounded-[32px] sm:p-6">
-      <div className="grid gap-6 xl:grid-cols-[1.12fr_0.88fr] xl:items-center">
-        <div>
-          <p className="inline-flex rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-violet-700">
-            Marketplace
+    <section className="max-w-full overflow-hidden rounded-[30px] border border-white/80 bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.18),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(221,214,254,0.5),_transparent_26%),linear-gradient(135deg,_rgba(255,255,255,0.98)_0%,_rgba(247,241,255,0.9)_48%,_rgba(237,233,254,0.84)_100%)] p-4 shadow-[0_24px_60px_rgba(124,58,237,0.1)] sm:rounded-[32px] sm:p-6">
+      <div className="grid min-w-0 gap-5 xl:grid-cols-[1.12fr_0.88fr] xl:items-center">
+        <div className="min-w-0">
+          <p className="inline-flex max-w-full rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-violet-700">
+            {t('common.marketplaceBadge')}
           </p>
-          <h1 className="mt-4 text-2xl font-semibold leading-tight text-stone-950 sm:text-3xl">
+          <h1 className="mt-4 max-w-full text-2xl font-semibold leading-tight text-stone-950 sm:text-3xl">
             {title}
           </h1>
-          <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-600">
+          <p className="mt-3 max-w-2xl break-words text-sm leading-7 text-stone-600">
             {description}
           </p>
           <div className="mt-5">
@@ -48,7 +52,7 @@ export function MarketplaceHero({ active, title, description, imageSrc, imageAlt
           </div>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-[1fr_auto] xl:items-center">
+        <div className="grid min-w-0 gap-3 sm:grid-cols-3 xl:grid-cols-[1fr_auto] xl:items-center">
           {stats.map((stat) => (
             <HeroStatCard key={stat.label} label={stat.label} value={stat.value} />
           ))}
@@ -113,6 +117,8 @@ export function FileField({ label, ...props }) {
 }
 
 export function SelectField({ label, options, ...props }) {
+  const { t } = useI18n()
+
   return (
     <label className="block">
       <span className="mb-2 block text-sm font-medium text-stone-700">{label}</span>
@@ -121,7 +127,7 @@ export function SelectField({ label, options, ...props }) {
         {...props}
       >
         {options.map((option) => (
-          <option key={option.value} value={option.value}>{option.label}</option>
+          <option key={option.value} value={option.value}>{option.labelKey ? t(option.labelKey) : option.label}</option>
         ))}
       </select>
     </label>
