@@ -1,6 +1,6 @@
 # Rapport final - Audit i18n et UI mobile YaZoo
 
-Date: 2026-06-19
+Date: 2026-06-20
 
 ## 1. Resume des problemes trouves
 
@@ -81,17 +81,32 @@ Supprimes car generes/inutiles:
 
 ## 9. Commandes Git/Docker/Azure
 
-- `git status --short`: execute.
-- `git diff --stat`: execute.
-- Commit Git: non execute, en attente de validation utilisateur.
-- Push GitHub: non execute, en attente de validation utilisateur.
-- Build/push DockerHub: non execute, en attente de validation utilisateur.
-- Deploiement Azure: non execute, en attente de validation utilisateur.
+- `git status --short`: execute; les fichiers de soutenance non lies sont restes hors staging.
+- `git diff --stat`: execute; aucun `.env`, secret, cache, coverage, dist, vendor ou node_modules ajoute.
+- Commit Git principal: `0cfb150` (`fix: complete i18n coverage and mobile UI marketplace/feed`).
+- Push GitHub: `origin/main` mis a jour en fast-forward jusqu'a `0cfb150`.
+- DockerHub backend: `5eef/yazoo-api:latest`, digest `sha256:8a8651d4e2e056998487e90f9bba8f1206a2b8b877ecc53b0932295f46fe986b`.
+- DockerHub frontend: `5eef/yazoo-frontend:latest`, digest `sha256:5e27a577b53d5f6e1492a5e6b016821e4012a58034264350051b2dfc1228f6eb`.
+- Azure backend: App Service existant `yazoo-api` redemarre avec `5eef/yazoo-api:latest`.
+- Azure frontend: App Service existant `yazoo` redemarre avec `5eef/yazoo-frontend:latest`.
+- Aucune ressource Azure creee et aucun secret modifie.
 
 ## 10. Points restants
 
 - L'audit i18n detecte encore 5 valeurs email exemples/contact, conservees volontairement.
-- Validation navigateur mobile/production non executee car Git/Docker/Azure sont volontairement en attente de validation apres resume des tests.
+- Le navigateur integre n'etait pas disponible dans la session. Les parcours metier ont ete valides par 79 tests Laravel et 25 tests frontend; les controles visuels responsive/RTL ont ete verifies par tests et inspection des regles de layout, sans navigation interactive en production.
+- Les parcours authentifies de production n'ont pas ete modifies avec des donnees de test. Les endpoints publics, health, CORS, assets et validations FR/AR ont ete controles apres deploiement.
+
+## 12. Verification production apres deploiement
+
+- `https://yazoo.azurewebsites.net`: HTTP 200; nouvel asset `index-i9NQ80n8.js` servi en HTTP 200.
+- `https://yazoo-api.azurewebsites.net/health/live`: HTTP 200.
+- `https://yazoo-api.azurewebsites.net/health/ready`: HTTP 200; base de donnees et Redis operationnels.
+- Validation API avec `Accept-Language: fr`: message francais retourne.
+- Validation API avec `Accept-Language: ar`: message arabe retourne.
+- Preflight CORS depuis `https://yazoo.azurewebsites.net`: HTTP 204, origine autorisee.
+- Routes SPA `/login` et `/marketplace/services`: HTTP 200.
+- Configuration verifiee: `WEBSITES_PORT=8080`, `APP_ENV=production`, `APP_DEBUG=false`, `FRONTEND_URL=https://yazoo.azurewebsites.net`.
 
 ## 11. Checklist validation production
 
