@@ -40,6 +40,7 @@ return [
     'marketplace' => [
         'animal_deleted' => 'Listing deleted successfully.',
         'product_deleted' => 'Product deleted successfully.',
+        'veterinarian_deleted' => 'Veterinarian deleted successfully.',
     ],
     'posts' => [
         'deleted' => 'Post deleted successfully.',

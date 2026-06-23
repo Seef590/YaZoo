@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\ReservationReviewController;
 use App\Http\Controllers\Api\ServiceListingController;
 use App\Http\Controllers\Api\StoryController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\VeterinarianController;
 use App\Http\Middleware\ForceJsonResponse;
 use App\Http\Middleware\SetApiLocale;
 use App\Http\Middleware\UseSanctumTokenFromCookie;
@@ -92,6 +93,9 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
         Route::get('/services/types', [ServiceListingController::class, 'types']);
         Route::get('/services/{service}', [ServiceListingController::class, 'show']);
 
+        Route::get('/veterinarians', [VeterinarianController::class, 'index']);
+        Route::get('/veterinarians/{veterinarian}', [VeterinarianController::class, 'show']);
+
         Route::middleware('throttle:marketplace-write')->group(function (): void {
             Route::post('/animals', [AnimalController::class, 'store']);
             Route::put('/animals/{animal}', [AnimalController::class, 'update']);
@@ -103,6 +107,10 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
             Route::put('/services/{service}', [ServiceListingController::class, 'update']);
             Route::patch('/services/{service}', [ServiceListingController::class, 'update']);
             Route::delete('/services/{service}', [ServiceListingController::class, 'destroy']);
+            Route::post('/veterinarians', [VeterinarianController::class, 'store']);
+            Route::put('/veterinarians/{veterinarian}', [VeterinarianController::class, 'update']);
+            Route::patch('/veterinarians/{veterinarian}', [VeterinarianController::class, 'update']);
+            Route::delete('/veterinarians/{veterinarian}', [VeterinarianController::class, 'destroy']);
         });
 
         Route::get('/reservations', [ReservationController::class, 'index']);

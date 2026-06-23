@@ -40,6 +40,7 @@ return [
     'marketplace' => [
         'animal_deleted' => 'تم حذف الإعلان بنجاح.',
         'product_deleted' => 'تم حذف المنتج بنجاح.',
+        'veterinarian_deleted' => 'تم حذف الطبيب البيطري بنجاح.',
     ],
     'posts' => [
         'deleted' => 'تم حذف المنشور بنجاح.',

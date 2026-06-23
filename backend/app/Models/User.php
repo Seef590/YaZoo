@@ -147,6 +147,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get the veterinarian listings created by the user.
+     */
+    public function veterinarians(): HasMany
+    {
+        return $this->hasMany(Veterinarian::class);
+    }
+
+    /**
      * Get the communities created by the user.
      */
     public function createdCommunities(): HasMany

@@ -27,6 +27,7 @@ const RegisterPage = lazy(() => import('./pages/RegisterPage'))
 const ReservationsPage = lazy(() => import('./pages/ReservationsPage'))
 const ServicesMarketplacePage = lazy(() => import('./pages/ServicesMarketplacePage'))
 const SettingsPage = lazy(() => import('./pages/SettingsPage'))
+const VeterinariansMarketplacePage = lazy(() => import('./pages/VeterinariansMarketplacePage'))
 
 function App() {
   const { isAuthenticated } = useAuth()
@@ -62,6 +63,10 @@ function App() {
           <Route
             path="/marketplace/services"
             element={<ServicesMarketplacePage />}
+          />
+          <Route
+            path="/marketplace/veterinarians"
+            element={<VeterinariansMarketplacePage />}
           />
           <Route
             path="/marketplace/animals/:animalId"

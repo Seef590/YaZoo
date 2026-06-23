@@ -10,6 +10,7 @@ export function MarketplaceTabs({ active }) {
       <div className="inline-flex min-w-max gap-2 rounded-full border border-white/80 bg-white/82 p-1.5 shadow-[0_14px_30px_rgba(124,58,237,0.08)]">
         <TabLink to="/marketplace" active={active === 'animals'}>{t('common.animals')}</TabLink>
         <TabLink to="/marketplace/products" active={active === 'products'}>{t('common.products')}</TabLink>
+        <TabLink to="/marketplace/veterinarians" active={active === 'veterinarians'}>{t('common.veterinarians')}</TabLink>
         <TabLink to="/marketplace/services" active={active === 'services'}>{t('common.assistance')}</TabLink>
       </div>
     </div>
