@@ -247,7 +247,17 @@ function AnimalDetailPage() {
             <div className="rounded-[24px] border border-violet-100 bg-[linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.82))] p-4">
               <p className="text-sm font-semibold text-stone-950">{t('common.seller')}</p>
               <div className="mt-3 flex items-center gap-3">
-                <Avatar name={animal.author.name} />
+                {animal.author?.id ? (
+                  <Link
+                    to={`/profile/${animal.author.id}`}
+                    className="shrink-0 rounded-[20px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400"
+                    aria-label={t('profile.viewProfile')}
+                  >
+                    <Avatar name={animal.author.name} src={animal.author.avatar || ''} />
+                  </Link>
+                ) : (
+                  <Avatar name={animal.author.name} src={animal.author?.avatar || ''} />
+                )}
                 <div>
                   <p className="text-sm font-medium text-stone-900">
                     {animal.author.name}

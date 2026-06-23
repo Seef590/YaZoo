@@ -190,6 +190,16 @@ body ::selection {
   overflow-x: clip;
 }
 
+.yz-bidi-isolate {
+  unicode-bidi: isolate;
+}
+
+.yz-no-horizontal-overflow {
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: clip;
+}
+
 *,
 *::before,
 *::after {

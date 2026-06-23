@@ -235,19 +235,16 @@ function LandingPage() {
         >
           <div>
             <h2 className="text-2xl font-semibold text-stone-950 dark:text-white sm:text-3xl">
-              Pourquoi choisir <span className="text-violet-700">YaZoo</span> ?
+              {t('landing.whyChoose')} <span className="text-violet-700">YaZoo</span> ?
             </h2>
             <p className="mt-4 text-sm leading-7 text-stone-600 dark:text-violet-100/78">
-              YaZoo est plus qu un simple reseau social. C est un lieu de
-              rencontre pour les amoureux des animaux. Partagez vos moments,
-              trouvez une nouvelle famille a ceux qui en ont besoin, ou rejoignez
-              une communaute bienveillante et passionnee.
+              {t('landing.whyChooseText')}
             </p>
             <Link
               to="/login"
               className="mt-6 inline-flex items-center rounded-full bg-[linear-gradient(135deg,#7c3aed,#a855f7,#c4b5fd)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(124,58,237,0.18)] transition hover:brightness-105"
             >
-              Rejoindre la communaute
+              {t('landing.joinCommunity')}
             </Link>
           </div>
 

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
 
 import { formatDate } from '../../utils/formatDate'
@@ -198,7 +199,7 @@ function PostCard({
 
       <div className={`w-full min-w-0 max-w-full px-3 py-4 sm:p-5 ${isMenuOpen ? 'overflow-visible' : 'overflow-hidden'}`}>
         <div className="flex w-full min-w-0 items-start gap-3 sm:gap-4">
-          <Avatar name={post.author?.name} src={post.author?.avatar} className="shrink-0" />
+          <ProfileAvatar user={post.author} t={t} />
 
           <div className="min-w-0 flex-1 text-start">
             <h3 className="truncate text-base font-semibold text-stone-900 dark:text-violet-50">
@@ -294,14 +295,14 @@ function PostCard({
                 <video
                   src={mediaUrl}
                   controls
-                  className="aspect-[4/3] h-auto max-h-[70vh] w-full max-w-full object-cover sm:aspect-[16/10] md:max-h-[34rem]"
+                  className="aspect-[4/3] h-auto max-h-[70vh] w-full max-w-full object-cover sm:aspect-[16/10] md:max-h-[34rem] md:object-contain"
                   onError={() => setHasMediaError(true)}
                 />
               ) : (
                 <img
                   src={mediaUrl}
                   alt={t('post.mediaAlt')}
-                  className="aspect-[4/3] h-auto max-h-[70vh] w-full max-w-full object-cover transition duration-500 group-hover:scale-[1.02] sm:aspect-[16/10] md:max-h-[34rem]"
+                  className="aspect-[4/3] h-auto max-h-[70vh] w-full max-w-full object-cover transition duration-500 group-hover:scale-[1.01] sm:aspect-[16/10] md:max-h-[34rem] md:object-contain"
                   onError={() => setHasMediaError(true)}
                 />
               )}
@@ -461,6 +462,26 @@ function ShareIcon() {
   )
 }
 
+function ProfileAvatar({ user, t }) {
+  const avatar = (
+    <Avatar name={user?.name} src={user?.avatar} className="shrink-0" />
+  )
+
+  if (!user?.id) {
+    return avatar
+  }
+
+  return (
+    <Link
+      to={`/profile/${user.id}`}
+      className="shrink-0 rounded-[20px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400"
+      aria-label={t('profile.viewProfile')}
+    >
+      {avatar}
+    </Link>
+  )
+}
+
 function PostActionsMenu({
   canManagePost,
   isMenuOpen,
@@ -594,6 +615,11 @@ PostMenuButton.propTypes = {
   children: PropTypes.node,
   onClick: PropTypes.func,
   tone: PropTypes.string,
+}
+
+ProfileAvatar.propTypes = {
+  user: PropTypes.object,
+  t: PropTypes.func,
 }
 
 export default PostCard

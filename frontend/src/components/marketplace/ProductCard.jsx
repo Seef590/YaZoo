@@ -1,5 +1,6 @@
 import Avatar from '../ui/Avatar'
 import Button from '../ui/Button'
+import { Link } from 'react-router-dom'
 import { Info, LinkButton } from './MarketplaceCommon'
 import {
   buildProductContactPath,
@@ -46,7 +47,7 @@ function ProductCard({ product, onDelete, onEdit }) {
         </div>
 
         <div className="flex items-center gap-3 rounded-[22px] bg-white/88 px-4 py-3 shadow-sm">
-          <Avatar name={product.author.name} size="sm" />
+          <AuthorAvatar author={product.author} t={t} />
           <div className="min-w-0">
             <p className="truncate text-sm font-medium text-stone-900">{product.author.name}</p>
             <p className="text-xs text-stone-500">{[product.location, formatDate(product.createdAt)].filter(Boolean).join(' - ')}</p>
@@ -95,6 +96,24 @@ function ProductActions({ product, onDelete, onEdit }) {
         <LinkButton to={buildProductContactPath(product, t)} variant="ghost" className="w-full sm:w-auto">{t('common.contact')}</LinkButton>
       ) : null}
     </div>
+  )
+}
+
+function AuthorAvatar({ author, t }) {
+  const avatar = <Avatar name={author?.name} src={author?.avatar || ''} size="sm" />
+
+  if (!author?.id) {
+    return avatar
+  }
+
+  return (
+    <Link
+      to={`/profile/${author.id}`}
+      className="shrink-0 rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400"
+      aria-label={t('profile.viewProfile')}
+    >
+      {avatar}
+    </Link>
   )
 }
 

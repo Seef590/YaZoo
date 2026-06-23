@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 
 import { formatDate } from '../../utils/formatDate'
 import { useI18n } from '../../hooks/useI18n'
@@ -89,7 +90,7 @@ function CommentItem({
       }`}
     >
       <div className="flex items-start gap-3">
-        <Avatar name={comment.author.name} src={comment.author.avatar} size="sm" />
+        <ProfileAvatar user={comment.author} t={t} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-3">
             <p className="truncate text-sm font-semibold text-stone-900">
@@ -192,6 +193,24 @@ function CommentItem({
         </div>
       ) : null}
     </div>
+  )
+}
+
+function ProfileAvatar({ user, t }) {
+  const avatar = <Avatar name={user?.name} src={user?.avatar} size="sm" />
+
+  if (!user?.id) {
+    return avatar
+  }
+
+  return (
+    <Link
+      to={`/profile/${user.id}`}
+      className="shrink-0 rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400"
+      aria-label={t('profile.viewProfile')}
+    >
+      {avatar}
+    </Link>
   )
 }
 

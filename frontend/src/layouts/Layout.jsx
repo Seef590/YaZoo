@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { NavLink, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Link, NavLink, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
 
 import Avatar from '../components/ui/Avatar'
@@ -165,7 +165,11 @@ function Layout() {
               <DesktopActionLink to="/messages" icon="chat" label={t('common.messages')} className="hidden lg:inline-flex" />
               <DesktopActionLink to="/notifications" icon="bell" label={t('common.notifications')} className="hidden lg:inline-flex" />
 
-              <div className="hidden lg:flex items-center gap-2 rounded-full border border-white/50 bg-white/35 px-3 py-1.5 dark:border-violet-300/15 dark:bg-white/8">
+              <Link
+                to="/profile"
+                className="hidden items-center gap-2 rounded-full border border-white/50 bg-white/35 px-3 py-1.5 transition hover:bg-white/55 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400 dark:border-violet-300/15 dark:bg-white/8 dark:hover:bg-white/14 lg:flex"
+                aria-label={t('profile.viewProfile')}
+              >
                 <Avatar
                   name={user?.name ?? t('common.user')}
                   src={user?.avatar || ''}
@@ -174,7 +178,7 @@ function Layout() {
                 <span className="max-w-[120px] truncate text-xs font-medium text-stone-700 dark:text-violet-50">
                   {user?.name ?? t('common.user')}
                 </span>
-              </div>
+              </Link>
 
               <Button type="button" variant="secondary" onClick={logout} className="hidden lg:inline-flex">
                 {t('common.logout')}
@@ -316,11 +320,18 @@ function MobileMenuDrawer({
           >
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <Avatar
-              name={user?.name ?? t('common.user')}
-              src={user?.avatar || ''}
-              className="border border-white/80"
-            />
+            <Link
+              to="/profile"
+              onClick={onClose}
+              className="shrink-0 rounded-[20px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400"
+              aria-label={t('profile.viewProfile')}
+            >
+              <Avatar
+                name={user?.name ?? t('common.user')}
+                src={user?.avatar || ''}
+                className="border border-white/80"
+              />
+            </Link>
             <div>
               <p className="text-sm font-semibold text-stone-950 dark:text-violet-50">{user?.name ?? t('common.user')}</p>
               <p className="text-xs text-stone-500">

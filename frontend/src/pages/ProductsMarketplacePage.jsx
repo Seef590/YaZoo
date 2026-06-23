@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import companionImage from '../assets/images/companions-bond.webp'
+import productHeroImage from '../assets/images/produit.png'
 import ProductCard from '../components/marketplace/ProductCard'
 import ProductListingForm from '../components/marketplace/ProductListingForm'
 import ProductsFilters from '../components/marketplace/ProductsFilters'
@@ -20,7 +20,7 @@ function ProductsMarketplacePage() {
         active="products"
         title={t('marketplace.productsHeroTitle')}
         description={t('marketplace.productsHeroDescription')}
-        imageSrc={companionImage}
+        imageSrc={productHeroImage}
         imageAlt={t('marketplace.productsImageAlt')}
         imageClass="mx-auto h-24 w-auto rounded-[20px] object-cover sm:h-28 xl:w-[180px]"
         stats={[

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 
 import {
   createDirectConversationRequest,
@@ -592,10 +592,17 @@ function MessagesPage() {
                   const isActive = selectedConversationId === conversation.id
 
                   return (
-                    <button
+                    <div
                       key={conversation.id}
-                      type="button"
+                      role="button"
+                      tabIndex={0}
                       onClick={() => openConversation(conversation.id)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault()
+                          openConversation(conversation.id)
+                        }
+                      }}
                       className={`w-full rounded-[26px] border px-4 py-4 text-start transition duration-200 ${
                         isActive
                           ? 'border-transparent bg-[linear-gradient(135deg,#7c3aed,#a855f7,#c4b5fd)] text-white shadow-[0_18px_34px_rgba(124,58,237,0.22)]'
@@ -603,10 +610,26 @@ function MessagesPage() {
                       }`}
                     >
                       <div className="flex items-start gap-3">
-                        <Avatar
-                          name={conversation.participant?.name ?? 'YaZoo User'}
-                          size="sm"
-                        />
+                        {conversation.participant?.id ? (
+                          <Link
+                            to={`/profile/${conversation.participant.id}`}
+                            onClick={(event) => event.stopPropagation()}
+                            className="shrink-0 rounded-2xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400"
+                            aria-label={t('profile.viewProfile')}
+                          >
+                            <Avatar
+                              name={conversation.participant?.name ?? 'YaZoo User'}
+                              src={conversation.participant?.avatar || ''}
+                              size="sm"
+                            />
+                          </Link>
+                        ) : (
+                          <Avatar
+                            name={conversation.participant?.name ?? 'YaZoo User'}
+                            src={conversation.participant?.avatar || ''}
+                            size="sm"
+                          />
+                        )}
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center justify-between gap-3">
                             <p className="truncate text-sm font-semibold">
@@ -643,7 +666,7 @@ function MessagesPage() {
                           </p>
                         </div>
                       </div>
-                    </button>
+                    </div>
                   )
                 })}
               </div>
@@ -666,9 +689,23 @@ function MessagesPage() {
             <div className="space-y-5">
               <div className="flex flex-wrap items-center justify-between gap-4 border-b border-violet-100 pb-5">
                 <div className="flex items-center gap-3">
-                  <Avatar
-                    name={selectedConversation.participant?.name ?? 'YaZoo User'}
-                  />
+                  {selectedConversation.participant?.id ? (
+                    <Link
+                      to={`/profile/${selectedConversation.participant.id}`}
+                      className="shrink-0 rounded-[20px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400"
+                      aria-label={t('profile.viewProfile')}
+                    >
+                      <Avatar
+                        name={selectedConversation.participant?.name ?? 'YaZoo User'}
+                        src={selectedConversation.participant?.avatar || ''}
+                      />
+                    </Link>
+                  ) : (
+                    <Avatar
+                      name={selectedConversation.participant?.name ?? 'YaZoo User'}
+                      src={selectedConversation.participant?.avatar || ''}
+                    />
+                  )}
                   <div>
                     <p className="text-xs uppercase tracking-[0.18em] text-violet-700">
                       {t('messages.openConversation')}

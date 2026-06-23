@@ -2941,6 +2941,93 @@ messages.en = deepMerge(messages.en, {
   },
 })
 
+messages.fr = deepMerge(messages.fr, {
+  common: {
+    services: 'Services',
+  },
+  profile: {
+    viewProfile: 'Voir le profil',
+  },
+  landing: {
+    whyChoose: 'Pourquoi choisir',
+    whyChooseText:
+      'YaZoo est plus qu un simple reseau social. C est un lieu de rencontre pour les amoureux des animaux. Partagez vos moments, trouvez une nouvelle famille a ceux qui en ont besoin, ou rejoignez une communaute bienveillante et passionnee.',
+    joinCommunity: 'Rejoindre la communaute',
+  },
+  veterinarians: {
+    addListing: 'Ajouter une fiche veterinaire',
+    addHint: 'Creez une fiche professionnelle liee a votre compte YaZoo.',
+    loginToAdd: 'Connectez-vous pour ajouter votre fiche veterinaire.',
+    createListing: 'Creer une fiche veterinaire',
+    clinicInformation: 'Informations du cabinet',
+    image: 'Photo ou image du cabinet',
+    beFirst: 'Soyez le premier a ajouter une fiche veterinaire.',
+    nameRequired: 'Le nom du veterinaire ou du cabinet est obligatoire.',
+    invalidCoordinates: 'Latitude et longitude doivent etre des nombres valides.',
+    createError: 'Impossible de creer la fiche.',
+    specialtiesPlaceholder: 'Chats, chiens, chirurgie...',
+    workingHoursPlaceholder: 'Lundi 9h-18h, samedi matin...',
+  },
+})
+
+messages.ar = deepMerge(messages.ar, {
+  common: {
+    services: 'الخدمات',
+  },
+  profile: {
+    viewProfile: 'عرض الملف الشخصي',
+  },
+  landing: {
+    whyChoose: 'لماذا تختار',
+    whyChooseText:
+      'YaZoo أكثر من شبكة اجتماعية بسيطة. إنها مساحة تجمع محبي الحيوانات لمشاركة اللحظات، والمساعدة في تبن مسؤول، والانضمام إلى مجتمع رحيم وشغوف.',
+    joinCommunity: 'انضم إلى المجتمع',
+  },
+  veterinarians: {
+    addListing: 'إضافة بطاقة طبيب بيطري',
+    addHint: 'أنشئ بطاقة مهنية مرتبطة بحسابك في YaZoo.',
+    loginToAdd: 'سجل الدخول لإضافة بطاقة الطبيب البيطري الخاصة بك.',
+    createListing: 'إنشاء بطاقة طبيب بيطري',
+    clinicInformation: 'معلومات العيادة',
+    image: 'صورة الطبيب أو العيادة',
+    beFirst: 'كن أول من يضيف بطاقة طبيب بيطري.',
+    nameRequired: 'اسم الطبيب البيطري أو العيادة مطلوب.',
+    invalidCoordinates: 'يجب أن تكون إحداثيات العرض والطول أرقاما صحيحة.',
+    createError: 'تعذر إنشاء البطاقة.',
+    specialtiesPlaceholder: 'قطط، كلاب، جراحة...',
+    workingHoursPlaceholder: 'الاثنين 9-18، السبت صباحا...',
+  },
+})
+
+messages.en = deepMerge(messages.en, {
+  common: {
+    services: 'Services',
+  },
+  profile: {
+    viewProfile: 'View profile',
+  },
+  landing: {
+    whyChoose: 'Why choose',
+    whyChooseText:
+      'YaZoo is more than a simple social network. It is a meeting place for animal lovers to share moments, support responsible adoption, and join a caring community.',
+    joinCommunity: 'Join the community',
+  },
+  veterinarians: {
+    addListing: 'Add a veterinarian profile',
+    addHint: 'Create a professional profile linked to your YaZoo account.',
+    loginToAdd: 'Log in to add your veterinarian profile.',
+    createListing: 'Create a veterinarian profile',
+    clinicInformation: 'Clinic information',
+    image: 'Veterinarian or clinic image',
+    beFirst: 'Be the first to add a veterinarian profile.',
+    nameRequired: 'The veterinarian or clinic name is required.',
+    invalidCoordinates: 'Latitude and longitude must be valid numbers.',
+    createError: 'Unable to create the profile.',
+    specialtiesPlaceholder: 'Cats, dogs, surgery...',
+    workingHoursPlaceholder: 'Monday 9-18, Saturday morning...',
+  },
+})
+
 function deepMerge(base, override = {}) {
   const result = { ...base }
 

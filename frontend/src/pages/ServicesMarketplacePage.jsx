@@ -5,7 +5,7 @@ import { getServicesRequest } from '../api/services'
 import ServiceCard from '../components/marketplace/ServiceCard'
 import { MarketplaceHero } from '../components/marketplace/MarketplaceCommon'
 import CollapsiblePanel from '../components/ui/CollapsiblePanel'
-import companionImage from '../assets/images/pretty-girl-embarcing-cat-dog.webp'
+import trainerHeroImage from '../assets/images/dresseur.png'
 import { useI18n } from '../hooks/useI18n'
 
 function ServicesMarketplacePage() {
@@ -53,8 +53,9 @@ function ServicesMarketplacePage() {
         active="services"
         title={t('services.marketplaceTitle')}
         description={t('services.marketplaceDescription')}
-        imageSrc={companionImage}
+        imageSrc={trainerHeroImage}
         imageAlt={t('services.marketplaceTitle')}
+        imageClass="mx-auto h-24 w-auto rounded-[20px] object-cover sm:h-28 xl:w-[180px]"
         stats={[
           { label: t('services.visibleServices'), value: services.length },
           { label: t('services.assistance'), value: t('services.petSitting') },

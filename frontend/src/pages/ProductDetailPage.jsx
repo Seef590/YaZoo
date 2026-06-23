@@ -246,7 +246,17 @@ function ProductDetailPage() {
             <div className="rounded-[24px] border border-violet-100 bg-[linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.82))] p-4">
               <p className="text-sm font-semibold text-stone-950">{t('common.seller')}</p>
               <div className="mt-3 flex items-center gap-3">
-                <Avatar name={product.author.name} />
+                {product.author?.id ? (
+                  <Link
+                    to={`/profile/${product.author.id}`}
+                    className="shrink-0 rounded-[20px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400"
+                    aria-label={t('profile.viewProfile')}
+                  >
+                    <Avatar name={product.author.name} src={product.author.avatar || ''} />
+                  </Link>
+                ) : (
+                  <Avatar name={product.author.name} src={product.author?.avatar || ''} />
+                )}
                 <div>
                   <p className="text-sm font-medium text-stone-900">
                     {product.author.name}

@@ -11,7 +11,7 @@ export function MarketplaceTabs({ active }) {
         <TabLink to="/marketplace" active={active === 'animals'}>{t('common.animals')}</TabLink>
         <TabLink to="/marketplace/products" active={active === 'products'}>{t('common.products')}</TabLink>
         <TabLink to="/marketplace/veterinarians" active={active === 'veterinarians'}>{t('common.veterinarians')}</TabLink>
-        <TabLink to="/marketplace/services" active={active === 'services'}>{t('common.assistance')}</TabLink>
+        <TabLink to="/marketplace/services" active={active === 'services'}>{t('common.services')}</TabLink>
       </div>
     </div>
   )
