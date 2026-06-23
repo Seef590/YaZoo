@@ -50,18 +50,25 @@ jobs:
       - uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build and push backend image
         run: |
-          az acr login --name "${{ secrets.ACR_NAME }}"
-          docker build -f backend/Dockerfile -t "${{ secrets.ACR_LOGIN_SERVER }}/yazoo-api:${{ github.sha }}" .
-          docker push "${{ secrets.ACR_LOGIN_SERVER }}/yazoo-api:${{ github.sha }}"
+          docker build -f backend/Dockerfile \
+            -t "${{ secrets.DOCKERHUB_USERNAME }}/yazoo-api:${{ github.sha }}" \
+            -t "${{ secrets.DOCKERHUB_USERNAME }}/yazoo-api:latest" \
+            .
+          docker push "${{ secrets.DOCKERHUB_USERNAME }}/yazoo-api:${{ github.sha }}"
+          docker push "${{ secrets.DOCKERHUB_USERNAME }}/yazoo-api:latest"
       - name: Deploy backend App Service
         run: |
           az webapp config container set \
             --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
             --name "${{ secrets.AZURE_WEBAPP_NAME }}" \
-            --docker-custom-image-name "${{ secrets.ACR_LOGIN_SERVER }}/yazoo-api:${{ github.sha }}" \
-            --docker-registry-server-url "https://${{ secrets.ACR_LOGIN_SERVER }}"
+            --container-image-name "${{ secrets.DOCKERHUB_USERNAME }}/yazoo-api:${{ github.sha }}" \
+            --container-registry-url "https://index.docker.io"
           az webapp config appsettings set \
             --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
             --name "${{ secrets.AZURE_WEBAPP_NAME }}" \
@@ -78,29 +85,25 @@ jobs:
           node-version: "22"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-      - name: Build frontend
-        working-directory: frontend
-        env:
-          VITE_APP_NAME: YaZoo
-          VITE_API_URL: ${{ vars.VITE_API_URL }}
-          VITE_STORAGE_URL: ${{ vars.VITE_STORAGE_URL }}
-          VITE_REALTIME_ENABLED: ${{ vars.VITE_REALTIME_ENABLED || 'false' }}
-          VITE_REVERB_APP_KEY: ${{ vars.VITE_REVERB_APP_KEY }}
-          VITE_REVERB_HOST: ${{ vars.VITE_REVERB_HOST }}
-          VITE_REVERB_PORT: ${{ vars.VITE_REVERB_PORT || '443' }}
-          VITE_REVERB_SCHEME: ${{ vars.VITE_REVERB_SCHEME || 'https' }}
-          VITE_MONITORING_ENABLED: ${{ vars.VITE_MONITORING_ENABLED || 'false' }}
-          VITE_MONITORING_ENDPOINT: ${{ vars.VITE_MONITORING_ENDPOINT }}
-          VITE_NOTIFICATIONS_POLL_MS: ${{ vars.VITE_NOTIFICATIONS_POLL_MS || '30000' }}
-          VITE_BUILD_SOURCEMAPS: ${{ vars.VITE_BUILD_SOURCEMAPS || 'false' }}
+      - name: Build and push frontend image
         run: |
-          npm ci
-          npm run build
-      - name: Deploy Static Web App
-        uses: Azure/static-web-apps-deploy@v1
-        with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
-          action: upload
-          app_location: frontend
-          skip_app_build: true
-          output_location: dist
+          docker build -f frontend/Dockerfile \
+            -t "${{ secrets.DOCKERHUB_USERNAME }}/yazoo-frontend:${{ github.sha }}" \
+            -t "${{ secrets.DOCKERHUB_USERNAME }}/yazoo-frontend:latest" \
+            .
+          docker push "${{ secrets.DOCKERHUB_USERNAME }}/yazoo-frontend:${{ github.sha }}"
+          docker push "${{ secrets.DOCKERHUB_USERNAME }}/yazoo-frontend:latest"
+      - name: Deploy frontend App Service
+        run: |
+          az webapp config container set \
+            --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
+            --name "yazoo" \
+            --container-image-name "${{ secrets.DOCKERHUB_USERNAME }}/yazoo-frontend:${{ github.sha }}" \
+            --container-registry-url "https://index.docker.io"
+          az webapp config appsettings set \
+            --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
+            --name "yazoo" \
+            --settings WEBSITES_PORT=80 WEBSITES_CONTAINER_START_TIME_LIMIT=600 YAZOO_IMAGE_TAG="${{ github.sha }}"
+          az webapp restart \
+            --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
+            --name "yazoo"
