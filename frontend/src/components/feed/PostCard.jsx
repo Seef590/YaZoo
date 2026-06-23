@@ -196,168 +196,177 @@ function PostCard({
     <article className={`group relative w-full max-w-full min-w-0 box-border rounded-[30px] border border-white/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.99),_rgba(246,239,255,0.94))] shadow-[0_24px_56px_rgba(124,58,237,0.08)] transition-all duration-200 hover:-translate-y-1 hover:border-violet-200 hover:shadow-[0_28px_60px_rgba(124,58,237,0.12)] dark:border-violet-300/12 dark:bg-[linear-gradient(180deg,_rgba(24,16,38,0.96),_rgba(36,20,61,0.92))] dark:shadow-[0_24px_60px_rgba(0,0,0,0.34)] ${isMenuOpen ? 'z-40 overflow-visible' : 'z-0 overflow-hidden'}`}>
       <div className="h-1.5 rounded-t-[30px] bg-[linear-gradient(90deg,#7c3aed,#a855f7,#d8b4fe,#ede9fe)]" />
 
-      <div className={`min-w-0 max-w-full p-4 sm:p-5 ${isMenuOpen ? 'overflow-visible' : 'overflow-hidden'}`}>
-        <div className="flex min-w-0 items-start gap-3 sm:gap-4">
-          <Avatar name={post.author?.name} src={post.author?.avatar} />
+      <div className={`w-full min-w-0 max-w-full px-3 py-4 sm:p-5 ${isMenuOpen ? 'overflow-visible' : 'overflow-hidden'}`}>
+        <div className="flex w-full min-w-0 items-start gap-3 sm:gap-4">
+          <Avatar name={post.author?.name} src={post.author?.avatar} className="shrink-0" />
 
-          <div className="min-w-0 flex-1">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0 flex-1">
-                <h3 className="truncate text-base font-semibold text-stone-900 dark:text-violet-50">
-                  {post.author?.name}
-                </h3>
-                <p className="truncate text-sm text-stone-500 dark:text-violet-100/60">{metadata}</p>
-                <div className="mt-2 flex flex-wrap items-center gap-2">
-                  <span className="inline-flex rounded-full border border-violet-100 bg-white/70 px-2.5 py-1 text-[11px] font-semibold text-violet-800 dark:border-violet-300/15 dark:bg-white/8 dark:text-violet-100">
-                    {visibilityLabel}
-                  </span>
-                  <FollowButton
-                    userId={post.author?.id}
-                    isFollowing={post.author?.isFollowing}
-                    hidden={canManagePost}
-                    compact
-                  />
-                </div>
-              </div>
-
-              <PostActionsMenu
-                canManagePost={canManagePost}
-                isMenuOpen={isMenuOpen}
-                isUpdatingPost={isUpdatingPost}
-                post={post}
-                visibility={visibility}
-                onDeletePost={handleDeletePost}
-                onEditPost={() => {
-                  setEditContent(post.content ?? '')
-                  setIsEditing(true)
-                  setIsMenuOpen(false)
-                }}
-                onSavePost={handleSavePost}
-                onSharePost={handleSharePost}
-                onToggleMenu={() => setIsMenuOpen((current) => !current)}
-                onVisibilityChange={handleVisibilityChange}
-                menuRef={menuRef}
-                t={t}
+          <div className="min-w-0 flex-1 text-start">
+            <h3 className="truncate text-base font-semibold text-stone-900 dark:text-violet-50">
+              {post.author?.name}
+            </h3>
+            <p className="truncate text-sm text-stone-500 dark:text-violet-100/60">{metadata}</p>
+            <div className="mt-2 flex w-full max-w-full flex-wrap items-center gap-2">
+              <span className="inline-flex max-w-full rounded-full border border-violet-100 bg-white/70 px-2.5 py-1 text-[11px] font-semibold text-violet-800 dark:border-violet-300/15 dark:bg-white/8 dark:text-violet-100">
+                {visibilityLabel}
+              </span>
+              <FollowButton
+                userId={post.author?.id}
+                isFollowing={post.author?.isFollowing}
+                hidden={canManagePost}
+                compact
               />
             </div>
+          </div>
 
-            {(post.tags ?? []).length > 0 ? (
-              <div className="mt-3 flex max-w-full flex-wrap gap-2">
-                {(post.tags ?? []).map((tag) => (
-                  <span
-                    key={tag}
-                    dir="ltr"
-                    style={{ unicodeBidi: 'isolate' }}
-                    className="max-w-full rounded-full border border-violet-100 bg-[linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.82))] px-3 py-1 text-xs font-medium text-violet-800 transition hover:border-violet-200 hover:bg-violet-50 dark:border-violet-300/12 dark:bg-white/8 dark:text-violet-100"
-                  >
-                    #{tag}
-                  </span>
-                ))}
-              </div>
-            ) : null}
+          <PostActionsMenu
+            canManagePost={canManagePost}
+            isMenuOpen={isMenuOpen}
+            isUpdatingPost={isUpdatingPost}
+            post={post}
+            visibility={visibility}
+            onDeletePost={handleDeletePost}
+            onEditPost={() => {
+              setEditContent(post.content ?? '')
+              setIsEditing(true)
+              setIsMenuOpen(false)
+            }}
+            onSavePost={handleSavePost}
+            onSharePost={handleSharePost}
+            onToggleMenu={() => setIsMenuOpen((current) => !current)}
+            onVisibilityChange={handleVisibilityChange}
+            menuRef={menuRef}
+            t={t}
+          />
+        </div>
 
-            {isEditing ? (
-              <form onSubmit={handleEditPost} className="mt-4 space-y-3">
-                <textarea
-                  value={editContent}
-                  onChange={(event) => setEditContent(event.target.value)}
-                  rows={4}
-                  className="w-full rounded-2xl border border-violet-100 bg-white px-4 py-3 text-sm leading-7 text-stone-700 outline-none transition focus:border-violet-400 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-50"
-                />
-                <div className="flex flex-wrap justify-end gap-2">
-                  <Button type="button" variant="ghost" onClick={() => setIsEditing(false)}>
-                    {t('common.cancel')}
-                  </Button>
-                  <Button type="submit" disabled={isUpdatingPost || !editContent.trim()}>
-                    {isUpdatingPost ? t('post.updating') : t('common.save')}
-                  </Button>
-                </div>
-              </form>
-            ) : (
-              <p className="mt-4 min-w-0 break-words text-start text-sm leading-7 text-stone-700 dark:text-violet-50/86">
-                {post.content}
-              </p>
-            )}
-
-            {actionMessage ? (
-              <p className="mt-3 rounded-2xl border border-violet-100 bg-violet-50 px-4 py-3 text-sm text-violet-800 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-100">
-                {actionMessage}
-              </p>
-            ) : null}
-
-            {mediaUrl && !hasMediaError ? (
-              <div className="mt-5 w-full max-w-full overflow-hidden">
-                <div className="relative mx-auto w-full max-w-[34rem] overflow-hidden rounded-[24px] bg-stone-100 shadow-[0_18px_40px_rgba(124,58,237,0.08)] dark:bg-stone-900 sm:max-w-full sm:rounded-[28px]">
-                <span className="absolute end-3 top-3 z-10 rounded-full bg-violet-950/72 px-3 py-1 text-xs font-medium text-white backdrop-blur">
-                  {mediaKind === 'video' ? t('post.video') : t('post.photo')}
-                </span>
-
-                {mediaKind === 'video' ? (
-                  <video
-                    src={mediaUrl}
-                    controls
-                    className="aspect-[4/3] h-auto max-h-[70vh] w-full max-w-full object-cover sm:aspect-[16/10] md:max-h-[34rem]"
-                    onError={() => setHasMediaError(true)}
-                  />
-                ) : (
-                  <img
-                    src={mediaUrl}
-                    alt={t('post.mediaAlt')}
-                    className="aspect-[4/3] h-auto max-h-[70vh] w-full max-w-full object-cover transition duration-500 group-hover:scale-[1.02] sm:aspect-[16/10] md:max-h-[34rem]"
-                    onError={() => setHasMediaError(true)}
-                  />
-                )}
-                </div>
-              </div>
-            ) : mediaUrl && hasMediaError ? (
-              <div className="mt-4 rounded-[24px] border border-dashed border-violet-200 bg-violet-50 px-4 py-8 text-center text-sm text-violet-800 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-100">
-                {t('post.mediaUnavailable')}
-              </div>
-            ) : null}
-
-            <div className="mt-5 flex w-full max-w-full min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-              <div className="flex w-full max-w-full min-w-0 flex-wrap justify-center gap-2 sm:w-auto sm:justify-start">
-                {POST_REACTIONS.map((reaction) => (
-                  <button
-                    key={reaction.key}
-                    type="button"
-                    onClick={() => onToggleLike(post.id, reaction.key)}
-                    disabled={isLikePending}
-                    className={`inline-flex min-w-0 items-center justify-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold transition hover:-translate-y-0.5 disabled:cursor-wait disabled:opacity-60 ${
-                      post.userReaction === reaction.key
-                        ? 'border-violet-300 bg-violet-600 text-white shadow-[0_12px_26px_rgba(124,58,237,0.18)]'
-                        : 'border-violet-100 bg-white/86 text-violet-900 hover:bg-violet-50 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-50 dark:hover:bg-white/14'
-                    }`}
-                    aria-label={t('post.reactAria', { reaction: t(reaction.labelKey) })}
-                    title={t(reaction.labelKey)}
-                  >
-                    <span aria-hidden="true">{reaction.icon}</span>
-                    <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>
-                      {reaction.key === 'like' ? post.likes : getReactionCount(post.reactions, reaction.key)}
-                    </span>
-                  </button>
-                ))}
-              </div>
-
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => setShowComments((current) => !current)}
-                className="w-full justify-center sm:w-auto"
+        {(post.tags ?? []).length > 0 ? (
+          <div className="mt-3 flex w-full max-w-full flex-wrap items-center gap-2">
+            {(post.tags ?? []).map((tag) => (
+              <span
+                key={tag}
+                dir="ltr"
+                style={{ unicodeBidi: 'isolate' }}
+                className="max-w-full rounded-full border border-violet-100 bg-[linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.82))] px-3 py-1 text-xs font-medium text-violet-800 transition hover:border-violet-200 hover:bg-violet-50 dark:border-violet-300/12 dark:bg-white/8 dark:text-violet-100"
               >
-                {showComments ? t('common.hide') : t('post.comments')} |{' '}
-                <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>
-                  {post.commentsCount ?? post.comments?.length ?? 0}
-                </span>
-              </Button>
-
-              <span className="inline-flex w-full max-w-full items-center justify-center rounded-full border border-violet-100 bg-white/70 px-4 py-2 text-sm font-semibold text-stone-600 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-100/80 sm:w-auto">
-                {t('post.shares')} |{' '}
-                <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>
-                  {post.sharesCount ?? 0}
-                </span>
+                #{tag}
               </span>
+            ))}
+          </div>
+        ) : null}
+
+        {isEditing ? (
+          <form onSubmit={handleEditPost} className="mt-4 w-full max-w-full space-y-3">
+            <textarea
+              value={editContent}
+              onChange={(event) => setEditContent(event.target.value)}
+              rows={4}
+              className="w-full rounded-2xl border border-violet-100 bg-white px-4 py-3 text-sm leading-7 text-stone-700 outline-none transition focus:border-violet-400 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-50"
+            />
+            <div className="flex flex-wrap justify-end gap-2">
+              <Button type="button" variant="ghost" onClick={() => setIsEditing(false)}>
+                {t('common.cancel')}
+              </Button>
+              <Button type="submit" disabled={isUpdatingPost || !editContent.trim()}>
+                {isUpdatingPost ? t('post.updating') : t('common.save')}
+              </Button>
             </div>
+          </form>
+        ) : (
+          <p className="mt-4 w-full min-w-0 max-w-full break-words text-start text-sm leading-7 text-stone-700 dark:text-violet-50/86">
+            {post.content}
+          </p>
+        )}
+
+        {actionMessage ? (
+          <p className="mt-3 w-full max-w-full rounded-2xl border border-violet-100 bg-violet-50 px-4 py-3 text-sm text-violet-800 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-100">
+            {actionMessage}
+          </p>
+        ) : null}
+
+        {mediaUrl && !hasMediaError ? (
+          <div className="mt-4 w-full min-w-0 max-w-full overflow-hidden">
+            <div className="relative mx-auto w-full max-w-full overflow-hidden rounded-[24px] bg-stone-100 shadow-[0_18px_40px_rgba(124,58,237,0.08)] dark:bg-stone-900 sm:rounded-[28px]">
+              <span className="absolute end-3 top-3 z-10 rounded-full bg-violet-950/72 px-3 py-1 text-xs font-medium text-white backdrop-blur">
+                {mediaKind === 'video' ? t('post.video') : t('post.photo')}
+              </span>
+
+              {mediaKind === 'video' ? (
+                <video
+                  src={mediaUrl}
+                  controls
+                  className="aspect-[4/3] h-auto max-h-[70vh] w-full max-w-full object-cover sm:aspect-[16/10] md:max-h-[34rem]"
+                  onError={() => setHasMediaError(true)}
+                />
+              ) : (
+                <img
+                  src={mediaUrl}
+                  alt={t('post.mediaAlt')}
+                  className="aspect-[4/3] h-auto max-h-[70vh] w-full max-w-full object-cover transition duration-500 group-hover:scale-[1.02] sm:aspect-[16/10] md:max-h-[34rem]"
+                  onError={() => setHasMediaError(true)}
+                />
+              )}
+            </div>
+          </div>
+        ) : mediaUrl && hasMediaError ? (
+          <div className="mt-4 w-full max-w-full rounded-[24px] border border-dashed border-violet-200 bg-violet-50 px-4 py-8 text-center text-sm text-violet-800 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-100">
+            {t('post.mediaUnavailable')}
+          </div>
+        ) : null}
+
+        <div className="mt-5 flex w-full max-w-full min-w-0 flex-col gap-3">
+          <div className="grid w-full max-w-full min-w-0 grid-cols-4 gap-2">
+            {POST_REACTIONS.map((reaction) => (
+              <button
+                key={reaction.key}
+                type="button"
+                onClick={() => onToggleLike(post.id, reaction.key)}
+                disabled={isLikePending}
+                className={`inline-flex h-11 min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-full border px-2 text-sm font-semibold transition hover:-translate-y-0.5 disabled:cursor-wait disabled:opacity-60 ${
+                  post.userReaction === reaction.key
+                    ? 'border-violet-300 bg-violet-600 text-white shadow-[0_12px_26px_rgba(124,58,237,0.18)]'
+                    : 'border-violet-100 bg-white/86 text-violet-900 hover:bg-violet-50 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-50 dark:hover:bg-white/14'
+                }`}
+                aria-label={t('post.reactAria', { reaction: t(reaction.labelKey) })}
+                title={t(reaction.labelKey)}
+              >
+                <span aria-hidden="true">{reaction.icon}</span>
+                <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>
+                  {reaction.key === 'like' ? post.likes : getReactionCount(post.reactions, reaction.key)}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <div className="flex w-full max-w-full items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={() => setShowComments((current) => !current)}
+              className="inline-flex h-11 min-w-[5rem] items-center justify-center gap-2 rounded-full border border-violet-100 bg-white/86 px-3 text-sm font-semibold text-violet-900 shadow-[0_12px_26px_rgba(124,58,237,0.08)] transition hover:-translate-y-0.5 hover:bg-violet-50 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-50 dark:hover:bg-white/14"
+              aria-label={showComments ? t('common.hide') : t('post.comments')}
+              title={showComments ? t('common.hide') : t('post.comments')}
+            >
+              <span aria-hidden="true">
+                <CommentIcon />
+              </span>
+              <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>
+                {post.commentsCount ?? post.comments?.length ?? 0}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSharePost}
+              className="inline-flex h-11 min-w-[5rem] items-center justify-center gap-2 rounded-full border border-violet-100 bg-white/86 px-3 text-sm font-semibold text-violet-900 shadow-[0_12px_26px_rgba(124,58,237,0.08)] transition hover:-translate-y-0.5 hover:bg-violet-50 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-50 dark:hover:bg-white/14"
+              aria-label={t('post.share')}
+              title={t('post.share')}
+            >
+              <span aria-hidden="true">
+                <ShareIcon />
+              </span>
+              <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>
+                {post.sharesCount ?? 0}
+              </span>
+            </button>
           </div>
         </div>
 
@@ -421,6 +430,34 @@ function PostCard({
         ) : null}
       </div>
     </article>
+  )
+}
+
+function CommentIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" aria-hidden="true">
+      <path
+        d="M7.5 16.5 4.5 19.5v-12A2.25 2.25 0 0 1 6.75 5.25h10.5A2.25 2.25 0 0 1 19.5 7.5v6A2.25 2.25 0 0 1 17.25 15.75H7.5Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
+function ShareIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" aria-hidden="true">
+      <path
+        d="M8.25 12.75 15.75 5.25m0 0H10.5m5.25 0v5.25M9.75 7.5H7.5A2.25 2.25 0 0 0 5.25 9.75v6.75A2.25 2.25 0 0 0 7.5 18.75h6.75a2.25 2.25 0 0 0 2.25-2.25v-2.25"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   )
 }
 
