@@ -193,10 +193,10 @@ function PostCard({
   }
 
   return (
-    <article className={`group relative max-w-full overflow-visible rounded-[30px] border border-white/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.99),_rgba(246,239,255,0.94))] shadow-[0_24px_56px_rgba(124,58,237,0.08)] transition-all duration-200 hover:-translate-y-1 hover:border-violet-200 hover:shadow-[0_28px_60px_rgba(124,58,237,0.12)] dark:border-violet-300/12 dark:bg-[linear-gradient(180deg,_rgba(24,16,38,0.96),_rgba(36,20,61,0.92))] dark:shadow-[0_24px_60px_rgba(0,0,0,0.34)] ${isMenuOpen ? 'z-40' : 'z-0'}`}>
+    <article className={`group relative w-full max-w-full min-w-0 box-border rounded-[30px] border border-white/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.99),_rgba(246,239,255,0.94))] shadow-[0_24px_56px_rgba(124,58,237,0.08)] transition-all duration-200 hover:-translate-y-1 hover:border-violet-200 hover:shadow-[0_28px_60px_rgba(124,58,237,0.12)] dark:border-violet-300/12 dark:bg-[linear-gradient(180deg,_rgba(24,16,38,0.96),_rgba(36,20,61,0.92))] dark:shadow-[0_24px_60px_rgba(0,0,0,0.34)] ${isMenuOpen ? 'z-40 overflow-visible' : 'z-0 overflow-hidden'}`}>
       <div className="h-1.5 rounded-t-[30px] bg-[linear-gradient(90deg,#7c3aed,#a855f7,#d8b4fe,#ede9fe)]" />
 
-      <div className="p-4 sm:p-5">
+      <div className={`min-w-0 max-w-full p-4 sm:p-5 ${isMenuOpen ? 'overflow-visible' : 'overflow-hidden'}`}>
         <div className="flex min-w-0 items-start gap-3 sm:gap-4">
           <Avatar name={post.author?.name} src={post.author?.avatar} />
 
@@ -242,11 +242,13 @@ function PostCard({
             </div>
 
             {(post.tags ?? []).length > 0 ? (
-              <div className="mt-3 flex flex-wrap gap-2">
+              <div className="mt-3 flex max-w-full flex-wrap gap-2">
                 {(post.tags ?? []).map((tag) => (
                   <span
                     key={tag}
-                    className="rounded-full border border-violet-100 bg-[linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.82))] px-3 py-1 text-xs font-medium text-violet-800 transition hover:border-violet-200 hover:bg-violet-50 dark:border-violet-300/12 dark:bg-white/8 dark:text-violet-100"
+                    dir="ltr"
+                    style={{ unicodeBidi: 'isolate' }}
+                    className="max-w-full rounded-full border border-violet-100 bg-[linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.82))] px-3 py-1 text-xs font-medium text-violet-800 transition hover:border-violet-200 hover:bg-violet-50 dark:border-violet-300/12 dark:bg-white/8 dark:text-violet-100"
                   >
                     #{tag}
                   </span>
@@ -272,7 +274,7 @@ function PostCard({
                 </div>
               </form>
             ) : (
-              <p className="mt-4 break-words text-sm leading-7 text-stone-700 dark:text-violet-50/86">
+              <p className="mt-4 min-w-0 break-words text-start text-sm leading-7 text-stone-700 dark:text-violet-50/86">
                 {post.content}
               </p>
             )}
@@ -284,8 +286,8 @@ function PostCard({
             ) : null}
 
             {mediaUrl && !hasMediaError ? (
-              <div className="-mx-2 mt-5 px-2 sm:-mx-3 sm:px-3">
-                <div className="relative w-full max-w-full overflow-hidden rounded-[24px] bg-stone-100 shadow-[0_18px_40px_rgba(124,58,237,0.08)] dark:bg-stone-900 sm:rounded-[28px]">
+              <div className="mt-5 w-full max-w-full overflow-hidden">
+                <div className="relative mx-auto w-full max-w-[34rem] overflow-hidden rounded-[24px] bg-stone-100 shadow-[0_18px_40px_rgba(124,58,237,0.08)] dark:bg-stone-900 sm:max-w-full sm:rounded-[28px]">
                 <span className="absolute end-3 top-3 z-10 rounded-full bg-violet-950/72 px-3 py-1 text-xs font-medium text-white backdrop-blur">
                   {mediaKind === 'video' ? t('post.video') : t('post.photo')}
                 </span>
@@ -294,14 +296,14 @@ function PostCard({
                   <video
                     src={mediaUrl}
                     controls
-                    className="aspect-[4/3] max-h-[70vh] w-full object-cover sm:aspect-[16/10] md:max-h-[34rem]"
+                    className="aspect-[4/3] h-auto max-h-[70vh] w-full max-w-full object-cover sm:aspect-[16/10] md:max-h-[34rem]"
                     onError={() => setHasMediaError(true)}
                   />
                 ) : (
                   <img
                     src={mediaUrl}
                     alt={t('post.mediaAlt')}
-                    className="aspect-[4/3] max-h-[70vh] w-full object-cover transition duration-500 group-hover:scale-[1.02] sm:aspect-[16/10] md:max-h-[34rem]"
+                    className="aspect-[4/3] h-auto max-h-[70vh] w-full max-w-full object-cover transition duration-500 group-hover:scale-[1.02] sm:aspect-[16/10] md:max-h-[34rem]"
                     onError={() => setHasMediaError(true)}
                   />
                 )}
@@ -313,15 +315,15 @@ function PostCard({
               </div>
             ) : null}
 
-            <div className="mt-5 flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-              <div className="yz-horizontal-scroll yz-no-scrollbar sm:flex sm:flex-wrap sm:overflow-visible">
+            <div className="mt-5 flex w-full max-w-full min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+              <div className="flex w-full max-w-full min-w-0 flex-wrap justify-center gap-2 sm:w-auto sm:justify-start">
                 {POST_REACTIONS.map((reaction) => (
                   <button
                     key={reaction.key}
                     type="button"
                     onClick={() => onToggleLike(post.id, reaction.key)}
                     disabled={isLikePending}
-                    className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold transition hover:-translate-y-0.5 disabled:cursor-wait disabled:opacity-60 ${
+                    className={`inline-flex min-w-0 items-center justify-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold transition hover:-translate-y-0.5 disabled:cursor-wait disabled:opacity-60 ${
                       post.userReaction === reaction.key
                         ? 'border-violet-300 bg-violet-600 text-white shadow-[0_12px_26px_rgba(124,58,237,0.18)]'
                         : 'border-violet-100 bg-white/86 text-violet-900 hover:bg-violet-50 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-50 dark:hover:bg-white/14'
@@ -330,7 +332,7 @@ function PostCard({
                     title={t(reaction.labelKey)}
                   >
                     <span aria-hidden="true">{reaction.icon}</span>
-                    <span>
+                    <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>
                       {reaction.key === 'like' ? post.likes : getReactionCount(post.reactions, reaction.key)}
                     </span>
                   </button>
@@ -341,14 +343,19 @@ function PostCard({
                 type="button"
                 variant="ghost"
                 onClick={() => setShowComments((current) => !current)}
-                className="justify-center"
+                className="w-full justify-center sm:w-auto"
               >
                 {showComments ? t('common.hide') : t('post.comments')} |{' '}
-                {post.commentsCount ?? post.comments?.length ?? 0}
+                <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>
+                  {post.commentsCount ?? post.comments?.length ?? 0}
+                </span>
               </Button>
 
-              <span className="inline-flex items-center justify-center rounded-full border border-violet-100 bg-white/70 px-4 py-2 text-sm font-semibold text-stone-600 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-100/80">
-                {t('post.shares')} | {post.sharesCount ?? 0}
+              <span className="inline-flex w-full max-w-full items-center justify-center rounded-full border border-violet-100 bg-white/70 px-4 py-2 text-sm font-semibold text-stone-600 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-100/80 sm:w-auto">
+                {t('post.shares')} |{' '}
+                <span dir="ltr" style={{ unicodeBidi: 'isolate' }}>
+                  {post.sharesCount ?? 0}
+                </span>
               </span>
             </div>
           </div>
