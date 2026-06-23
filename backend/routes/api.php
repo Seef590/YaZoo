@@ -57,6 +57,9 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
 
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 
+    Route::get('/veterinarians', [VeterinarianController::class, 'index']);
+    Route::get('/veterinarians/{veterinarian}', [VeterinarianController::class, 'show']);
+
     Route::middleware([UseSanctumTokenFromCookie::class, 'auth:sanctum'])->group(function (): void {
         Route::get('/posts', [PostController::class, 'index']);
         Route::middleware('throttle:feed-write')->group(function (): void {
@@ -92,9 +95,6 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
         Route::get('/my/services', [ServiceListingController::class, 'mine']);
         Route::get('/services/types', [ServiceListingController::class, 'types']);
         Route::get('/services/{service}', [ServiceListingController::class, 'show']);
-
-        Route::get('/veterinarians', [VeterinarianController::class, 'index']);
-        Route::get('/veterinarians/{veterinarian}', [VeterinarianController::class, 'show']);
 
         Route::middleware('throttle:marketplace-write')->group(function (): void {
             Route::post('/animals', [AnimalController::class, 'store']);

@@ -12,6 +12,43 @@ class VeterinarianApiTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_guest_can_list_active_veterinarians(): void
+    {
+        Veterinarian::factory()->create([
+            'name' => 'Dr Public Vet',
+            'is_active' => true,
+        ]);
+
+        Veterinarian::factory()->create([
+            'name' => 'Inactive Vet',
+            'is_active' => false,
+        ]);
+
+        $this->getJson('/api/veterinarians')
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.name', 'Dr Public Vet');
+    }
+
+    public function test_guest_can_view_active_veterinarian(): void
+    {
+        $veterinarian = Veterinarian::factory()->create([
+            'name' => 'Dr Public Detail',
+            'is_active' => true,
+        ]);
+
+        $this->getJson("/api/veterinarians/{$veterinarian->id}")
+            ->assertOk()
+            ->assertJsonPath('data.name', 'Dr Public Detail');
+    }
+
+    public function test_guest_cannot_create_veterinarian(): void
+    {
+        $this->postJson('/api/veterinarians', [
+            'name' => 'Guest Vet',
+        ])->assertUnauthorized();
+    }
+
     public function test_authenticated_user_can_list_veterinarians_with_filters(): void
     {
         $user = User::factory()->create();
