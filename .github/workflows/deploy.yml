@@ -58,12 +58,31 @@ jobs:
             .
           docker push "${{ secrets.DOCKERHUB_USERNAME }}/yazoo-api:${{ github.sha }}"
           docker push "${{ secrets.DOCKERHUB_USERNAME }}/yazoo-api:latest"
-      - name: Deploy backend App Service
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: yazoo-api
-          publish-profile: ${{ secrets.AZURE_API_PUBLISH_PROFILE }}
-          images: ${{ secrets.DOCKERHUB_USERNAME }}/yazoo-api:${{ github.sha }}
+      - name: Refresh backend App Service container
+        env:
+          PUBLISH_PROFILE: ${{ secrets.AZURE_API_PUBLISH_PROFILE }}
+        run: |
+          python3 - <<'PY' > /tmp/backend-kudu.env
+          import os
+          import shlex
+          import xml.etree.ElementTree as ET
+
+          root = ET.fromstring(os.environ["PUBLISH_PROFILE"])
+          profile = next(
+              (item for item in root.findall("publishProfile") if item.attrib.get("publishMethod") == "ZipDeploy"),
+              None,
+          )
+          if profile is None:
+              raise SystemExit("ZipDeploy publish profile not found")
+
+          print(f"SCM_USER={shlex.quote(profile.attrib['userName'])}")
+          print(f"SCM_PASS={shlex.quote(profile.attrib['userPWD'])}")
+          PY
+          . /tmp/backend-kudu.env
+          curl --fail --silent --show-error --output /dev/null --write-out "Backend hook HTTP %{http_code}\n" \
+            -X POST \
+            -u "$SCM_USER:$SCM_PASS" \
+            "https://yazoo-api.scm.azurewebsites.net/docker/hook"
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
@@ -77,9 +96,28 @@ jobs:
             .
           docker push "${{ secrets.DOCKERHUB_USERNAME }}/yazoo-frontend:${{ github.sha }}"
           docker push "${{ secrets.DOCKERHUB_USERNAME }}/yazoo-frontend:latest"
-      - name: Deploy frontend App Service
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: yazoo
-          publish-profile: ${{ secrets.AZURE_FRONTEND_PUBLISH_PROFILE }}
-          images: ${{ secrets.DOCKERHUB_USERNAME }}/yazoo-frontend:${{ github.sha }}
+      - name: Refresh frontend App Service container
+        env:
+          PUBLISH_PROFILE: ${{ secrets.AZURE_FRONTEND_PUBLISH_PROFILE }}
+        run: |
+          python3 - <<'PY' > /tmp/frontend-kudu.env
+          import os
+          import shlex
+          import xml.etree.ElementTree as ET
+
+          root = ET.fromstring(os.environ["PUBLISH_PROFILE"])
+          profile = next(
+              (item for item in root.findall("publishProfile") if item.attrib.get("publishMethod") == "ZipDeploy"),
+              None,
+          )
+          if profile is None:
+              raise SystemExit("ZipDeploy publish profile not found")
+
+          print(f"SCM_USER={shlex.quote(profile.attrib['userName'])}")
+          print(f"SCM_PASS={shlex.quote(profile.attrib['userPWD'])}")
+          PY
+          . /tmp/frontend-kudu.env
+          curl --fail --silent --show-error --output /dev/null --write-out "Frontend hook HTTP %{http_code}\n" \
+            -X POST \
+            -u "$SCM_USER:$SCM_PASS" \
+            "https://yazoo.scm.azurewebsites.net/docker/hook"
