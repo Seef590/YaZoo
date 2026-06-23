@@ -44,12 +44,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write
     steps:
       - uses: actions/checkout@v4
-      - uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
       - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -63,23 +59,11 @@ jobs:
           docker push "${{ secrets.DOCKERHUB_USERNAME }}/yazoo-api:${{ github.sha }}"
           docker push "${{ secrets.DOCKERHUB_USERNAME }}/yazoo-api:latest"
       - name: Deploy backend App Service
-        run: |
-          az webapp config container set \
-            --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
-            --name "${{ secrets.AZURE_WEBAPP_NAME }}" \
-            --container-image-name "${{ secrets.DOCKERHUB_USERNAME }}/yazoo-api:${{ github.sha }}" \
-            --container-registry-url "https://index.docker.io"
-          az webapp config appsettings set \
-            --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
-            --name "${{ secrets.AZURE_WEBAPP_NAME }}" \
-            --settings WEBSITES_PORT=8080 WEBSITES_CONTAINER_START_TIME_LIMIT=1800 WEBSITE_HEALTHCHECK_MAXPINGFAILURES=3 YAZOO_RUN_MIGRATIONS=true YAZOO_RUNTIME_OPTIMIZE=true YAZOO_IMAGE_TAG="${{ github.sha }}"
-          az webapp config set \
-            --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
-            --name "${{ secrets.AZURE_WEBAPP_NAME }}" \
-            --generic-configurations '{"healthCheckPath":"/health/ready"}'
-          az webapp restart \
-            --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
-            --name "${{ secrets.AZURE_WEBAPP_NAME }}"
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: yazoo-api
+          publish-profile: ${{ secrets.AZURE_API_PUBLISH_PROFILE }}
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/yazoo-api:${{ github.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
@@ -94,16 +78,8 @@ jobs:
           docker push "${{ secrets.DOCKERHUB_USERNAME }}/yazoo-frontend:${{ github.sha }}"
           docker push "${{ secrets.DOCKERHUB_USERNAME }}/yazoo-frontend:latest"
       - name: Deploy frontend App Service
-        run: |
-          az webapp config container set \
-            --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
-            --name "yazoo" \
-            --container-image-name "${{ secrets.DOCKERHUB_USERNAME }}/yazoo-frontend:${{ github.sha }}" \
-            --container-registry-url "https://index.docker.io"
-          az webapp config appsettings set \
-            --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
-            --name "yazoo" \
-            --settings WEBSITES_PORT=80 WEBSITES_CONTAINER_START_TIME_LIMIT=600 YAZOO_IMAGE_TAG="${{ github.sha }}"
-          az webapp restart \
-            --resource-group "${{ secrets.AZURE_RESOURCE_GROUP }}" \
-            --name "yazoo"
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: yazoo
+          publish-profile: ${{ secrets.AZURE_FRONTEND_PUBLISH_PROFILE }}
+          images: ${{ secrets.DOCKERHUB_USERNAME }}/yazoo-frontend:${{ github.sha }}
