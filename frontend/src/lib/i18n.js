@@ -3230,6 +3230,288 @@ messages.en = deepMerge(messages.en, {
   },
 })
 
+messages.fr = deepMerge(messages.fr, {
+  common: {
+    loadingSession: 'Vérification de la session...',
+    backHome: "Retour à l'accueil",
+    or: 'ou',
+    country: 'Pays',
+  },
+  auth: {
+    showPassword: 'Afficher le mot de passe',
+    hidePassword: 'Masquer le mot de passe',
+    passwordPlaceholder: '********',
+    countryPlaceholder: 'Maroc',
+    login: {
+      title: 'Connexion',
+      panelTitle: 'Heureux de vous retrouver',
+      subtitle:
+        'Connectez-vous à votre compte YaZoo pour reprendre vos publications, vos annonces et vos conversations.',
+      heroTitle:
+        'Revenez dans un espace qui donne envie de partager, vendre et rester présent.',
+      heroText:
+        'Connectez-vous pour retrouver votre univers YaZoo, vos contacts, vos stories et votre marketplace.',
+      email: 'Email',
+      emailPlaceholder: 'vous@exemple.com',
+      password: 'Mot de passe',
+      submit: 'Se connecter',
+      loading: 'Connexion...',
+      forgotPassword: 'Mot de passe oublié ?',
+      noAccount: 'Pas encore de compte ?',
+      createAccount: 'Créer un compte',
+      google: 'Continuer avec Google',
+      googleUnavailable: 'Connexion Google indisponible pour le moment.',
+      googleNotConfigured:
+        'Connexion Google indisponible : les identifiants OAuth ne sont pas configurés.',
+      success: 'Connexion réussie.',
+      failed: 'Impossible de se connecter pour le moment.',
+      highlights: {
+        one: 'Retrouvez vos stories, vos messages et vos annonces en un seul endroit.',
+        two: 'Suivez vos réservations, vos ventes et vos contacts sans perdre le fil.',
+        three: 'Revenez vite à votre communauté et aux moments que vous partagez.',
+      },
+    },
+    register: {
+      title: 'Inscription',
+      panelTitle: 'Ouvrir mon espace YaZoo',
+      subtitle:
+        'Créez votre compte YaZoo en quelques instants et accédez à un espace prêt pour vos publications, annonces et contacts.',
+      heroTitle:
+        'Créez votre place dans une plateforme qui rend le monde animalier plus vivant.',
+      heroText:
+        'Ouvrez votre espace YaZoo pour partager votre univers, publier vos annonces et construire une réputation qui rassure.',
+      name: 'Nom complet',
+      namePlaceholder: 'Votre nom',
+      email: 'Email',
+      emailPlaceholder: 'vous@exemple.com',
+      password: 'Mot de passe',
+      passwordConfirmation: 'Confirmer le mot de passe',
+      city: 'Ville',
+      phone: 'Téléphone',
+      phonePlaceholder: '+212...',
+      submit: 'Créer mon compte',
+      loading: 'Création...',
+      alreadyAccount: 'Vous avez déjà un compte ?',
+      login: 'Se connecter',
+      google: 'Continuer avec Google',
+      googleUnavailable: 'Inscription Google indisponible pour le moment.',
+      googleNotConfigured:
+        'Inscription Google indisponible : les identifiants OAuth ne sont pas configurés.',
+      acceptTerms: "J'accepte les conditions d'utilisation",
+      success: 'Compte créé avec succès.',
+      failed: 'Impossible de créer le compte pour le moment.',
+      highlights: {
+        one: 'Créez une présence qui inspire confiance dès votre première apparition.',
+        two: 'Publiez, vendez, réservez et discutez dans un seul univers cohérent.',
+        three: 'Avancez avec une interface pensée pour être simple, douce et engageante.',
+      },
+    },
+    forgot: {
+      title: 'Mot de passe oublié',
+      subtitle: 'Recevez les instructions pour récupérer votre compte YaZoo.',
+      submit: 'Envoyer les instructions',
+      backToLogin: 'Retour à la connexion',
+      success: 'Instructions envoyées.',
+      failed: "Impossible d'envoyer les instructions.",
+    },
+    reset: {
+      title: 'Réinitialiser le mot de passe',
+      subtitle: 'Choisissez un nouveau mot de passe pour votre compte YaZoo.',
+      submit: 'Réinitialiser',
+      success: 'Mot de passe réinitialisé.',
+      failed: 'Impossible de réinitialiser le mot de passe.',
+    },
+  },
+})
+
+messages.ar = deepMerge(messages.ar, {
+  common: {
+    loadingSession: 'جارٍ التحقق من الجلسة...',
+    backHome: 'العودة إلى الصفحة الرئيسية',
+    or: 'أو',
+    country: 'البلد',
+  },
+  auth: {
+    showPassword: 'إظهار كلمة المرور',
+    hidePassword: 'إخفاء كلمة المرور',
+    passwordPlaceholder: '********',
+    countryPlaceholder: 'المغرب',
+    login: {
+      title: 'تسجيل الدخول',
+      panelTitle: 'سعداء بعودتك',
+      subtitle:
+        'سجّل الدخول إلى حسابك في YaZoo لمتابعة منشوراتك وإعلاناتك ومحادثاتك.',
+      heroTitle:
+        'عد إلى مساحة تشجعك على المشاركة والبيع والبقاء قريبا من مجتمعك.',
+      heroText:
+        'سجّل الدخول لاستعادة عالمك في YaZoo وجهات اتصالك وقصصك والسوق الخاص بك.',
+      email: 'البريد الإلكتروني',
+      emailPlaceholder: 'you@example.com',
+      password: 'كلمة المرور',
+      submit: 'تسجيل الدخول',
+      loading: 'جارٍ تسجيل الدخول...',
+      forgotPassword: 'هل نسيت كلمة المرور؟',
+      noAccount: 'ليس لديك حساب بعد؟',
+      createAccount: 'إنشاء حساب',
+      google: 'المتابعة باستخدام Google',
+      googleUnavailable: 'تسجيل الدخول عبر Google غير متاح حاليا.',
+      googleNotConfigured:
+        'تسجيل الدخول عبر Google غير متاح: بيانات OAuth غير مهيأة.',
+      success: 'تم تسجيل الدخول بنجاح.',
+      failed: 'تعذر تسجيل الدخول حاليا.',
+      highlights: {
+        one: 'اجمع قصصك ورسائلك وإعلاناتك في مكان واحد.',
+        two: 'تابع حجوزاتك ومبيعاتك وجهات اتصالك بسهولة.',
+        three: 'عد بسرعة إلى مجتمعك واللحظات التي تشاركها.',
+      },
+    },
+    register: {
+      title: 'التسجيل',
+      panelTitle: 'افتح مساحتك في YaZoo',
+      subtitle:
+        'أنشئ حسابك في YaZoo خلال لحظات وابدأ في نشر منشوراتك وإعلاناتك والتواصل مع الآخرين.',
+      heroTitle:
+        'اصنع مكانك في منصة تجعل عالم الحيوانات أكثر حيوية.',
+      heroText:
+        'افتح مساحتك في YaZoo لمشاركة عالمك ونشر إعلاناتك وبناء سمعة تمنح الثقة.',
+      name: 'الاسم الكامل',
+      namePlaceholder: 'اسمك الكامل',
+      email: 'البريد الإلكتروني',
+      emailPlaceholder: 'you@example.com',
+      password: 'كلمة المرور',
+      passwordConfirmation: 'تأكيد كلمة المرور',
+      city: 'المدينة',
+      phone: 'الهاتف',
+      phonePlaceholder: '+212...',
+      submit: 'إنشاء حساب',
+      loading: 'جارٍ إنشاء الحساب...',
+      alreadyAccount: 'لديك حساب بالفعل؟',
+      login: 'تسجيل الدخول',
+      google: 'المتابعة باستخدام Google',
+      googleUnavailable: 'التسجيل عبر Google غير متاح حاليا.',
+      googleNotConfigured:
+        'التسجيل عبر Google غير متاح: بيانات OAuth غير مهيأة.',
+      acceptTerms: 'أوافق على شروط الاستخدام',
+      success: 'تم إنشاء الحساب بنجاح.',
+      failed: 'تعذر إنشاء الحساب حاليا.',
+      highlights: {
+        one: 'أنشئ حضورا يلهم الثقة منذ ظهورك الأول.',
+        two: 'انشر وبع واحجز وتواصل داخل مساحة واحدة منسجمة.',
+        three: 'استفد من واجهة بسيطة ولطيفة وسهلة الاستخدام.',
+      },
+    },
+    forgot: {
+      title: 'نسيت كلمة المرور',
+      subtitle: 'استلم تعليمات استرجاع حسابك في YaZoo.',
+      submit: 'إرسال التعليمات',
+      backToLogin: 'الرجوع إلى تسجيل الدخول',
+      success: 'تم إرسال التعليمات.',
+      failed: 'تعذر إرسال التعليمات.',
+    },
+    reset: {
+      title: 'إعادة تعيين كلمة المرور',
+      subtitle: 'اختر كلمة مرور جديدة لحسابك في YaZoo.',
+      submit: 'إعادة التعيين',
+      success: 'تمت إعادة تعيين كلمة المرور.',
+      failed: 'تعذر إعادة تعيين كلمة المرور.',
+    },
+  },
+})
+
+messages.en = deepMerge(messages.en, {
+  common: {
+    loadingSession: 'Checking the session...',
+    backHome: 'Back to home',
+    or: 'or',
+    country: 'Country',
+  },
+  auth: {
+    showPassword: 'Show password',
+    hidePassword: 'Hide password',
+    passwordPlaceholder: '********',
+    countryPlaceholder: 'Morocco',
+    login: {
+      title: 'Sign in',
+      panelTitle: 'Welcome back',
+      subtitle:
+        'Sign in to your YaZoo account to continue your posts, listings, and conversations.',
+      heroTitle:
+        'Come back to a space made for sharing, selling, and staying close to your community.',
+      heroText:
+        'Sign in to find your YaZoo world, contacts, stories, and marketplace again.',
+      email: 'Email',
+      emailPlaceholder: 'you@example.com',
+      password: 'Password',
+      submit: 'Sign in',
+      loading: 'Signing in...',
+      forgotPassword: 'Forgot password?',
+      noAccount: 'Don’t have an account?',
+      createAccount: 'Create an account',
+      google: 'Continue with Google',
+      googleUnavailable: 'Google sign-in is unavailable right now.',
+      googleNotConfigured:
+        'Google sign-in is unavailable: OAuth credentials are not configured.',
+      success: 'Signed in successfully.',
+      failed: 'Unable to sign in right now.',
+      highlights: {
+        one: 'Find your stories, messages, and listings in one place.',
+        two: 'Track your reservations, sales, and contacts without losing the thread.',
+        three: 'Return quickly to your community and the moments you share.',
+      },
+    },
+    register: {
+      title: 'Sign up',
+      panelTitle: 'Open my YaZoo space',
+      subtitle:
+        'Create your YaZoo account in a few moments and access a space ready for your posts, listings, and contacts.',
+      heroTitle:
+        'Create your place in a platform that makes the animal world feel more alive.',
+      heroText:
+        'Open your YaZoo space to share your world, publish listings, and build a reassuring reputation.',
+      name: 'Full name',
+      namePlaceholder: 'Your name',
+      email: 'Email',
+      emailPlaceholder: 'you@example.com',
+      password: 'Password',
+      passwordConfirmation: 'Confirm password',
+      city: 'City',
+      phone: 'Phone',
+      phonePlaceholder: '+212...',
+      submit: 'Create my account',
+      loading: 'Creating...',
+      alreadyAccount: 'Already have an account?',
+      login: 'Sign in',
+      google: 'Continue with Google',
+      googleUnavailable: 'Google sign-up is unavailable right now.',
+      googleNotConfigured:
+        'Google sign-up is unavailable: OAuth credentials are not configured.',
+      acceptTerms: 'I accept the terms of use',
+      success: 'Account created successfully.',
+      failed: 'Unable to create the account right now.',
+      highlights: {
+        one: 'Create a presence that inspires trust from your first appearance.',
+        two: 'Publish, sell, reserve, and chat in one coherent space.',
+        three: 'Move forward with an interface designed to feel simple, warm, and engaging.',
+      },
+    },
+    forgot: {
+      title: 'Forgot password',
+      subtitle: 'Receive instructions to recover your YaZoo account.',
+      submit: 'Send instructions',
+      backToLogin: 'Back to sign in',
+      success: 'Instructions sent.',
+      failed: 'Unable to send instructions.',
+    },
+    reset: {
+      title: 'Reset password',
+      subtitle: 'Choose a new password for your YaZoo account.',
+      submit: 'Reset password',
+      success: 'Password reset successfully.',
+      failed: 'Unable to reset the password.',
+    },
+  },
+})
+
 function deepMerge(base, override = {}) {
   const result = { ...base }
 

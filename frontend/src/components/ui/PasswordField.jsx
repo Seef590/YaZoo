@@ -1,7 +1,14 @@
 import { useState } from 'react'
 
-function PasswordField({ label, onChange, ...props }) {
+function PasswordField({
+  label,
+  onChange,
+  showLabel = 'Afficher le mot de passe',
+  hideLabel = 'Masquer le mot de passe',
+  ...props
+}) {
   const [isVisible, setIsVisible] = useState(false)
+  const toggleLabel = isVisible ? hideLabel : showLabel
 
   return (
     <label className="block">
@@ -11,16 +18,16 @@ function PasswordField({ label, onChange, ...props }) {
       <div className="relative">
         <input
           type={isVisible ? 'text' : 'password'}
-          className="w-full rounded-2xl border border-violet-100 bg-violet-50/55 px-4 py-3 pr-12 text-sm text-stone-700 outline-none transition placeholder:text-stone-400 focus:border-violet-400 focus:bg-white dark:border-violet-300/18 dark:bg-[#12051f] dark:text-violet-50 dark:placeholder:text-violet-200/45 dark:focus:bg-[#160827]"
+          className="w-full rounded-2xl border border-violet-100 bg-violet-50/55 px-4 py-3 pe-12 text-sm text-stone-700 outline-none transition placeholder:text-stone-400 focus:border-violet-400 focus:bg-white dark:border-violet-300/18 dark:bg-[#12051f] dark:text-violet-50 dark:placeholder:text-violet-200/45 dark:focus:bg-[#160827]"
           onChange={(event) => onChange(event.target.value)}
           {...props}
         />
         <button
           type="button"
           onClick={() => setIsVisible((current) => !current)}
-          className="absolute inset-y-0 right-2 my-auto inline-flex h-8 w-8 items-center justify-center rounded-full text-violet-700 transition hover:bg-violet-100 dark:bg-black/40 dark:text-violet-200 dark:hover:bg-violet-500/18"
-          aria-label={isVisible ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
-          title={isVisible ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+          className="absolute inset-y-0 end-2 my-auto inline-flex h-8 w-8 items-center justify-center rounded-full text-violet-700 transition hover:bg-violet-100 dark:bg-black/40 dark:text-violet-200 dark:hover:bg-violet-500/18"
+          aria-label={toggleLabel}
+          title={toggleLabel}
         >
           {isVisible ? <EyeOffIcon /> : <EyeIcon />}
         </button>

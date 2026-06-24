@@ -1,21 +1,22 @@
-import { useState } from 'react'
+import { useContext, useMemo, useState } from 'react'
 import { Link, Navigate, useSearchParams } from 'react-router-dom'
 
 import { getGoogleAuthUrl, isGoogleAuthEnabled } from '../api/auth'
 import Button from '../components/ui/Button'
 import Footer from '../components/ui/Footer'
 import PasswordField from '../components/ui/PasswordField'
+import { I18nContext } from '../contexts/i18n-context'
 import { useAuth } from '../hooks/useAuth'
+import { translate } from '../lib/i18n'
 import { getErrorMessage } from '../utils/getErrorMessage'
-
-const highlights = [
-  'Retrouvez vos stories, vos messages et vos annonces en un seul endroit.',
-  'Suivez vos reservations, vos ventes et vos contacts sans perdre le fil.',
-  'Revenez vite a votre communaute et aux moments que vous partagez.',
-]
 
 function LoginPage() {
   const { isAuthenticated, isBootstrapping, login } = useAuth()
+  const i18n = useContext(I18nContext)
+  const t = useMemo(
+    () => i18n?.t ?? ((key, replacements) => translate('fr', key, replacements)),
+    [i18n?.t],
+  )
   const [searchParams] = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -23,12 +24,20 @@ function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const googleAuthEnabled = isGoogleAuthEnabled()
   const authError = searchParams.get('auth_error')
+  const highlights = useMemo(
+    () => [
+      t('auth.login.highlights.one'),
+      t('auth.login.highlights.two'),
+      t('auth.login.highlights.three'),
+    ],
+    [t],
+  )
 
   if (isBootstrapping) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[linear-gradient(180deg,_#fffaff_0%,_#f6efff_100%)] px-4 py-10 dark:bg-[radial-gradient(circle_at_top_left,_rgba(124,58,237,0.28),_transparent_28%),linear-gradient(180deg,_#090011_0%,_#13071f_56%,_#08000f_100%)]">
         <p className="text-sm text-stone-600 dark:text-violet-100">
-          Verification de la session...
+          {t('common.loadingSession')}
         </p>
       </main>
     )
@@ -52,7 +61,7 @@ function LoginPage() {
       await login(payload)
     } catch (error) {
       setErrorMessage(
-        getErrorMessage(error, 'Impossible de se connecter pour le moment.'),
+        getErrorMessage(error, t('auth.login.failed')),
       )
     } finally {
       setIsSubmitting(false)
@@ -61,7 +70,7 @@ function LoginPage() {
 
   const handleGoogleLogin = () => {
     if (!googleAuthEnabled) {
-      setErrorMessage('Connexion Google indisponible pour le moment.')
+      setErrorMessage(t('auth.login.googleUnavailable'))
       return
     }
 
@@ -77,18 +86,17 @@ function LoginPage() {
             to="/"
             className="inline-flex items-center rounded-full border border-white/30 bg-white/16 px-4 py-2 text-sm font-medium text-white transition hover:-translate-y-0.5 hover:bg-white/24"
           >
-            Retour a l'accueil
+            {t('common.backHome')}
           </Link>
 
           <p className="mt-8 text-xs uppercase tracking-[0.24em] text-violet-50">
             YaZoo
           </p>
           <h1 className="mt-4 text-3xl font-semibold leading-tight text-white sm:text-4xl">
-            Revenez dans un espace qui donne envie de partager, vendre et rester present.
+            {t('auth.login.heroTitle')}
           </h1>
           <p className="mt-4 max-w-xl text-sm leading-7 text-violet-50/92">
-            Connectez-vous pour retrouver votre univers YaZoo, vos contacts, vos
-            stories et votre marketplace.
+            {t('auth.login.heroText')}
           </p>
 
           <div className="mt-8 space-y-3">
@@ -105,38 +113,40 @@ function LoginPage() {
 
         <section className="rounded-[30px] border border-white/80 bg-white/94 p-5 shadow-[0_28px_70px_rgba(124,58,237,0.1)] sm:rounded-[34px] sm:p-6 dark:border-violet-300/12 dark:bg-[linear-gradient(180deg,_rgba(30,16,49,0.96),_rgba(17,6,31,0.98))]">
           <p className="text-xs uppercase tracking-[0.24em] text-violet-700 dark:text-violet-300">
-            Connexion
+            {t('auth.login.title')}
           </p>
           <h2 className="mt-3 text-2xl font-semibold text-stone-950 sm:text-3xl dark:text-violet-50">
-            Heureux de vous retrouver
+            {t('auth.login.panelTitle')}
           </h2>
           <p className="mt-2 text-sm text-stone-500 dark:text-violet-100/70">
-            Ouvrez votre compte YaZoo pour reprendre vos publications, vos
-            annonces et vos conversations la ou elles vous attendent.
+            {t('auth.login.subtitle')}
           </p>
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <Field
-              label="Email"
+              label={t('auth.login.email')}
               type="email"
               name="email"
               value={email}
               onChange={setEmail}
-              placeholder="vous@exemple.com"
+              placeholder={t('auth.login.emailPlaceholder')}
               autoComplete="email"
+              dir="ltr"
             />
             <PasswordField
-              label="Mot de passe"
+              label={t('auth.login.password')}
               name="password"
               value={password}
               onChange={setPassword}
-              placeholder="********"
+              placeholder={t('auth.passwordPlaceholder')}
               autoComplete="current-password"
+              showLabel={t('auth.showPassword')}
+              hideLabel={t('auth.hidePassword')}
             />
 
             {authError === 'google_not_configured' ? (
               <p className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-300/20 dark:bg-amber-500/12 dark:text-amber-100">
-                Connexion Google indisponible : les identifiants OAuth ne sont pas configures.
+                {t('auth.login.googleNotConfigured')}
               </p>
             ) : null}
 
@@ -147,14 +157,14 @@ function LoginPage() {
             ) : null}
 
             <Button type="submit" className="w-full py-3" disabled={isSubmitting}>
-              {isSubmitting ? 'Connexion...' : 'Se connecter'}
+              {isSubmitting ? t('auth.login.loading') : t('auth.login.submit')}
             </Button>
           </form>
 
           <div className="my-5 flex items-center gap-3">
             <div className="h-px flex-1 bg-violet-100 dark:bg-violet-300/14" />
             <span className="text-xs uppercase tracking-[0.16em] text-stone-400 dark:text-violet-100/50">
-              ou
+              {t('common.or')}
             </span>
             <div className="h-px flex-1 bg-violet-100 dark:bg-violet-300/14" />
           </div>
@@ -166,13 +176,13 @@ function LoginPage() {
             className="inline-flex w-full items-center justify-center gap-3 rounded-full border border-violet-100 bg-white px-4 py-3 text-sm font-semibold text-stone-800 shadow-[0_14px_30px_rgba(124,58,237,0.08)] transition hover:-translate-y-0.5 hover:border-violet-200 hover:bg-violet-50/80 disabled:cursor-not-allowed disabled:opacity-55 dark:border-violet-300/14 dark:bg-[#12051f] dark:text-violet-50 dark:hover:bg-[#180827]"
           >
             <GoogleMark />
-            Continuer avec Google
+            {t('auth.login.google')}
           </button>
 
           <p className="mt-5 text-sm text-stone-500 dark:text-violet-100/70">
-            Pas encore de compte ?{' '}
+            {t('auth.login.noAccount')}{' '}
             <Link className="font-medium text-violet-900 dark:text-violet-300" to="/register">
-              Creer un compte
+              {t('auth.login.createAccount')}
             </Link>
           </p>
         </section>
