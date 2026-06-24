@@ -692,7 +692,7 @@ function FeedPage() {
 
           <article className="rounded-[28px] border border-white/80 bg-white/95 p-5 shadow-[0_18px_42px_rgba(124,58,237,0.08)]">
             <p className="text-xs uppercase tracking-[0.18em] text-violet-700">
-              Marketplace
+              {t('common.marketplaceBadge')}
             </p>
               {marketplaceHighlights.slice(0, 3).map((item) => (
               <button

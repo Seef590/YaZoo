@@ -235,7 +235,7 @@ function LandingPage() {
         >
           <div>
             <h2 className="text-2xl font-semibold text-stone-950 dark:text-white sm:text-3xl">
-              {t('landing.whyChoose')} <span className="text-violet-700">YaZoo</span> ?
+              {t('landing.whyChooseTitle')}
             </h2>
             <p className="mt-4 text-sm leading-7 text-stone-600 dark:text-violet-100/78">
               {t('landing.whyChooseText')}

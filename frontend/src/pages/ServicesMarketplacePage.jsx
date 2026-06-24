@@ -1,51 +1,123 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
 
-import { getServicesRequest } from '../api/services'
+import { createServiceRequest, getServicesRequest } from '../api/services'
 import ServiceCard from '../components/marketplace/ServiceCard'
 import { MarketplaceHero } from '../components/marketplace/MarketplaceCommon'
 import CollapsiblePanel from '../components/ui/CollapsiblePanel'
 import trainerHeroImage from '../assets/images/dresseur.png'
+import { useAuth } from '../hooks/useAuth'
 import { useI18n } from '../hooks/useI18n'
+
+const defaultServiceForm = {
+  type: 'pet_sitting',
+  title: '',
+  description: '',
+  city: '',
+  address: '',
+  price: '',
+  price_type: 'negotiable',
+  contact_phone: '',
+  contact_email: '',
+  whatsapp_enabled: true,
+}
 
 function ServicesMarketplacePage() {
   const { t } = useI18n()
+  const { isAuthenticated, isBootstrapping } = useAuth()
   const [services, setServices] = useState([])
   const [type, setType] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isFiltersOpen, setIsFiltersOpen] = useState(false)
+  const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const [serviceForm, setServiceForm] = useState(defaultServiceForm)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const activeFiltersCount = type ? 1 : 0
 
-  useEffect(() => {
-    let isMounted = true
+  const loadServices = useCallback(async () => {
+    setIsLoading(true)
+    setError('')
 
-    async function loadServices() {
-      setIsLoading(true)
-      setError('')
-
-      try {
-        const response = await getServicesRequest(type ? { type } : {})
-        if (isMounted) {
-          setServices(response.data.data ?? [])
-        }
-      } catch {
-        if (isMounted) {
-          setError(t('errors.generic'))
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false)
-        }
-      }
-    }
-
-    loadServices()
-
-    return () => {
-      isMounted = false
+    try {
+      const response = await getServicesRequest(type ? { type } : {})
+      setServices(response.data.data ?? [])
+    } catch {
+      setError(t('errors.generic'))
+    } finally {
+      setIsLoading(false)
     }
   }, [type, t])
+
+  useEffect(() => {
+    void loadServices()
+  }, [loadServices])
+
+  const handleFormChange = (field) => (event) => {
+    const value = field === 'whatsapp_enabled'
+      ? event.target.checked
+      : event.target.value
+
+    setServiceForm((current) => ({
+      ...current,
+      [field]: value,
+    }))
+  }
+
+  const handleCreateService = async (event) => {
+    event.preventDefault()
+    setError('')
+    setSuccess('')
+
+    const title = serviceForm.title.trim()
+    const description = serviceForm.description.trim()
+
+    if (!title || !description) {
+      setError(t('services.requiredFields'))
+      return
+    }
+
+    const payload = {
+      type: serviceForm.type,
+      title,
+      description,
+      price_type: serviceForm.price_type,
+      whatsapp_enabled: serviceForm.whatsapp_enabled,
+    }
+
+    const optionalFields = {
+      city: serviceForm.city.trim(),
+      address: serviceForm.address.trim(),
+      contact_phone: serviceForm.contact_phone.trim(),
+      contact_email: serviceForm.contact_email.trim(),
+    }
+
+    Object.entries(optionalFields).forEach(([field, value]) => {
+      if (value) {
+        payload[field] = value
+      }
+    })
+
+    if (serviceForm.price !== '') {
+      payload.price = Number(serviceForm.price)
+    }
+
+    setIsSubmitting(true)
+
+    try {
+      await createServiceRequest(payload)
+      setServiceForm(defaultServiceForm)
+      setIsCreateOpen(false)
+      setSuccess(t('services.created'))
+      await loadServices()
+    } catch {
+      setError(t('services.createFailed'))
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
     <section className="space-y-6">
@@ -61,6 +133,98 @@ function ServicesMarketplacePage() {
           { label: t('services.assistance'), value: t('services.petSitting') },
         ]}
       />
+
+      <CollapsiblePanel
+        kicker={t('services.publish')}
+        title={t('services.add')}
+        description={isAuthenticated ? t('services.createHint') : t('services.signInToPublish')}
+        summary={isAuthenticated ? t('services.create') : t('common.login')}
+        isOpen={isCreateOpen}
+        onToggle={() => setIsCreateOpen((current) => !current)}
+        showLabel={t('services.add')}
+        hideLabel={t('common.hide')}
+      >
+        {!isBootstrapping && !isAuthenticated ? (
+          <div className="rounded-[24px] border border-violet-100 bg-violet-50/70 px-5 py-5 text-sm text-stone-700 dark:border-violet-300/18 dark:bg-white/10 dark:text-violet-50">
+            <p>{t('services.signInToPublish')}</p>
+            <Link
+              to="/login"
+              className="mt-4 inline-flex rounded-full bg-[linear-gradient(135deg,#7c3aed,#a855f7)] px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-105"
+            >
+              {t('common.login')}
+            </Link>
+          </div>
+        ) : (
+          <form className="grid gap-4" onSubmit={handleCreateService}>
+            <div className="grid gap-4 md:grid-cols-2">
+              <Field label={t('services.title')} value={serviceForm.title} onChange={handleFormChange('title')} required />
+              <SelectField
+                label={t('services.category')}
+                value={serviceForm.type}
+                onChange={handleFormChange('type')}
+                options={[
+                  { value: 'pet_sitting', label: t('services.petSitting') },
+                  { value: 'training', label: t('services.training') },
+                ]}
+              />
+              <Field label={t('services.city')} value={serviceForm.city} onChange={handleFormChange('city')} />
+              <Field label={t('services.address')} value={serviceForm.address} onChange={handleFormChange('address')} />
+              <Field label={t('services.price')} type="number" min="0" step="0.01" value={serviceForm.price} onChange={handleFormChange('price')} />
+              <SelectField
+                label={t('services.priceType')}
+                value={serviceForm.price_type}
+                onChange={handleFormChange('price_type')}
+                options={[
+                  { value: 'negotiable', label: t('services.priceTypes.negotiable') },
+                  { value: 'fixed', label: t('services.priceTypes.fixed') },
+                  { value: 'hourly', label: t('services.priceTypes.hourly') },
+                  { value: 'daily', label: t('services.priceTypes.daily') },
+                  { value: 'session', label: t('services.priceTypes.session') },
+                ]}
+              />
+              <Field label={t('services.contact')} dir="ltr" value={serviceForm.contact_phone} onChange={handleFormChange('contact_phone')} />
+              <Field label={t('services.email')} dir="ltr" type="email" value={serviceForm.contact_email} onChange={handleFormChange('contact_email')} />
+            </div>
+            <label className="block">
+              <span className="mb-2 block text-sm font-medium text-stone-700 dark:text-violet-50">
+                {t('services.description')}
+              </span>
+              <textarea
+                rows={4}
+                value={serviceForm.description}
+                onChange={handleFormChange('description')}
+                required
+                className="w-full rounded-2xl border border-violet-100 bg-violet-50/55 px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-400 focus:bg-white dark:border-violet-300/18 dark:bg-white/8 dark:text-white"
+              />
+            </label>
+            <label className="inline-flex items-center gap-3 text-sm font-medium text-stone-700 dark:text-violet-50">
+              <input
+                type="checkbox"
+                checked={serviceForm.whatsapp_enabled}
+                onChange={handleFormChange('whatsapp_enabled')}
+                className="h-4 w-4 rounded border-violet-200 text-violet-700 focus:ring-violet-300"
+              />
+              {t('services.whatsapp')}
+            </label>
+            <div className="flex flex-wrap gap-3">
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="rounded-full bg-[linear-gradient(135deg,#7c3aed,#a855f7)] px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-105 disabled:opacity-60"
+              >
+                {isSubmitting ? t('common.sending') : t('services.save')}
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsCreateOpen(false)}
+                className="rounded-full border border-violet-100 bg-white px-5 py-2.5 text-sm font-semibold text-violet-900 transition hover:bg-violet-50 dark:border-violet-300/18 dark:bg-white/8 dark:text-violet-50"
+              >
+                {t('services.cancel')}
+              </button>
+            </div>
+          </form>
+        )}
+      </CollapsiblePanel>
 
       <CollapsiblePanel
         kicker={t('services.assistance')}
@@ -81,6 +245,10 @@ function ServicesMarketplacePage() {
         <div className="rounded-[24px] border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-700">{error}</div>
       ) : null}
 
+      {success ? (
+        <div className="rounded-[24px] border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-700">{success}</div>
+      ) : null}
+
       {isLoading ? (
         <div className="rounded-[28px] border border-violet-100 bg-white/84 px-5 py-12 text-center text-sm text-stone-500 dark:border-violet-300/16 dark:bg-white/10 dark:text-violet-100">
           {t('common.loading')}
@@ -89,7 +257,14 @@ function ServicesMarketplacePage() {
 
       {!isLoading && services.length === 0 ? (
         <div className="rounded-[28px] border border-dashed border-violet-200 bg-white/84 px-5 py-12 text-center text-sm text-stone-500 dark:border-violet-300/20 dark:bg-white/10 dark:text-violet-100">
-          {t('services.empty')}
+          <p>{t('services.empty')}</p>
+          <button
+            type="button"
+            onClick={() => setIsCreateOpen(true)}
+            className="mt-4 rounded-full bg-[linear-gradient(135deg,#7c3aed,#a855f7)] px-5 py-2.5 text-sm font-semibold text-white transition hover:brightness-105"
+          >
+            {t('services.add')}
+          </button>
         </div>
       ) : null}
 
@@ -99,6 +274,34 @@ function ServicesMarketplacePage() {
         ))}
       </div>
     </section>
+  )
+}
+
+function Field({ label, ...props }) {
+  return (
+    <label className="block">
+      <span className="mb-2 block text-sm font-medium text-stone-700 dark:text-violet-50">{label}</span>
+      <input
+        className="w-full rounded-2xl border border-violet-100 bg-violet-50/55 px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-400 focus:bg-white dark:border-violet-300/18 dark:bg-white/8 dark:text-white"
+        {...props}
+      />
+    </label>
+  )
+}
+
+function SelectField({ label, options, ...props }) {
+  return (
+    <label className="block">
+      <span className="mb-2 block text-sm font-medium text-stone-700 dark:text-violet-50">{label}</span>
+      <select
+        className="w-full rounded-2xl border border-violet-100 bg-violet-50/55 px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-400 focus:bg-white dark:border-violet-300/18 dark:bg-white/8 dark:text-white"
+        {...props}
+      >
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>{option.label}</option>
+        ))}
+      </select>
+    </label>
   )
 }
 
@@ -122,6 +325,15 @@ FilterButton.propTypes = {
   active: PropTypes.bool,
   onClick: PropTypes.func,
   children: PropTypes.node,
+}
+
+Field.propTypes = {
+  label: PropTypes.string,
+}
+
+SelectField.propTypes = {
+  label: PropTypes.string,
+  options: PropTypes.array,
 }
 
 export default ServicesMarketplacePage
