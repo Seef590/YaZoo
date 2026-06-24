@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\DTOs\PaginationData;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Notification\NotificationResource;
+use App\Notifications\NewMessageNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -26,7 +27,10 @@ class NotificationController extends Controller
     {
         return response()->json([
             'data' => [
-                'unreadCount' => $request->user()->unreadNotifications()->count(),
+                'unreadCount' => $request->user()
+                    ->unreadNotifications()
+                    ->where('type', '!=', NewMessageNotification::class)
+                    ->count(),
             ],
         ]);
     }

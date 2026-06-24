@@ -1,7 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
 
+import { getUnreadMessagesCountRequest } from '../api/messages'
+import { searchUsersRequest } from '../api/search'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import Footer from '../components/ui/Footer'
@@ -15,6 +17,7 @@ function Layout() {
   const { isAuthenticated, isBootstrapping, logout, user } = useAuth()
   const { isRtl, t } = useI18n()
   const { unreadCount } = useNotifications()
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [globalSearch, setGlobalSearch] = useState('')
   const mobileMenuTriggerRef = useRef(null)
@@ -68,6 +71,56 @@ function Layout() {
     }
   }, [location.search])
 
+  const refreshUnreadMessagesCount = useCallback(async () => {
+    if (!isAuthenticated) {
+      setUnreadMessagesCount(0)
+      return
+    }
+
+    try {
+      const response = await getUnreadMessagesCountRequest()
+      setUnreadMessagesCount(response.data.data.unreadCount ?? response.data.data.unread_count ?? 0)
+    } catch {
+      setUnreadMessagesCount(0)
+    }
+  }, [isAuthenticated])
+
+  useEffect(() => {
+    if (isBootstrapping) {
+      return undefined
+    }
+
+    const timeoutId = globalThis.setTimeout(refreshUnreadMessagesCount, 0)
+
+    if (!isAuthenticated) {
+      return () => {
+        globalThis.clearTimeout(timeoutId)
+      }
+    }
+
+    const intervalId = globalThis.setInterval(refreshUnreadMessagesCount, 45_000)
+
+    return () => {
+      globalThis.clearTimeout(timeoutId)
+      globalThis.clearInterval(intervalId)
+    }
+  }, [isAuthenticated, isBootstrapping, location.pathname, refreshUnreadMessagesCount])
+
+  const goToSearch = useCallback(
+    (query) => {
+      const safeQuery = query.trim()
+
+      if (!safeQuery) {
+        navigate('/search')
+      } else {
+        navigate(`/search?q=${encodeURIComponent(safeQuery)}`)
+      }
+
+      setIsMobileMenuOpen(false)
+    },
+    [navigate],
+  )
+
   if (isBootstrapping) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[linear-gradient(180deg,_#fffaff_0%,_#f7f1ff_100%)] px-4">
@@ -94,34 +147,17 @@ function Layout() {
 
   const handleGlobalSearch = (event) => {
     event.preventDefault()
-
-    const query = globalSearch.trim()
-    const targetPath = getSearchTargetPath(location.pathname)
-
-    if (!query) {
-      navigate(targetPath)
-      return
-    }
-
-    navigate(`${targetPath}?q=${encodeURIComponent(query)}`)
-    setIsMobileMenuOpen(false)
+    goToSearch(globalSearch)
   }
 
   const navigationItems = [
     { to: '/feed', label: t('common.feed') },
-    { to: '/profile', label: t('common.profile') },
     { to: '/marketplace', label: t('common.marketplace') },
     { to: '/communities', label: t('common.communities') },
     { to: '/messages', label: t('common.messages') },
     { to: '/reservations', label: t('common.reservations') },
     { to: '/orders/history', label: t('common.history') },
     { to: '/settings', label: t('common.settings') },
-    {
-      to: '/notifications',
-      label: unreadCount > 0
-        ? `${t('common.notifications')} (${unreadCount})`
-        : t('common.notifications'),
-    },
   ]
 
   if (user?.isAdmin) {
@@ -145,7 +181,7 @@ function Layout() {
             </NavLink>
 
             <form onSubmit={handleGlobalSearch} className="hidden min-w-[220px] flex-1 md:block">
-              <SearchInput value={globalSearch} onChange={setGlobalSearch} />
+              <SearchInput value={globalSearch} onChange={setGlobalSearch} onSearch={goToSearch} />
             </form>
 
             <div className="ms-auto flex items-center gap-2">
@@ -162,8 +198,22 @@ function Layout() {
               </button>
 
               <DesktopActionLink to="/feed" icon="home" label={t('common.feed')} className="hidden lg:inline-flex" />
-              <DesktopActionLink to="/messages" icon="chat" label={t('common.messages')} className="hidden lg:inline-flex" />
-              <DesktopActionLink to="/notifications" icon="bell" label={t('common.notifications')} className="hidden lg:inline-flex" />
+              <DesktopActionLink
+                to="/messages"
+                icon="chat"
+                label={t('common.messages')}
+                badgeCount={unreadMessagesCount}
+                badgeLabel={t('messages.unreadAria', { count: unreadMessagesCount })}
+                className="hidden lg:inline-flex"
+              />
+              <DesktopActionLink
+                to="/notifications"
+                icon="bell"
+                label={t('common.notifications')}
+                badgeCount={unreadCount}
+                badgeLabel={t('notifications.unreadAria', { count: unreadCount })}
+                className="hidden lg:inline-flex"
+              />
 
               <Link
                 to="/profile"
@@ -187,7 +237,7 @@ function Layout() {
           </div>
 
           <form onSubmit={handleGlobalSearch} className="mt-3 md:hidden">
-            <SearchInput value={globalSearch} onChange={setGlobalSearch} />
+            <SearchInput value={globalSearch} onChange={setGlobalSearch} onSearch={goToSearch} />
           </form>
 
           <div className="mt-3 flex flex-wrap items-center gap-2 sm:hidden">
@@ -218,7 +268,7 @@ function Layout() {
         t={t}
       />
 
-      <MobileBottomDock user={user} onCreateStory={handleCreateStory} t={t} />
+      <MobileBottomDock user={user} onCreateStory={handleCreateStory} t={t} notificationsCount={unreadCount} />
     </div>
   )
 }
@@ -247,43 +297,184 @@ function DesktopNav({ items }) {
   )
 }
 
-function SearchInput({ value, onChange }) {
+function SearchInput({ value, onChange, onSearch }) {
   const { t } = useI18n()
+  const navigate = useNavigate()
+  const [suggestions, setSuggestions] = useState([])
+  const [isOpen, setIsOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [activeIndex, setActiveIndex] = useState(-1)
+  const [hasError, setHasError] = useState(false)
+  const wrapperRef = useRef(null)
+  const trimmedValue = value.trim()
+
+  useEffect(() => {
+    if (trimmedValue.length < 2) {
+      setSuggestions([])
+      setIsLoading(false)
+      setHasError(false)
+      return undefined
+    }
+
+    let cancelled = false
+    const timeoutId = globalThis.setTimeout(async () => {
+      setIsLoading(true)
+      setHasError(false)
+
+      try {
+        const response = await searchUsersRequest(trimmedValue)
+
+        if (!cancelled) {
+          setSuggestions(Array.isArray(response.data.data) ? response.data.data : [])
+          setIsOpen(true)
+          setActiveIndex(-1)
+        }
+      } catch {
+        if (!cancelled) {
+          setSuggestions([])
+          setHasError(true)
+          setIsOpen(true)
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false)
+        }
+      }
+    }, 300)
+
+    return () => {
+      cancelled = true
+      globalThis.clearTimeout(timeoutId)
+    }
+  }, [trimmedValue])
+
+  useEffect(() => {
+    const handlePointerDown = (event) => {
+      if (!wrapperRef.current?.contains(event.target)) {
+        setIsOpen(false)
+      }
+    }
+
+    globalThis.addEventListener('pointerdown', handlePointerDown)
+
+    return () => {
+      globalThis.removeEventListener('pointerdown', handlePointerDown)
+    }
+  }, [])
+
+  const openSuggestion = (suggestion) => {
+    if (!suggestion?.url) {
+      return
+    }
+
+    setIsOpen(false)
+    onChange('')
+    navigate(suggestion.url)
+  }
+
+  const handleKeyDown = (event) => {
+    if (event.key === 'Escape') {
+      setIsOpen(false)
+      return
+    }
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault()
+      setIsOpen(true)
+      setActiveIndex((current) => Math.min(current + 1, suggestions.length - 1))
+      return
+    }
+
+    if (event.key === 'ArrowUp') {
+      event.preventDefault()
+      setActiveIndex((current) => Math.max(current - 1, -1))
+      return
+    }
+
+    if (event.key === 'Enter' && activeIndex >= 0 && suggestions[activeIndex]) {
+      event.preventDefault()
+      openSuggestion(suggestions[activeIndex])
+    }
+  }
 
   return (
-    <label className="block">
+    <label className="relative block" ref={wrapperRef}>
       <span className="sr-only">{t('common.search')}</span>
       <input
         type="search"
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        placeholder={t('common.searchPlaceholder')}
+        onFocus={() => setIsOpen(true)}
+        onKeyDown={handleKeyDown}
+        placeholder={t('search.placeholder')}
         className="w-full rounded-full border border-white/55 bg-white/70 px-4 py-2 text-sm text-stone-700 outline-none transition focus:border-violet-300 focus:bg-white dark:border-violet-300/14 dark:bg-white/10 dark:text-violet-50 dark:placeholder:text-violet-100/45 dark:focus:bg-white/14"
       />
+      {isOpen && trimmedValue.length >= 2 ? (
+        <div className="absolute inset-x-0 top-[calc(100%+0.5rem)] z-50 overflow-hidden rounded-[24px] border border-white/70 bg-white/95 p-2 shadow-[0_24px_60px_rgba(76,29,149,0.18)] backdrop-blur-2xl dark:border-violet-300/16 dark:bg-[#160d24]/95">
+          {isLoading ? <SearchState>{t('search.searching')}</SearchState> : null}
+          {!isLoading && hasError ? <SearchState>{t('search.error')}</SearchState> : null}
+          {!isLoading && !hasError && suggestions.length === 0 ? (
+            <SearchState>{t('search.noUsers')}</SearchState>
+          ) : null}
+          {!isLoading && suggestions.length > 0 ? (
+            <div className="max-h-80 overflow-y-auto">
+              {suggestions.map((suggestion, index) => (
+                <button
+                  key={suggestion.id}
+                  type="button"
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => openSuggestion(suggestion)}
+                  className={`flex w-full items-center gap-3 rounded-[18px] px-3 py-2.5 text-start transition ${
+                    index === activeIndex
+                      ? 'bg-violet-100 text-violet-950 dark:bg-violet-500/24 dark:text-white'
+                      : 'text-stone-700 hover:bg-violet-50 dark:text-violet-50 dark:hover:bg-white/10'
+                  }`}
+                  aria-label={t('search.viewProfile')}
+                >
+                  <Avatar
+                    name={suggestion.name ?? t('common.user')}
+                    src={suggestion.avatarUrl || ''}
+                    className="h-10 w-10 shrink-0"
+                  />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-semibold">{suggestion.name}</span>
+                    <span className="block truncate text-xs text-stone-500 dark:text-violet-100/65">
+                      @{suggestion.username ?? suggestion.id}
+                      {suggestion.city ? ` - ${suggestion.city}` : ''}
+                    </span>
+                  </span>
+                  <span className="rounded-full bg-violet-100 px-2.5 py-1 text-[11px] font-semibold text-violet-700 dark:bg-violet-500/24 dark:text-violet-100">
+                    {t('search.userType')}
+                  </span>
+                </button>
+              ))}
+            </div>
+          ) : null}
+          <button
+            type="button"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => onSearch(trimmedValue)}
+            className="mt-2 w-full rounded-[18px] border border-violet-100 bg-violet-50 px-3 py-2 text-sm font-semibold text-violet-800 transition hover:bg-violet-100 dark:border-violet-300/18 dark:bg-violet-500/20 dark:text-violet-50"
+          >
+            {t('search.viewAll')}
+          </button>
+        </div>
+      ) : null}
+      {isOpen && value.trim().length > 0 && value.trim().length < 2 ? (
+        <div className="absolute inset-x-0 top-[calc(100%+0.5rem)] z-50 rounded-[22px] border border-white/70 bg-white/95 px-4 py-3 text-sm text-stone-500 shadow-[0_18px_42px_rgba(76,29,149,0.14)] dark:border-violet-300/16 dark:bg-[#160d24]/95 dark:text-violet-100/70">
+          {t('search.minChars')}
+        </div>
+      ) : null}
     </label>
   )
 }
 
-function getSearchTargetPath(pathname) {
-  if (pathname.startsWith('/marketplace/products')) {
-    return '/marketplace/products'
-  }
-
-  if (pathname.startsWith('/marketplace')) {
-    return '/marketplace'
-  }
-
-  const searchablePaths = [
-    '/feed',
-    '/profile',
-    '/communities',
-    '/messages',
-    '/reservations',
-    '/notifications',
-    '/orders/history',
-  ]
-
-  return searchablePaths.includes(pathname) ? pathname : '/feed'
+function SearchState({ children }) {
+  return (
+    <div className="px-3 py-4 text-center text-sm text-stone-500 dark:text-violet-100/70">
+      {children}
+    </div>
+  )
 }
 
 function MobileMenuDrawer({
@@ -396,12 +587,14 @@ function MobileMenuDrawer({
   )
 }
 
-function DesktopActionLink({ to, icon, label, className = '' }) {
+function DesktopActionLink({ to, icon, label, badgeCount = 0, badgeLabel = '', className = '' }) {
+  const formattedBadge = formatBadgeCount(badgeCount)
+
   return (
     <NavLink
       to={to}
       className={({ isActive }) =>
-        `${className} h-10 w-10 items-center justify-center rounded-2xl border transition ${
+        `${className} relative h-10 w-10 items-center justify-center rounded-2xl border transition ${
           isActive
             ? 'border-violet-300 bg-[linear-gradient(135deg,#7c3aed,#a855f7,#c4b5fd)] text-white shadow-[0_10px_22px_rgba(124,58,237,0.18)]'
             : 'border-white/55 bg-white/35 text-stone-700 hover:border-violet-200 hover:bg-white/55 hover:text-violet-900'
@@ -411,15 +604,22 @@ function DesktopActionLink({ to, icon, label, className = '' }) {
       title={label}
     >
       <AppIcon name={icon} className="h-5 w-5" />
+      {badgeCount > 0 ? <UnreadBadge label={badgeLabel}>{formattedBadge}</UnreadBadge> : null}
     </NavLink>
   )
 }
 
-function MobileBottomDock({ user, onCreateStory, t }) {
+function MobileBottomDock({ user, onCreateStory, t, notificationsCount }) {
   return (
     <nav className="fixed bottom-3 left-1/2 z-30 flex w-[calc(100%-1rem)] max-w-md -translate-x-1/2 items-center justify-between rounded-[24px] border border-white/55 bg-[linear-gradient(135deg,_rgba(255,255,255,0.46),_rgba(248,240,255,0.32),_rgba(255,255,255,0.18))] px-1.5 py-1.5 pb-[max(0.375rem,env(safe-area-inset-bottom))] shadow-[0_20px_44px_rgba(124,58,237,0.14)] backdrop-blur-2xl dark:border-violet-300/16 dark:bg-[linear-gradient(135deg,_rgba(24,16,38,0.84),_rgba(49,24,83,0.58),_rgba(12,8,20,0.72))] lg:hidden">
       <MobileDockLink to="/feed" label={t('common.feed')} icon="home" />
-      <MobileDockLink to="/marketplace" label={t('common.marketplaceShort')} icon="search" />
+      <MobileDockLink
+        to="/notifications"
+        label={t('common.notificationsShort')}
+        icon="bell"
+        badgeCount={notificationsCount}
+        badgeLabel={t('notifications.unreadAria', { count: notificationsCount })}
+      />
       <MobileDockStoryButton onClick={onCreateStory} label={t('common.story')} />
       <MobileDockLink to="/messages" label={t('common.messagesShort')} icon="chat" />
       <MobileDockProfileLink user={user} label={t('common.profile')} />
@@ -427,7 +627,7 @@ function MobileBottomDock({ user, onCreateStory, t }) {
   )
 }
 
-function MobileDockLink({ to, label, icon }) {
+function MobileDockLink({ to, label, icon, badgeCount = 0, badgeLabel = '' }) {
   return (
     <NavLink
       to={to}
@@ -440,9 +640,26 @@ function MobileDockLink({ to, label, icon }) {
       }
     >
       <AppIcon name={icon} className="h-5 w-5" />
+      {badgeCount > 0 ? <UnreadBadge label={badgeLabel}>{formatBadgeCount(badgeCount)}</UnreadBadge> : null}
       <span className="max-w-[4.25rem] truncate whitespace-nowrap">{label}</span>
     </NavLink>
   )
+}
+
+function UnreadBadge({ children, label }) {
+  return (
+    <span
+      className="absolute -end-1 -top-1 min-w-5 rounded-full bg-rose-500 px-1.5 py-0.5 text-center text-[10px] font-bold leading-none text-white shadow-[0_8px_18px_rgba(225,29,72,0.28)] ring-2 ring-white dark:ring-[#160d24]"
+      aria-label={label}
+      dir="ltr"
+    >
+      {children}
+    </span>
+  )
+}
+
+function formatBadgeCount(count) {
+  return count > 99 ? '99+' : String(count)
 }
 
 function MobileDockProfileLink({ user, label }) {
@@ -622,6 +839,11 @@ DesktopNav.propTypes = {
 SearchInput.propTypes = {
   value: PropTypes.string,
   onChange: PropTypes.func,
+  onSearch: PropTypes.func,
+}
+
+SearchState.propTypes = {
+  children: PropTypes.node,
 }
 
 MobileMenuDrawer.propTypes = {
@@ -640,6 +862,8 @@ DesktopActionLink.propTypes = {
   to: PropTypes.string,
   icon: PropTypes.string,
   label: PropTypes.string,
+  badgeCount: PropTypes.number,
+  badgeLabel: PropTypes.string,
   className: PropTypes.string,
 }
 
@@ -647,12 +871,20 @@ MobileBottomDock.propTypes = {
   user: PropTypes.object,
   onCreateStory: PropTypes.func,
   t: PropTypes.func,
+  notificationsCount: PropTypes.number,
 }
 
 MobileDockLink.propTypes = {
   to: PropTypes.string,
   label: PropTypes.string,
   icon: PropTypes.string,
+  badgeCount: PropTypes.number,
+  badgeLabel: PropTypes.string,
+}
+
+UnreadBadge.propTypes = {
+  children: PropTypes.node,
+  label: PropTypes.string,
 }
 
 MobileDockProfileLink.propTypes = {

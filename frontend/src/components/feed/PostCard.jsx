@@ -47,6 +47,7 @@ function PostCard({
   const [hasMediaError, setHasMediaError] = useState(false)
   const [isSubmittingComment, setIsSubmittingComment] = useState(false)
   const [isUpdatingPost, setIsUpdatingPost] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const { mediaKind, mediaUrl } = getPostMedia(post)
   const canManagePost = String(post.author?.id) === String(currentUserId)
   const visibility = post.visibility ?? 'public'
@@ -177,12 +178,6 @@ function PostCard({
       return
     }
 
-    const confirmed = globalThis.confirm(t('post.deleteConfirm'))
-
-    if (!confirmed) {
-      return
-    }
-
     setIsUpdatingPost(true)
 
     try {
@@ -225,7 +220,10 @@ function PostCard({
             isUpdatingPost={isUpdatingPost}
             post={post}
             visibility={visibility}
-            onDeletePost={handleDeletePost}
+            onDeletePost={() => {
+              setIsMenuOpen(false)
+              setIsDeleteDialogOpen(true)
+            }}
             onEditPost={() => {
               setEditContent(post.content ?? '')
               setIsEditing(true)
@@ -430,6 +428,19 @@ function PostCard({
           </div>
         ) : null}
       </div>
+      <ConfirmDialog
+        isOpen={isDeleteDialogOpen}
+        title={t('confirm.deletePostTitle')}
+        message={t('confirm.deletePostMessage')}
+        confirmLabel={t('confirm.delete')}
+        cancelLabel={t('confirm.cancel')}
+        isProcessing={isUpdatingPost}
+        onCancel={() => setIsDeleteDialogOpen(false)}
+        onConfirm={() => {
+          setIsDeleteDialogOpen(false)
+          handleDeletePost()
+        }}
+      />
     </article>
   )
 }
@@ -459,6 +470,47 @@ function ShareIcon() {
         strokeLinejoin="round"
       />
     </svg>
+  )
+}
+
+function ConfirmDialog({
+  isOpen,
+  title,
+  message,
+  confirmLabel,
+  cancelLabel,
+  isProcessing,
+  onCancel,
+  onConfirm,
+}) {
+  if (!isOpen) {
+    return null
+  }
+
+  return (
+    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-violet-950/35 px-4 backdrop-blur-sm">
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="post-delete-confirm-title"
+        className="w-full max-w-md rounded-[30px] border border-white/70 bg-[linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(247,241,255,0.94),_rgba(237,233,254,0.9))] p-5 text-start shadow-[0_30px_80px_rgba(76,29,149,0.28)] dark:border-violet-300/16 dark:bg-[linear-gradient(135deg,_rgba(24,16,38,0.98),_rgba(49,24,83,0.94))]"
+      >
+        <h2 id="post-delete-confirm-title" className="text-lg font-semibold text-stone-950 dark:text-violet-50">
+          {title}
+        </h2>
+        <p className="mt-3 text-sm leading-6 text-stone-600 dark:text-violet-100/72">
+          {message}
+        </p>
+        <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <Button type="button" variant="ghost" onClick={onCancel} disabled={isProcessing} className="w-full sm:w-auto">
+            {cancelLabel}
+          </Button>
+          <Button type="button" onClick={onConfirm} disabled={isProcessing} className="w-full bg-rose-600 hover:bg-rose-500 sm:w-auto">
+            {isProcessing ? confirmLabel : confirmLabel}
+          </Button>
+        </div>
+      </section>
+    </div>
   )
 }
 
@@ -620,6 +672,17 @@ PostMenuButton.propTypes = {
 ProfileAvatar.propTypes = {
   user: PropTypes.object,
   t: PropTypes.func,
+}
+
+ConfirmDialog.propTypes = {
+  isOpen: PropTypes.bool,
+  title: PropTypes.string,
+  message: PropTypes.string,
+  confirmLabel: PropTypes.string,
+  cancelLabel: PropTypes.string,
+  isProcessing: PropTypes.bool,
+  onCancel: PropTypes.func,
+  onConfirm: PropTypes.func,
 }
 
 export default PostCard

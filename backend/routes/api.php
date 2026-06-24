@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ReservationController;
 use App\Http\Controllers\Api\ReservationReviewController;
+use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\ServiceListingController;
 use App\Http\Controllers\Api\StoryController;
 use App\Http\Controllers\Api\UserController;
@@ -146,6 +147,7 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
         Route::delete('/communities/{community}/membership-requests/{membership}', [CommunityController::class, 'rejectRequest']);
 
         Route::get('/conversations', [ConversationController::class, 'index']);
+        Route::get('/messages/unread-count', [ConversationController::class, 'unreadCount']);
         Route::get('/conversations/{conversation}', [ConversationController::class, 'show']);
         Route::patch('/conversations/{conversation}/read', [ConversationController::class, 'read']);
         Route::middleware('throttle:messages-write')->group(function (): void {
@@ -158,6 +160,9 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
         Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
         Route::post('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
         Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+
+        Route::get('/search', [SearchController::class, 'index']);
+        Route::get('/search/users', [SearchController::class, 'users']);
 
         Route::prefix('admin')->group(function (): void {
             Route::get('/users', [UserController::class, 'index']);

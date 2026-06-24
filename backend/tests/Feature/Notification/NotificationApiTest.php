@@ -3,8 +3,10 @@
 namespace Tests\Feature\Notification;
 
 use App\Models\Comment;
+use App\Models\Conversation;
 use App\Models\Post;
 use App\Models\User;
+use App\Notifications\NewMessageNotification;
 use App\Notifications\PostCommentedNotification;
 use App\Notifications\PostLikedNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -28,9 +30,18 @@ class NotificationApiTest extends TestCase
             'post_id' => $post->id,
             'user_id' => $actor->id,
         ]);
+        $conversation = Conversation::query()->create([
+            'participant_one_id' => min($user->id, $actor->id),
+            'participant_two_id' => max($user->id, $actor->id),
+        ]);
+        $message = $conversation->messages()->create([
+            'user_id' => $actor->id,
+            'body' => 'Message prive non lu',
+        ]);
 
         $user->notify(new PostLikedNotification($post, $actor));
         $user->notify(new PostCommentedNotification($post, $comment, $actor));
+        $user->notify(new NewMessageNotification($conversation, $message, $actor));
 
         Sanctum::actingAs($user, ['*']);
 
@@ -43,7 +54,7 @@ class NotificationApiTest extends TestCase
 
         $indexResponse
             ->assertOk()
-            ->assertJsonCount(2, 'data');
+            ->assertJsonCount(3, 'data');
 
         $this->postJson("/api/notifications/{$firstNotificationId}/read")
             ->assertOk()
@@ -55,7 +66,7 @@ class NotificationApiTest extends TestCase
 
         $this->postJson('/api/notifications/read-all')
             ->assertOk()
-            ->assertJsonPath('data.markedCount', 1)
+            ->assertJsonPath('data.markedCount', 2)
             ->assertJsonPath('data.unreadCount', 0);
     }
 }

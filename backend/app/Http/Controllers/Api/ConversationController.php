@@ -52,6 +52,28 @@ class ConversationController extends Controller
         return ConversationResource::collection($conversations);
     }
 
+    public function unreadCount(Request $request): JsonResponse
+    {
+        $userId = $request->user()->id;
+
+        $unreadCount = Message::query()
+            ->where('user_id', '!=', $userId)
+            ->whereNull('read_at')
+            ->whereHas('conversation', function ($query) use ($userId): void {
+                $query
+                    ->where('participant_one_id', $userId)
+                    ->orWhere('participant_two_id', $userId);
+            })
+            ->count();
+
+        return response()->json([
+            'data' => [
+                'unreadCount' => $unreadCount,
+                'unread_count' => $unreadCount,
+            ],
+        ]);
+    }
+
     /**
      * Start a conversation or reuse an existing one.
      */

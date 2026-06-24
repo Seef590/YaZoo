@@ -4,6 +4,10 @@ export function getConversationsRequest() {
   return api.get('/conversations')
 }
 
+export function getUnreadMessagesCountRequest() {
+  return api.get('/messages/unread-count')
+}
+
 export function createConversationRequest(payload) {
   return api.post('/conversations', payload)
 }

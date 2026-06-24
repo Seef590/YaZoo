@@ -3512,6 +3512,159 @@ messages.en = deepMerge(messages.en, {
   },
 })
 
+messages.fr = deepMerge(messages.fr, {
+  common: {
+    notificationsShort: 'Notif',
+  },
+  marketplace: {
+    adoption: 'Adoption',
+  },
+  messages: {
+    unreadAria: 'Messages, {count} non lus',
+  },
+  notifications: {
+    unreadAria: 'Notifications, {count} non lues',
+  },
+  search: {
+    badge: 'Recherche globale',
+    title: 'Retrouvez les profils, annonces et communautés YaZoo.',
+    subtitle: 'Cherchez des utilisateurs, communautés, animaux, produits, services et vétérinaires depuis un seul espace.',
+    placeholder: 'Rechercher...',
+    usersPlaceholder: 'Rechercher des utilisateurs...',
+    noUsers: 'Aucun utilisateur trouvé',
+    noResults: 'Aucun résultat trouvé',
+    searching: 'Recherche en cours...',
+    error: 'Impossible de charger la recherche.',
+    viewProfile: 'Voir le profil',
+    minChars: 'Tapez au moins 2 caractères',
+    viewAll: 'Voir tous les résultats',
+    userType: 'Utilisateur',
+    result: 'Résultat YaZoo',
+    tabs: {
+      all: 'Tous',
+      users: 'Utilisateurs',
+      communities: 'Communautés',
+      animals: 'Animaux',
+      products: 'Produits',
+      services: 'Services',
+      veterinarians: 'Vétérinaires',
+    },
+  },
+  confirm: {
+    title: "Confirmer l'action",
+    deletePostTitle: 'Supprimer ce post ?',
+    deletePostMessage: 'Cette action est définitive.',
+    deleteStoryTitle: 'Supprimer cette story ?',
+    deleteStoryMessage: 'Cette story sera retirée définitivement.',
+    delete: 'Supprimer',
+    cancel: 'Annuler',
+    success: 'Action réussie',
+    error: 'Une erreur est survenue',
+  },
+})
+
+messages.ar = deepMerge(messages.ar, {
+  common: {
+    notificationsShort: 'إشعارات',
+  },
+  marketplace: {
+    adoption: 'تبنّي',
+  },
+  messages: {
+    unreadAria: 'الرسائل، {count} غير مقروءة',
+  },
+  notifications: {
+    unreadAria: 'الإشعارات، {count} غير مقروءة',
+  },
+  search: {
+    badge: 'البحث الشامل',
+    title: 'اعثر على الملفات الشخصية والإعلانات والمجتمعات في YaZoo.',
+    subtitle: 'ابحث عن المستخدمين والمجتمعات والحيوانات والمنتجات والخدمات والأطباء البيطريين من مكان واحد.',
+    placeholder: 'ابحث...',
+    usersPlaceholder: 'ابحث عن المستخدمين...',
+    noUsers: 'لم يتم العثور على مستخدمين',
+    noResults: 'لم يتم العثور على نتائج',
+    searching: 'جارٍ البحث...',
+    error: 'تعذر تحميل البحث.',
+    viewProfile: 'عرض الملف الشخصي',
+    minChars: 'اكتب حرفين على الأقل',
+    viewAll: 'عرض كل النتائج',
+    userType: 'مستخدم',
+    result: 'نتيجة YaZoo',
+    tabs: {
+      all: 'الكل',
+      users: 'المستخدمون',
+      communities: 'المجتمعات',
+      animals: 'الحيوانات',
+      products: 'المنتجات',
+      services: 'الخدمات',
+      veterinarians: 'الأطباء البيطريون',
+    },
+  },
+  confirm: {
+    title: 'تأكيد الإجراء',
+    deletePostTitle: 'هل تريد حذف هذا المنشور؟',
+    deletePostMessage: 'هذا الإجراء نهائي.',
+    deleteStoryTitle: 'هل تريد حذف هذه القصة؟',
+    deleteStoryMessage: 'سيتم حذف هذه القصة نهائياً.',
+    delete: 'حذف',
+    cancel: 'إلغاء',
+    success: 'تم تنفيذ الإجراء',
+    error: 'حدث خطأ',
+  },
+})
+
+messages.en = deepMerge(messages.en, {
+  common: {
+    notificationsShort: 'Alerts',
+  },
+  marketplace: {
+    adoption: 'Adoption',
+  },
+  messages: {
+    unreadAria: 'Messages, {count} unread',
+  },
+  notifications: {
+    unreadAria: 'Notifications, {count} unread',
+  },
+  search: {
+    badge: 'Global search',
+    title: 'Find YaZoo profiles, listings, and communities.',
+    subtitle: 'Search users, communities, animals, products, services, and veterinarians from one place.',
+    placeholder: 'Search...',
+    usersPlaceholder: 'Search users...',
+    noUsers: 'No users found',
+    noResults: 'No results found',
+    searching: 'Searching...',
+    error: 'Unable to load search.',
+    viewProfile: 'View profile',
+    minChars: 'Type at least 2 characters',
+    viewAll: 'View all results',
+    userType: 'User',
+    result: 'YaZoo result',
+    tabs: {
+      all: 'All',
+      users: 'Users',
+      communities: 'Communities',
+      animals: 'Animals',
+      products: 'Products',
+      services: 'Services',
+      veterinarians: 'Veterinarians',
+    },
+  },
+  confirm: {
+    title: 'Confirm action',
+    deletePostTitle: 'Delete this post?',
+    deletePostMessage: 'This action is final.',
+    deleteStoryTitle: 'Delete this story?',
+    deleteStoryMessage: 'This story will be permanently removed.',
+    delete: 'Delete',
+    cancel: 'Cancel',
+    success: 'Action completed',
+    error: 'Something went wrong',
+  },
+})
+
 function deepMerge(base, override = {}) {
   const result = { ...base }
 

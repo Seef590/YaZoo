@@ -25,6 +25,7 @@ const ProductsMarketplacePage = lazy(() => import('./pages/ProductsMarketplacePa
 const ProfilePage = lazy(() => import('./pages/ProfilePage'))
 const RegisterPage = lazy(() => import('./pages/RegisterPage'))
 const ReservationsPage = lazy(() => import('./pages/ReservationsPage'))
+const SearchPage = lazy(() => import('./pages/SearchPage'))
 const ServicesMarketplacePage = lazy(() => import('./pages/ServicesMarketplacePage'))
 const SettingsPage = lazy(() => import('./pages/SettingsPage'))
 const VeterinariansMarketplacePage = lazy(() => import('./pages/VeterinariansMarketplacePage'))
@@ -77,6 +78,7 @@ function App() {
           <Route path="/communities/:communityId" element={<CommunityDetailPage />} />
           <Route path="/messages" element={<MessagesPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/search" element={<SearchPage />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Route>
         <Route

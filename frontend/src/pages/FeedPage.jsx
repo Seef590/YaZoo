@@ -28,6 +28,7 @@ import PostCard from '../components/feed/PostCard'
 import StoryComposerModal from '../components/feed/StoryComposerModal'
 import StoryViewer from '../components/feed/StoryViewer'
 import Avatar from '../components/ui/Avatar'
+import Button from '../components/ui/Button'
 import FollowButton from '../components/ui/FollowButton'
 import ScrollTopButton from '../components/ui/ScrollTopButton'
 import { useAuth } from '../hooks/useAuth'
@@ -64,6 +65,7 @@ function FeedPage() {
   const [isStoryComposerOpen, setIsStoryComposerOpen] = useState(false)
   const [isStorySubmitting, setIsStorySubmitting] = useState(false)
   const [isDeletingStoryId, setIsDeletingStoryId] = useState('')
+  const [storyPendingDelete, setStoryPendingDelete] = useState(null)
   const viewingStoryIdsRef = useRef(new Set())
 
   const loadPosts = useCallback(async () => {
@@ -419,12 +421,6 @@ function FeedPage() {
       return
     }
 
-    const confirmed = globalThis.confirm(t('feed.deleteStoryConfirm'))
-
-    if (!confirmed) {
-      return
-    }
-
     setIsDeletingStoryId(String(story.id))
     setStoryErrorMessage('')
     setStorySuccessMessage('')
@@ -441,6 +437,14 @@ function FeedPage() {
     } finally {
       setIsDeletingStoryId('')
     }
+  }
+
+  const requestDeleteStory = (story) => {
+    if (!story?.id) {
+      return
+    }
+
+    setStoryPendingDelete(story)
   }
 
   const storyRowItems = useMemo(
@@ -785,12 +789,68 @@ function FeedPage() {
         onChangeStory={setActiveStoryIndex}
         onClose={() => setActiveStoryIndex(null)}
         onStorySeen={handleStorySeen}
-        onDeleteStory={handleDeleteStory}
+        onDeleteStory={requestDeleteStory}
         isDeletingStoryId={isDeletingStoryId}
+      />
+
+      <FeedConfirmDialog
+        isOpen={Boolean(storyPendingDelete)}
+        title={t('confirm.deleteStoryTitle')}
+        message={t('confirm.deleteStoryMessage')}
+        confirmLabel={t('confirm.delete')}
+        cancelLabel={t('confirm.cancel')}
+        isProcessing={Boolean(isDeletingStoryId)}
+        onCancel={() => setStoryPendingDelete(null)}
+        onConfirm={() => {
+          const story = storyPendingDelete
+          setStoryPendingDelete(null)
+          handleDeleteStory(story)
+        }}
       />
 
       <ScrollTopButton />
     </section>
+  )
+}
+
+function FeedConfirmDialog({
+  isOpen,
+  title,
+  message,
+  confirmLabel,
+  cancelLabel,
+  isProcessing,
+  onCancel,
+  onConfirm,
+}) {
+  if (!isOpen) {
+    return null
+  }
+
+  return (
+    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-violet-950/35 px-4 backdrop-blur-sm">
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="feed-confirm-title"
+        className="w-full max-w-md rounded-[30px] border border-white/70 bg-[linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(247,241,255,0.94),_rgba(237,233,254,0.9))] p-5 text-start shadow-[0_30px_80px_rgba(76,29,149,0.28)] dark:border-violet-300/16 dark:bg-[linear-gradient(135deg,_rgba(24,16,38,0.98),_rgba(49,24,83,0.94))]"
+      >
+        <h2 id="feed-confirm-title" className="text-lg font-semibold text-stone-950 dark:text-violet-50">
+          {title}
+        </h2>
+        <p className="mt-3 text-sm leading-6 text-stone-600 dark:text-violet-100/72">
+          {message}
+        </p>
+        <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <Button type="button" variant="ghost" onClick={onCancel} disabled={isProcessing} className="w-full sm:w-auto">
+            {cancelLabel}
+          </Button>
+          <Button type="button" onClick={onConfirm} disabled={isProcessing} className="w-full bg-rose-600 hover:bg-rose-500 sm:w-auto">
+            {confirmLabel}
+          </Button>
+        </div>
+      </section>
+    </div>
   )
 }
 
@@ -1229,6 +1289,17 @@ UserSuggestionsSection.propTypes = {
   currentUserId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   onNavigate: PropTypes.func,
   t: PropTypes.func,
+}
+
+FeedConfirmDialog.propTypes = {
+  isOpen: PropTypes.bool,
+  title: PropTypes.string,
+  message: PropTypes.string,
+  confirmLabel: PropTypes.string,
+  cancelLabel: PropTypes.string,
+  isProcessing: PropTypes.bool,
+  onCancel: PropTypes.func,
+  onConfirm: PropTypes.func,
 }
 
 function buildMarketplaceHighlights(animals, products, userId, options = {}) {
