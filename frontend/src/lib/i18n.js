@@ -3724,6 +3724,17 @@ messages.en = deepMerge(messages.en, {
 })
 
 messages.fr = deepMerge(messages.fr, {
+  messages: {
+    startWithUser: 'Recherchez un utilisateur YaZoo puis envoyez un premier message.',
+    userSearchLabel: 'Utilisateur',
+    userSearchPlaceholder: 'Rechercher un utilisateur...',
+    selectUserFromList: 'Selectionnez un utilisateur dans la liste.',
+    noUsersFound: 'Aucun utilisateur trouve.',
+    selectedUser: 'Utilisateur selectionne',
+    startError: 'Impossible de demarrer la conversation.',
+    conversationCreated: 'Conversation creee et premier message envoye.',
+    conversationUpdated: 'Conversation mise a jour avec votre nouveau message.',
+  },
   notifications: {
     followTitle: 'Nouveau follower',
     followBody: '{name} a commencé à vous suivre.',
@@ -3738,6 +3749,17 @@ messages.fr = deepMerge(messages.fr, {
 })
 
 messages.ar = deepMerge(messages.ar, {
+  messages: {
+    startWithUser: '\u0627\u0628\u062d\u062b \u0639\u0646 \u0645\u0633\u062a\u062e\u062f\u0645 \u0641\u064a YaZoo \u062b\u0645 \u0623\u0631\u0633\u0644 \u0631\u0633\u0627\u0644\u0629 \u0623\u0648\u0644\u0649.',
+    userSearchLabel: '\u0627\u0644\u0645\u0633\u062a\u062e\u062f\u0645',
+    userSearchPlaceholder: '\u0627\u0628\u062d\u062b \u0639\u0646 \u0645\u0633\u062a\u062e\u062f\u0645...',
+    selectUserFromList: '\u0627\u062e\u062a\u0631 \u0645\u0633\u062a\u062e\u062f\u0645\u0627\u064b \u0645\u0646 \u0627\u0644\u0642\u0627\u0626\u0645\u0629.',
+    noUsersFound: '\u0644\u0645 \u064a\u062a\u0645 \u0627\u0644\u0639\u062b\u0648\u0631 \u0639\u0644\u0649 \u0645\u0633\u062a\u062e\u062f\u0645\u064a\u0646.',
+    selectedUser: '\u0627\u0644\u0645\u0633\u062a\u062e\u062f\u0645 \u0627\u0644\u0645\u062d\u062f\u062f',
+    startError: '\u062a\u0639\u0630\u0631 \u0628\u062f\u0621 \u0627\u0644\u0645\u062d\u0627\u062f\u062b\u0629.',
+    conversationCreated: '\u062a\u0645 \u0625\u0646\u0634\u0627\u0621 \u0627\u0644\u0645\u062d\u0627\u062f\u062b\u0629 \u0648\u0625\u0631\u0633\u0627\u0644 \u0623\u0648\u0644 \u0631\u0633\u0627\u0644\u0629.',
+    conversationUpdated: '\u062a\u0645 \u062a\u062d\u062f\u064a\u062b \u0627\u0644\u0645\u062d\u0627\u062f\u062b\u0629 \u0628\u0631\u0633\u0627\u0644\u062a\u0643 \u0627\u0644\u062c\u062f\u064a\u062f\u0629.',
+  },
   notifications: {
     followTitle: 'متابع جديد',
     followBody: 'بدأ {name} بمتابعتك.',
@@ -3752,6 +3774,17 @@ messages.ar = deepMerge(messages.ar, {
 })
 
 messages.en = deepMerge(messages.en, {
+  messages: {
+    startWithUser: 'Search for a YaZoo user, then send a first message.',
+    userSearchLabel: 'User',
+    userSearchPlaceholder: 'Search a user...',
+    selectUserFromList: 'Select a user from the list.',
+    noUsersFound: 'No users found.',
+    selectedUser: 'Selected user',
+    startError: 'Could not start the conversation.',
+    conversationCreated: 'Conversation created and first message sent.',
+    conversationUpdated: 'Conversation updated with your new message.',
+  },
   notifications: {
     followTitle: 'New follower',
     followBody: '{name} started following you.',

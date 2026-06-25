@@ -245,6 +245,9 @@ function CommunityDetailPage() {
   const coverStyle = community.imageUrl && !isVideoMedia(community.imageUrl)
     ? {
         backgroundImage: `url(${community.imageUrl})`,
+        backgroundSize: 'contain',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',
       }
     : undefined
   const safePosts = asArray(posts)
@@ -307,7 +310,7 @@ function CommunityDetailPage() {
         </div>
 
         <div
-          className="relative h-52 bg-[linear-gradient(135deg,#4c1d95,#7c3aed,#c4b5fd)] bg-cover bg-center sm:h-72 lg:h-96"
+          className="relative h-52 bg-[linear-gradient(135deg,#4c1d95,#7c3aed,#c4b5fd)] sm:h-72 lg:h-80"
           style={coverStyle}
         >
           <div className="absolute inset-0 bg-gradient-to-b from-white/0 via-white/0 to-white/10 dark:to-black/8" />

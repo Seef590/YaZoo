@@ -3,12 +3,12 @@ import { Link, useSearchParams } from 'react-router-dom'
 
 import {
   createDirectConversationRequest,
-  createConversationRequest,
   createMessageRequest,
   getConversationRequest,
   getConversationsRequest,
   markConversationReadRequest,
 } from '../api/messages'
+import { searchUsersRequest } from '../api/search'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import { useAuth } from '../hooks/useAuth'
@@ -20,7 +20,6 @@ import { formatDate } from '../utils/formatDate'
 import { getErrorMessage } from '../utils/getErrorMessage'
 
 const defaultConversationForm = {
-  recipient_email: '',
   body: '',
 }
 
@@ -34,6 +33,12 @@ function MessagesPage() {
   const [selectedConversationId, setSelectedConversationId] = useState(null)
   const [selectedConversation, setSelectedConversation] = useState(null)
   const [conversationForm, setConversationForm] = useState(defaultConversationForm)
+  const [recipientQuery, setRecipientQuery] = useState('')
+  const [recipientSuggestions, setRecipientSuggestions] = useState([])
+  const [selectedRecipient, setSelectedRecipient] = useState(null)
+  const [isRecipientSearchOpen, setIsRecipientSearchOpen] = useState(false)
+  const [isRecipientSearchLoading, setIsRecipientSearchLoading] = useState(false)
+  const [recipientSearchError, setRecipientSearchError] = useState(false)
   const [messageBody, setMessageBody] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
@@ -321,11 +326,65 @@ function MessagesPage() {
     }
   }, [latestNotification, loadConversations, openConversation, selectedConversationId])
 
+  useEffect(() => {
+    const trimmedQuery = recipientQuery.trim()
+
+    if (selectedRecipient || trimmedQuery.length < 2) {
+      setRecipientSuggestions([])
+      setIsRecipientSearchLoading(false)
+      setRecipientSearchError(false)
+      return undefined
+    }
+
+    let cancelled = false
+    const timeoutId = globalThis.setTimeout(async () => {
+      setIsRecipientSearchLoading(true)
+      setRecipientSearchError(false)
+
+      try {
+        const response = await searchUsersRequest(trimmedQuery)
+
+        if (!cancelled) {
+          setRecipientSuggestions(asArray(response.data.data).filter((candidate) => candidate.id !== user?.id))
+          setIsRecipientSearchOpen(true)
+        }
+      } catch {
+        if (!cancelled) {
+          setRecipientSuggestions([])
+          setRecipientSearchError(true)
+          setIsRecipientSearchOpen(true)
+        }
+      } finally {
+        if (!cancelled) {
+          setIsRecipientSearchLoading(false)
+        }
+      }
+    }, 300)
+
+    return () => {
+      cancelled = true
+      globalThis.clearTimeout(timeoutId)
+    }
+  }, [recipientQuery, selectedRecipient, user?.id])
+
   const handleConversationFormChange = (field) => (event) => {
     setConversationForm((current) => ({
       ...current,
       [field]: event.target.value,
     }))
+  }
+
+  const handleRecipientQueryChange = (event) => {
+    setRecipientQuery(event.target.value)
+    setSelectedRecipient(null)
+    setIsRecipientSearchOpen(true)
+  }
+
+  const handleSelectRecipient = (recipient) => {
+    setSelectedRecipient(recipient)
+    setRecipientQuery(recipient.name ?? '')
+    setRecipientSuggestions([])
+    setIsRecipientSearchOpen(false)
   }
 
   const handleCreateConversation = async (event) => {
@@ -335,7 +394,14 @@ function MessagesPage() {
     setSuccessMessage('')
 
     try {
-      const response = await createConversationRequest(conversationForm)
+      if (!selectedRecipient?.id) {
+        throw new Error(t('messages.selectUserFromList'))
+      }
+
+      const response = await createDirectConversationRequest({
+        user_id: selectedRecipient.id,
+        body: conversationForm.body,
+      })
       const conversation = extractDataObject(response, null)
 
       if (!conversation) {
@@ -346,18 +412,20 @@ function MessagesPage() {
       setSelectedConversationId(conversation.id)
       setSelectedConversation(conversation)
       setConversationForm(defaultConversationForm)
+      setRecipientQuery('')
+      setSelectedRecipient(null)
       setMessageBody('')
       setSearchParams({ conversation: String(conversation.id) })
       setSuccessMessage(
         response.status === 201
-          ? 'Conversation creee et premier message envoye.'
-          : 'Conversation mise a jour avec votre nouveau message.',
+          ? t('messages.conversationCreated')
+          : t('messages.conversationUpdated'),
       )
 
       await refreshUnreadCount()
     } catch (error) {
       setErrorMessage(
-        getErrorMessage(error, 'Impossible de demarrer la conversation.'),
+        getErrorMessage(error, t('messages.startError')),
       )
     } finally {
       setIsConversationSubmitting(false)
@@ -494,22 +562,88 @@ function MessagesPage() {
                 {t('messages.newConversation')}
               </h2>
               <p className="mt-1 text-sm text-stone-500">
-                {t('messages.startWithContact')}
+                {t('messages.startWithUser')}
               </p>
             </div>
 
-            <label className="block">
+            <label className="relative block">
               <span className="mb-2 block text-sm font-medium text-stone-700">
-                {t('common.contactLabel')}
+                {t('messages.userSearchLabel')}
               </span>
               <input
                 type="text"
                 required
-                value={conversationForm.recipient_email}
-                onChange={handleConversationFormChange('recipient_email')}
+                value={recipientQuery}
+                onChange={handleRecipientQueryChange}
+                onFocus={() => setIsRecipientSearchOpen(true)}
                 className="w-full rounded-[22px] border border-violet-100 bg-[linear-gradient(135deg,_rgba(248,245,255,0.98),_rgba(255,255,255,0.94))] px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-300 focus:bg-white"
-                placeholder="contact@yazoo.ma"
+                placeholder={t('messages.userSearchPlaceholder')}
+                autoComplete="off"
               />
+              {isRecipientSearchOpen && !selectedRecipient && recipientQuery.trim().length >= 2 ? (
+                <div className="absolute inset-x-0 top-[calc(100%+0.5rem)] z-40 overflow-hidden rounded-[24px] border border-white/70 bg-white/95 p-2 shadow-[0_24px_60px_rgba(76,29,149,0.18)] backdrop-blur-2xl">
+                  {isRecipientSearchLoading ? <SearchState>{t('search.searching')}</SearchState> : null}
+                  {!isRecipientSearchLoading && recipientSearchError ? <SearchState>{t('search.error')}</SearchState> : null}
+                  {!isRecipientSearchLoading && !recipientSearchError && recipientSuggestions.length === 0 ? (
+                    <SearchState>{t('messages.noUsersFound')}</SearchState>
+                  ) : null}
+                  {!isRecipientSearchLoading && recipientSuggestions.length > 0 ? (
+                    <div className="max-h-72 overflow-y-auto">
+                      {recipientSuggestions.map((suggestion) => (
+                        <button
+                          key={suggestion.id}
+                          type="button"
+                          onClick={() => handleSelectRecipient(suggestion)}
+                          className="flex w-full min-w-0 items-center gap-3 rounded-[18px] px-3 py-2.5 text-start text-stone-700 transition hover:bg-violet-50"
+                        >
+                          <Avatar
+                            name={suggestion.name ?? t('common.user')}
+                            src={suggestion.avatarUrl || ''}
+                            className="h-10 w-10 shrink-0"
+                          />
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-sm font-semibold">{suggestion.name}</span>
+                            <span className="block truncate text-xs text-stone-500">
+                              <span dir="ltr">@{suggestion.username ?? suggestion.id}</span>
+                              {suggestion.city ? ` - ${suggestion.city}` : ''}
+                            </span>
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+              {selectedRecipient ? (
+                <div className="mt-3 flex min-w-0 items-center gap-3 rounded-[22px] border border-violet-100 bg-violet-50/80 px-3 py-3">
+                  <Avatar
+                    name={selectedRecipient.name ?? t('common.user')}
+                    src={selectedRecipient.avatarUrl || ''}
+                    size="sm"
+                  />
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-violet-700">
+                      {t('messages.selectedUser')}
+                    </span>
+                    <span className="block truncate text-sm font-semibold text-stone-950">
+                      {selectedRecipient.name}
+                    </span>
+                    <span className="block truncate text-xs text-stone-500" dir="ltr">
+                      @{selectedRecipient.username ?? selectedRecipient.id}
+                    </span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedRecipient(null)
+                      setRecipientQuery('')
+                    }}
+                    className="rounded-full px-3 py-1.5 text-xs font-semibold text-violet-700 transition hover:bg-white"
+                  >
+                    {t('common.cancel')}
+                  </button>
+                </div>
+              ) : null}
             </label>
 
             <label className="mt-4 block">
@@ -817,6 +951,14 @@ function HeroStatCard({ label, value }) {
 function StateBox({ children }) {
   return (
     <div className="rounded-[24px] border border-dashed border-violet-200 bg-white/84 px-4 py-12 text-center text-sm text-stone-500">
+      {children}
+    </div>
+  )
+}
+
+function SearchState({ children }) {
+  return (
+    <div className="px-3 py-4 text-center text-sm text-stone-500">
       {children}
     </div>
   )
