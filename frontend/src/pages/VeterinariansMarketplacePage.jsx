@@ -1,6 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
-
 import { createVeterinarianRequest, listVeterinariansRequest } from '../api/veterinarians'
 import VeterinarianCard from '../components/marketplace/VeterinarianCard'
 import { Field, MarketplaceHero } from '../components/marketplace/MarketplaceCommon'
@@ -171,31 +169,6 @@ function VeterinariansMarketplacePage() {
           { label: t('common.filtersActive'), value: activeFiltersCount },
         ]}
       />
-
-      <div className="rounded-[28px] border border-white/80 bg-white/84 px-5 py-4 shadow-[0_18px_42px_rgba(124,58,237,0.08)] dark:border-violet-300/16 dark:bg-white/10">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-w-0 text-start">
-            <p className="text-base font-semibold text-stone-950 dark:text-white">
-              {t('veterinarians.addListing')}
-            </p>
-            <p className="mt-1 text-sm leading-6 text-stone-500 dark:text-violet-100/72">
-              {isAuthenticated ? t('veterinarians.addHint') : t('veterinarians.loginToAdd')}
-            </p>
-          </div>
-          {isAuthenticated ? (
-            <Button type="button" onClick={() => setIsCreateOpen((current) => !current)}>
-              {t('veterinarians.addListing')}
-            </Button>
-          ) : (
-            <Link
-              to="/login"
-              className="inline-flex items-center justify-center rounded-full bg-[linear-gradient(135deg,#7c3aed,#a855f7)] px-5 py-2 text-sm font-semibold text-white"
-            >
-              {t('common.login')}
-            </Link>
-          )}
-        </div>
-      </div>
 
       {isAuthenticated ? (
         <CollapsiblePanel

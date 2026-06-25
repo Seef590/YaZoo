@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Notifications\NewMessageNotification;
 use App\Notifications\PostCommentedNotification;
 use App\Notifications\PostLikedNotification;
+use App\Notifications\UserFollowedNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -42,31 +43,43 @@ class NotificationApiTest extends TestCase
         $user->notify(new PostLikedNotification($post, $actor));
         $user->notify(new PostCommentedNotification($post, $comment, $actor));
         $user->notify(new NewMessageNotification($conversation, $message, $actor));
+        $user->notify(new UserFollowedNotification($actor));
 
         Sanctum::actingAs($user, ['*']);
 
         $this->getJson('/api/notifications/unread-count')
             ->assertOk()
-            ->assertJsonPath('data.unreadCount', 2);
+            ->assertJsonPath('data.unreadCount', 3);
 
         $indexResponse = $this->getJson('/api/notifications');
-        $firstNotificationId = $indexResponse->json('data.0.id');
 
         $indexResponse
             ->assertOk()
-            ->assertJsonCount(3, 'data');
+            ->assertJsonCount(4, 'data')
+            ->assertJsonFragment([
+                'type' => 'user_followed',
+                'actionUrl' => '/profile/'.$actor->id,
+            ])
+            ->assertJsonFragment([
+                'follower_name' => 'YaZoo Friend',
+            ]);
 
-        $this->postJson("/api/notifications/{$firstNotificationId}/read")
+        $followNotificationId = collect($indexResponse->json('data'))
+            ->firstWhere('type', 'user_followed')['id'] ?? null;
+
+        $this->assertNotNull($followNotificationId);
+
+        $this->postJson("/api/notifications/{$followNotificationId}/read")
             ->assertOk()
             ->assertJsonPath('data.isRead', true);
 
         $this->getJson('/api/notifications/unread-count')
             ->assertOk()
-            ->assertJsonPath('data.unreadCount', 1);
+            ->assertJsonPath('data.unreadCount', 2);
 
         $this->postJson('/api/notifications/read-all')
             ->assertOk()
-            ->assertJsonPath('data.markedCount', 2)
+            ->assertJsonPath('data.markedCount', 3)
             ->assertJsonPath('data.unreadCount', 0);
     }
 }

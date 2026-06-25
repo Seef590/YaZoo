@@ -244,7 +244,7 @@ function CommunityDetailPage() {
 
   const coverStyle = community.imageUrl && !isVideoMedia(community.imageUrl)
     ? {
-        backgroundImage: `linear-gradient(rgba(10,8,18,0.12),rgba(10,8,18,0.18)), url(${community.imageUrl})`,
+        backgroundImage: `url(${community.imageUrl})`,
       }
     : undefined
   const safePosts = asArray(posts)
@@ -260,14 +260,58 @@ function CommunityDetailPage() {
   ]
 
   return (
-    <section className="space-y-5">
+    <section className="max-w-full min-w-0 space-y-5 overflow-hidden">
       <section className="overflow-hidden rounded-[30px] border border-white/80 bg-white/94 shadow-[0_24px_60px_rgba(124,58,237,0.1)] dark:border-violet-300/12 dark:bg-white/8">
+        <div className="flex flex-col gap-4 px-4 py-5 sm:px-5 lg:flex-row lg:items-start lg:justify-between">
+          <div className="min-w-0 flex-1 text-start">
+            <span className="inline-flex rounded-full border border-violet-100 bg-violet-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-violet-800 dark:border-violet-300/18 dark:bg-white/10 dark:text-violet-100">
+              {community.isPrivate ? t('common.private') : t('common.public')}
+            </span>
+            <h1 className="mt-3 break-words text-2xl font-semibold text-stone-950 sm:text-3xl dark:text-violet-50">
+              {community.name}
+            </h1>
+            <p className="mt-2 text-sm font-medium text-stone-500 dark:text-violet-100/70">
+              {t('communities.membersMeta', {
+                count: community.membersCount,
+                plural: community.membersCount > 1 ? 's' : '',
+                date: formatDate(community.createdAt),
+              })}
+            </p>
+          </div>
+
+          <div className="flex w-full flex-wrap gap-2 lg:w-auto lg:justify-end">
+            {!community.isMember && community.membershipStatus !== 'pending' ? (
+              <Button type="button" onClick={handleJoin} disabled={isJoining} className="flex-1 sm:flex-none">
+                {community.isPrivate ? t('communities.requestAccess') : t('communities.join')}
+              </Button>
+            ) : null}
+            {community.isMember ? (
+              <Button type="button" variant="secondary" onClick={handleLeave} disabled={isJoining} className="flex-1 sm:flex-none">
+                {t('communities.leave')}
+              </Button>
+            ) : null}
+            <Button type="button" variant="ghost" onClick={handleShare} className="flex-1 sm:flex-none">
+              {t('post.share')}
+            </Button>
+            {canDeleteCommunity ? (
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setIsDeleteDialogOpen(true)}
+                className="flex-1 border-rose-200 bg-rose-50 text-rose-700 hover:border-rose-300 hover:bg-rose-100 hover:text-rose-800 sm:flex-none dark:border-rose-300/20 dark:bg-rose-500/10 dark:text-rose-100"
+              >
+                {t('communities.delete')}
+              </Button>
+            ) : null}
+          </div>
+        </div>
+
         <div
-          className="relative h-56 bg-[linear-gradient(135deg,#4c1d95,#7c3aed,#c4b5fd)] bg-cover bg-center sm:h-72 lg:h-96"
+          className="relative h-52 bg-[linear-gradient(135deg,#4c1d95,#7c3aed,#c4b5fd)] bg-cover bg-center sm:h-72 lg:h-96"
           style={coverStyle}
         >
-          <div className="absolute inset-0 bg-white/5 dark:bg-black/5" />
-          <div className="absolute bottom-5 left-5 right-5 flex flex-wrap items-end justify-between gap-4">
+          <div className="absolute inset-0 bg-gradient-to-b from-white/0 via-white/0 to-white/10 dark:to-black/8" />
+          <div className="hidden">
             <div>
               <span className="rounded-full bg-stone-950/58 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-white backdrop-blur">
                 {community.isPrivate ? 'Groupe prive' : 'Groupe public'}
@@ -306,8 +350,8 @@ function CommunityDetailPage() {
           </div>
         </div>
 
-        <div className="border-t border-violet-100/70 px-5 py-4 dark:border-violet-300/12">
-          <div className="flex gap-2 overflow-x-auto">
+        <div className="border-t border-violet-100/70 px-4 py-4 dark:border-violet-300/12 sm:px-5">
+          <div className="flex max-w-full gap-2 overflow-x-auto pb-1">
             {communityTabs.map((tab) => (
               <button
                 key={tab.key}
@@ -526,8 +570,8 @@ function ConfirmDialog({
   const { t } = useI18n()
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-stone-950/58 px-4 py-6 backdrop-blur-sm">
-      <section className="w-full max-w-md rounded-[30px] border border-white/70 bg-white/96 p-5 text-start shadow-[0_28px_70px_rgba(20,9,38,0.24)] dark:border-violet-300/14 dark:bg-[#12051f]">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-stone-950/58 px-4 py-6 backdrop-blur-sm">
+      <section className="max-h-[82vh] w-full max-w-lg overflow-y-auto rounded-[30px] border border-white/70 bg-white/96 p-5 text-start shadow-[0_28px_70px_rgba(20,9,38,0.24)] dark:border-violet-300/14 dark:bg-[#12051f]">
         <h2 className="text-lg font-semibold text-stone-950 dark:text-violet-50">{title}</h2>
         <p className="mt-3 text-sm leading-6 text-stone-600 dark:text-violet-100/72">
           {message}

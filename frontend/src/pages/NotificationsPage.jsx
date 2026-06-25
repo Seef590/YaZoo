@@ -6,6 +6,7 @@ import {
   markAllNotificationsReadRequest,
   markNotificationReadRequest,
 } from '../api/notifications'
+import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import { useI18n } from '../hooks/useI18n'
 import { useNotifications } from '../hooks/useNotifications'
@@ -30,7 +31,7 @@ function NotificationsPage() {
   const safeNotifications = asArray(notifications)
   const unreadCount = safeNotifications.filter((notification) => !notification.isRead).length
   const readCount = safeNotifications.length - unreadCount
-  const visibleNotifications = filterNotifications(safeNotifications, queryFromUrl, t)
+  const visibleNotifications = filterNotifications(safeNotifications, search, t)
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -252,6 +253,7 @@ function NotificationsPage() {
             {visibleNotifications.map((notification) => {
               const isProcessing = processingIds.includes(notification.id)
               const isUnread = !notification.isRead
+              const displayNotification = getDisplayNotification(notification, t)
 
               return (
                 <article
@@ -263,10 +265,18 @@ function NotificationsPage() {
                   }`}
                 >
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                    <div className="min-w-0 flex-1">
+                    <div className="flex min-w-0 flex-1 gap-3">
+                      {displayNotification.avatarName || displayNotification.avatarSrc ? (
+                        <Avatar
+                          name={displayNotification.avatarName}
+                          src={displayNotification.avatarSrc}
+                          className="mt-1 shrink-0"
+                        />
+                      ) : null}
+                      <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-3">
                         <span className="rounded-full bg-[linear-gradient(135deg,#7c3aed,#a855f7,#c4b5fd)] px-3 py-1 text-xs font-medium text-white shadow-[0_10px_20px_rgba(124,58,237,0.16)]">
-                          {formatNotificationType(notification.type, t)}
+                          {displayNotification.typeLabel}
                         </span>
                         {isUnread ? (
                           <span className="rounded-full bg-white/88 px-3 py-1 text-xs font-medium text-violet-700 ring-1 ring-inset ring-violet-200">
@@ -280,14 +290,15 @@ function NotificationsPage() {
                       </div>
 
                       <h3 className="mt-4 text-lg font-semibold text-stone-950">
-                        {notification.title}
+                        {displayNotification.title}
                       </h3>
                       <p className="mt-2 text-sm leading-6 text-stone-600">
-                        {notification.body}
+                        {displayNotification.body}
                       </p>
                       <p className="mt-3 text-xs text-stone-400">
                         {formatDate(notification.createdAt)}
                       </p>
+                      </div>
                     </div>
 
                     <div className="grid gap-3 sm:flex sm:flex-wrap">
@@ -341,7 +352,7 @@ function StateBox({ children }) {
 
 function formatNotificationType(type, t) {
   const labels = {
-    user_followed: t('profile.followersTitle'),
+    user_followed: t('notifications.types.follow'),
     new_message: t('messages.title'),
     post_comment: t('comments.title'),
     post_like: 'Like',
@@ -358,6 +369,33 @@ function formatNotificationType(type, t) {
   }
 
   return labels[type] ?? t('notifications.title')
+}
+
+function getDisplayNotification(notification, t) {
+  const typeLabel = formatNotificationType(notification.type, t)
+
+  if (notification.type === 'user_followed') {
+    const followerName =
+      notification.meta?.follower_name ??
+      notification.meta?.actor_name ??
+      t('common.user')
+
+    return {
+      typeLabel,
+      title: t('notifications.followTitle'),
+      body: t('notifications.followBody', { name: followerName }),
+      avatarName: followerName,
+      avatarSrc: notification.meta?.follower_avatar ?? notification.meta?.actor_avatar_url ?? '',
+    }
+  }
+
+  return {
+    typeLabel,
+    title: notification.title,
+    body: notification.body,
+    avatarName: notification.meta?.actor_name ?? notification.meta?.user_name ?? '',
+    avatarSrc: notification.meta?.actor_avatar_url ?? notification.meta?.avatar ?? '',
+  }
 }
 
 function upsertNotification(currentNotifications, nextNotification) {
@@ -387,13 +425,28 @@ function filterNotifications(notifications, searchTerm, t) {
 
   return safeNotifications.filter((notification) =>
     [
-      notification.title,
-      notification.body,
+      getDisplayNotification(notification, t).title,
+      getDisplayNotification(notification, t).body,
       notification.type,
       formatNotificationType(notification.type, t),
       notification.actionUrl,
+      ...flattenMetaValues(notification.meta),
     ].some((value) => normalizeSearchText(value).includes(normalizedSearch)),
   )
+}
+
+function flattenMetaValues(meta) {
+  if (!meta || typeof meta !== 'object') {
+    return []
+  }
+
+  return Object.values(meta).flatMap((value) => {
+    if (value && typeof value === 'object') {
+      return flattenMetaValues(value)
+    }
+
+    return [value]
+  })
 }
 
 function normalizeSearchText(value) {

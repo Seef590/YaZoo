@@ -2571,6 +2571,11 @@ messages.fr = deepMerge(messages.fr, {
     loadError: 'Impossible de charger les notifications.',
     markReadError: 'Impossible de marquer la notification comme lue.',
     markAllError: 'Impossible de marquer toutes les notifications.',
+    followTitle: 'Nouveau follower',
+    followBody: '{name} a commencé à vous suivre.',
+    types: {
+      follow: 'Follow',
+    },
   },
   comments: {
     title: 'Commentaire',
@@ -2608,6 +2613,8 @@ messages.fr = deepMerge(messages.fr, {
     shareFallback: 'Groupe YaZoo',
     linkCopied: 'Lien du groupe copie.',
     shareError: 'Partage annule ou indisponible.',
+    leave: 'Quitter',
+    membersMeta: '{count} membre{plural} · créé le {date}',
     emptySearch: 'Aucune communaute ne correspond a votre recherche.',
     previewAlt: 'Apercu de la communaute',
     descriptionPlaceholder: 'But du groupe, regles, ambiance, sujets couverts...',
@@ -3713,6 +3720,48 @@ messages.en = deepMerge(messages.en, {
     deleteConfirmMessage: 'This removes the community and its requests. Related posts are kept without a group.',
     deleteSuccess: 'Community deleted successfully.',
     deleteError: 'Unable to delete this community.',
+  },
+})
+
+messages.fr = deepMerge(messages.fr, {
+  notifications: {
+    followTitle: 'Nouveau follower',
+    followBody: '{name} a commencé à vous suivre.',
+    types: {
+      follow: 'Follow',
+    },
+  },
+  communities: {
+    leave: 'Quitter',
+    membersMeta: '{count} membre{plural} · créé le {date}',
+  },
+})
+
+messages.ar = deepMerge(messages.ar, {
+  notifications: {
+    followTitle: 'متابع جديد',
+    followBody: 'بدأ {name} بمتابعتك.',
+    types: {
+      follow: 'متابعة',
+    },
+  },
+  communities: {
+    leave: 'مغادرة',
+    membersMeta: '{count} عضو · تم الإنشاء في {date}',
+  },
+})
+
+messages.en = deepMerge(messages.en, {
+  notifications: {
+    followTitle: 'New follower',
+    followBody: '{name} started following you.',
+    types: {
+      follow: 'Follow',
+    },
+  },
+  communities: {
+    leave: 'Leave',
+    membersMeta: '{count} member{plural} · created on {date}',
   },
 })
 

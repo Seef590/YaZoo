@@ -828,12 +828,12 @@ function FeedConfirmDialog({
   }
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-violet-950/35 px-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-violet-950/35 px-4 py-6 backdrop-blur-sm">
       <section
         role="dialog"
         aria-modal="true"
         aria-labelledby="feed-confirm-title"
-        className="w-full max-w-md rounded-[30px] border border-white/70 bg-[linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(247,241,255,0.94),_rgba(237,233,254,0.9))] p-5 text-start shadow-[0_30px_80px_rgba(76,29,149,0.28)] dark:border-violet-300/16 dark:bg-[linear-gradient(135deg,_rgba(24,16,38,0.98),_rgba(49,24,83,0.94))]"
+        className="max-h-[82vh] w-full max-w-lg overflow-y-auto rounded-[30px] border border-white/70 bg-[linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(247,241,255,0.94),_rgba(237,233,254,0.9))] p-5 text-start shadow-[0_30px_80px_rgba(76,29,149,0.28)] dark:border-violet-300/16 dark:bg-[linear-gradient(135deg,_rgba(24,16,38,0.98),_rgba(49,24,83,0.94))]"
       >
         <h2 id="feed-confirm-title" className="text-lg font-semibold text-stone-950 dark:text-violet-50">
           {title}

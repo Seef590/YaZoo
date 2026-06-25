@@ -976,8 +976,8 @@ function RelationshipDialog({
   const { t } = useI18n()
 
   return (
-    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-stone-950/58 px-4 py-6 backdrop-blur-sm">
-      <section className="w-full max-w-lg rounded-[30px] border border-white/70 bg-white/96 p-5 shadow-[0_28px_70px_rgba(20,9,38,0.24)] dark:border-violet-300/14 dark:bg-[#12051f]">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-stone-950/58 px-4 py-6 backdrop-blur-sm">
+      <section className="flex max-h-[82vh] w-full max-w-2xl flex-col overflow-hidden rounded-[30px] border border-white/70 bg-white/96 p-5 shadow-[0_28px_70px_rgba(20,9,38,0.24)] dark:border-violet-300/14 dark:bg-[#12051f]">
         <div className="flex items-center justify-between gap-4">
           <h2 className="text-lg font-semibold text-stone-950 dark:text-violet-50">{title}</h2>
           <button
@@ -1009,7 +1009,7 @@ function RelationshipDialog({
         ) : null}
 
         {!isLoading && users.length > 0 ? (
-          <div className="mt-4 max-h-[60vh] space-y-3 overflow-y-auto pe-1">
+          <div className="mt-4 min-h-0 flex-1 space-y-3 overflow-y-auto pe-1">
             {users.map((profileUser) => (
               <Link
                 key={profileUser.id}

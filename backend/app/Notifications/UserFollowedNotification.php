@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\User;
+use App\Support\MediaStorage;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
@@ -36,6 +37,7 @@ class UserFollowedNotification extends Notification implements ShouldQueue
             'meta' => [
                 'follower_id' => $this->follower->id,
                 'follower_name' => $this->follower->name,
+                'follower_avatar' => MediaStorage::resolveUrl($this->follower->avatar),
             ],
         ];
     }
