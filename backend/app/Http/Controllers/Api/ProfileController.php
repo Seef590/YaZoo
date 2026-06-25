@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\DTOs\PaginationData;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Profile\UpdateProfileRequest;
+use App\Http\Resources\UserResource;
 use App\Http\Resources\Profile\UserProfileResource;
 use App\Models\User;
+use App\Notifications\UserFollowedNotification;
 use App\Support\MediaStorage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -80,7 +83,17 @@ class ProfileController extends Controller
         $user = $this->resolveUser($user);
         abort_if($request->user()->is($user), 422, 'Vous ne pouvez pas suivre votre propre profil.');
 
+        $wasFollowing = $request->user()
+            ->following()
+            ->whereKey($user->id)
+            ->exists();
+
         $request->user()->following()->syncWithoutDetaching([$user->id]);
+
+        if (! $wasFollowing) {
+            $user->notify(new UserFollowedNotification($request->user()));
+        }
+
         $this->loadProfileAggregates($user);
 
         return response()->json([
@@ -101,6 +114,32 @@ class ProfileController extends Controller
             'message' => __('messages.profile.unfollowed'),
             'data' => UserProfileResource::make($user)->resolve($request),
         ]);
+    }
+
+    public function followers(Request $request, string $user)
+    {
+        $user = $this->resolveUser($user);
+        $pagination = PaginationData::fromRequest($request, 24, 50);
+
+        $followers = $user->followers()
+            ->withCount(['followers', 'following'])
+            ->orderBy('users.name')
+            ->paginate($pagination->perPage);
+
+        return UserResource::collection($followers);
+    }
+
+    public function following(Request $request, string $user)
+    {
+        $user = $this->resolveUser($user);
+        $pagination = PaginationData::fromRequest($request, 24, 50);
+
+        $following = $user->following()
+            ->withCount(['followers', 'following'])
+            ->orderBy('users.name')
+            ->paginate($pagination->perPage);
+
+        return UserResource::collection($following);
     }
 
     private function loadProfileAggregates(User $user): void

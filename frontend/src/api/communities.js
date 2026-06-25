@@ -14,6 +14,9 @@ export const updateCommunityRequest = (communityId, payload) =>
     ? api.post(`/communities/${communityId}`, appendMethodOverride(payload, 'PUT'))
     : api.put(`/communities/${communityId}`, payload)
 
+export const deleteCommunityRequest = (communityId) =>
+  api.delete(`/communities/${communityId}`)
+
 export const joinCommunityRequest = (communityId) =>
   api.post(`/communities/${communityId}/join`)
 

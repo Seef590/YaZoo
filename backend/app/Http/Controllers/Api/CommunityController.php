@@ -10,6 +10,9 @@ use App\Http\Resources\Community\CommunityMembershipRequestResource;
 use App\Http\Resources\Community\CommunityResource;
 use App\Models\Community;
 use App\Models\CommunityMember;
+use App\Models\User;
+use App\Notifications\CommunityJoinedNotification;
+use App\Notifications\CommunityJoinRequestNotification;
 use App\Notifications\CommunityRequestApprovedNotification;
 use App\Notifications\CommunityRequestRejectedNotification;
 use App\Support\MediaStorage;
@@ -107,6 +110,7 @@ class CommunityController extends Controller
         $membership = $community->memberships()->firstOrNew([
             'user_id' => $request->user()->id,
         ]);
+        $previousStatus = $membership->exists ? $membership->status : null;
 
         if ($membership->exists && $membership->status === 'approved') {
             $message = __('messages.communities.already_member');
@@ -116,12 +120,28 @@ class CommunityController extends Controller
                 'status' => 'pending',
             ])->save();
 
+            if ($previousStatus !== 'pending') {
+                $this->notifyCommunityManagers(
+                    $community,
+                    $request->user(),
+                    new CommunityJoinRequestNotification($community, $request->user()),
+                );
+            }
+
             $message = __('messages.communities.request_sent');
         } else {
             $membership->fill([
                 'role' => $membership->role ?: 'member',
                 'status' => 'approved',
             ])->save();
+
+            if ($previousStatus !== 'approved') {
+                $this->notifyCommunityManagers(
+                    $community,
+                    $request->user(),
+                    new CommunityJoinedNotification($community, $request->user()),
+                );
+            }
 
             $message = __('messages.communities.joined');
         }
@@ -131,6 +151,21 @@ class CommunityController extends Controller
         return response()->json([
             'message' => $message,
             'data' => CommunityResource::make($community)->resolve(),
+        ]);
+    }
+
+    /**
+     * Delete a community owned or administered by the current user.
+     */
+    public function destroy(Request $request, Community $community): JsonResponse
+    {
+        $this->authorize('delete', $community);
+
+        MediaStorage::deleteStoredFiles([$community->image_url]);
+        $community->delete();
+
+        return response()->json([
+            'message' => __('messages.communities.deleted'),
         ]);
     }
 
@@ -317,6 +352,30 @@ class CommunityController extends Controller
     protected function prefixSearchTerm(string $value): string
     {
         return addcslashes($value, '\\%_').'%';
+    }
+
+    protected function notifyCommunityManagers(
+        Community $community,
+        User $actor,
+        object $notification,
+    ): void {
+        $managerIds = $community->memberships()
+            ->where('status', 'approved')
+            ->where('role', 'admin')
+            ->pluck('user_id')
+            ->push($community->user_id)
+            ->unique()
+            ->filter(fn ($userId): bool => (int) $userId !== (int) $actor->id)
+            ->values();
+
+        if ($managerIds->isEmpty()) {
+            return;
+        }
+
+        User::query()
+            ->whereKey($managerIds)
+            ->get()
+            ->each(fn (User $manager): mixed => $manager->notify($notification));
     }
 
     /**

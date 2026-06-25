@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import PropTypes from 'prop-types'
 
 import {
+  deleteCommunityRequest,
   getCommunityRequest,
   joinCommunityRequest,
   leaveCommunityRequest,
@@ -29,6 +30,7 @@ import { getErrorMessage } from '../utils/getErrorMessage'
 function CommunityDetailPage() {
   const { t } = useI18n()
   const { communityId } = useParams()
+  const navigate = useNavigate()
   const { user } = useAuth()
   const [community, setCommunity] = useState(null)
   const [posts, setPosts] = useState([])
@@ -37,6 +39,8 @@ function CommunityDetailPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isPostsLoading, setIsPostsLoading] = useState(true)
   const [isJoining, setIsJoining] = useState(false)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [isDeletingCommunity, setIsDeletingCommunity] = useState(false)
   const [likePendingIds, setLikePendingIds] = useState([])
   const [activeTab, setActiveTab] = useState('discussion')
 
@@ -120,6 +124,29 @@ function CommunityDetailPage() {
       }
     } catch {
       setErrorMessage(t('communities.shareError'))
+    }
+  }
+
+  const handleDeleteCommunity = async () => {
+    if (!community?.id) {
+      return
+    }
+
+    setIsDeletingCommunity(true)
+    setErrorMessage('')
+    setSuccessMessage('')
+
+    try {
+      await deleteCommunityRequest(community.id)
+      navigate('/communities', {
+        replace: true,
+        state: { message: t('communities.deleteSuccess') },
+      })
+    } catch (error) {
+      setErrorMessage(getErrorMessage(error, t('communities.deleteError')))
+      setIsDeleteDialogOpen(false)
+    } finally {
+      setIsDeletingCommunity(false)
     }
   }
 
@@ -223,6 +250,7 @@ function CommunityDetailPage() {
   const safePosts = asArray(posts)
   const mediaPosts = safePosts.filter((post) => post.mediaUrl || post.imageUrl)
   const canViewDiscussion = !community.isPrivate || community.isMember || community.isAdmin
+  const canDeleteCommunity = Boolean(community.isOwner || community.isAdmin)
   const memberPreview = getUniqueMembers([community.owner, community.isMember ? user : null])
   const communityTabs = [
     { key: 'about', label: t('communities.about') },
@@ -238,7 +266,7 @@ function CommunityDetailPage() {
           className="relative h-56 bg-[linear-gradient(135deg,#4c1d95,#7c3aed,#c4b5fd)] bg-cover bg-center sm:h-72 lg:h-96"
           style={coverStyle}
         >
-          <div className="absolute inset-0 bg-white/5 dark:bg-black/10" />
+          <div className="absolute inset-0 bg-white/5 dark:bg-black/5" />
           <div className="absolute bottom-5 left-5 right-5 flex flex-wrap items-end justify-between gap-4">
             <div>
               <span className="rounded-full bg-stone-950/58 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-white backdrop-blur">
@@ -262,8 +290,18 @@ function CommunityDetailPage() {
                 </Button>
               ) : null}
               <Button type="button" variant="ghost" onClick={handleShare}>
-                Partager
+                {t('post.share')}
               </Button>
+              {canDeleteCommunity ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setIsDeleteDialogOpen(true)}
+                  className="border-rose-200 bg-rose-50 text-rose-700 hover:border-rose-300 hover:bg-rose-100 hover:text-rose-800 dark:border-rose-300/20 dark:bg-rose-500/10 dark:text-rose-100"
+                >
+                  {t('communities.delete')}
+                </Button>
+              ) : null}
             </div>
           </div>
         </div>
@@ -420,6 +458,17 @@ function CommunityDetailPage() {
           </Link>
         </aside>
       </div>
+
+      {isDeleteDialogOpen ? (
+        <ConfirmDialog
+          confirmLabel={isDeletingCommunity ? t('common.deleting') : t('communities.delete')}
+          isProcessing={isDeletingCommunity}
+          message={t('communities.deleteConfirmMessage')}
+          onCancel={() => setIsDeleteDialogOpen(false)}
+          onConfirm={handleDeleteCommunity}
+          title={t('communities.deleteConfirmTitle')}
+        />
+      ) : null}
     </section>
   )
 }
@@ -462,6 +511,42 @@ function InfoPill({ label, value }) {
       <p className="mt-1 font-semibold text-stone-950 dark:text-violet-50">
         {value}
       </p>
+    </div>
+  )
+}
+
+function ConfirmDialog({
+  confirmLabel,
+  isProcessing,
+  message,
+  onCancel,
+  onConfirm,
+  title,
+}) {
+  const { t } = useI18n()
+
+  return (
+    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-stone-950/58 px-4 py-6 backdrop-blur-sm">
+      <section className="w-full max-w-md rounded-[30px] border border-white/70 bg-white/96 p-5 text-start shadow-[0_28px_70px_rgba(20,9,38,0.24)] dark:border-violet-300/14 dark:bg-[#12051f]">
+        <h2 className="text-lg font-semibold text-stone-950 dark:text-violet-50">{title}</h2>
+        <p className="mt-3 text-sm leading-6 text-stone-600 dark:text-violet-100/72">
+          {message}
+        </p>
+        <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <Button type="button" variant="ghost" onClick={onCancel} disabled={isProcessing}>
+            {t('common.cancel')}
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onConfirm}
+            disabled={isProcessing}
+            className="border-rose-200 bg-rose-50 text-rose-700 hover:border-rose-300 hover:bg-rose-100 hover:text-rose-800 dark:border-rose-300/20 dark:bg-rose-500/10 dark:text-rose-100"
+          >
+            {confirmLabel}
+          </Button>
+        </div>
+      </section>
     </div>
   )
 }
@@ -515,6 +600,15 @@ StateBox.propTypes = {
 InfoPill.propTypes = {
   label: PropTypes.string,
   value: PropTypes.node,
+}
+
+ConfirmDialog.propTypes = {
+  confirmLabel: PropTypes.string,
+  isProcessing: PropTypes.bool,
+  message: PropTypes.string,
+  onCancel: PropTypes.func,
+  onConfirm: PropTypes.func,
+  title: PropTypes.string,
 }
 
 MediaPreview.propTypes = {

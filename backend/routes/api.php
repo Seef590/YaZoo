@@ -80,6 +80,8 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
         });
 
         Route::get('/users/suggestions', [UserController::class, 'suggestions']);
+        Route::get('/users/{user}/followers', [ProfileController::class, 'followers']);
+        Route::get('/users/{user}/following', [ProfileController::class, 'following']);
         Route::get('/users/{user}', [ProfileController::class, 'show']);
         Route::patch('/users/{user}', [ProfileController::class, 'update']);
         Route::post('/users/{user}/follow', [ProfileController::class, 'follow']);
@@ -140,6 +142,7 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
         Route::post('/communities', [CommunityController::class, 'store']);
         Route::get('/communities/{community}', [CommunityController::class, 'show']);
         Route::put('/communities/{community}', [CommunityController::class, 'update']);
+        Route::delete('/communities/{community}', [CommunityController::class, 'destroy']);
         Route::post('/communities/{community}/join', [CommunityController::class, 'join']);
         Route::delete('/communities/{community}/leave', [CommunityController::class, 'leave']);
         Route::get('/communities/{community}/membership-requests', [CommunityController::class, 'pendingRequests']);

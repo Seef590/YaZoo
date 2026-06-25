@@ -341,9 +341,12 @@ function StateBox({ children }) {
 
 function formatNotificationType(type, t) {
   const labels = {
+    user_followed: t('profile.followersTitle'),
     new_message: t('messages.title'),
     post_comment: t('comments.title'),
     post_like: 'Like',
+    community_join_request: t('communities.title'),
+    community_joined: t('communities.title'),
     community_request_approved: t('communities.title'),
     community_request_rejected: t('communities.title'),
     reservation_requested: t('reservations.title'),

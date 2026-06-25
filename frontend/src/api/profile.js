@@ -2,6 +2,12 @@ import api from './client'
 
 export const getProfileRequest = (userId) => api.get(`/users/${userId}`)
 
+export const getProfileFollowersRequest = (userId, params = {}) =>
+  api.get(`/users/${userId}/followers`, { params })
+
+export const getProfileFollowingRequest = (userId, params = {}) =>
+  api.get(`/users/${userId}/following`, { params })
+
 export const getUserSuggestionsRequest = () => api.get('/users/suggestions')
 
 export const followUserRequest = (userId) => api.post(`/users/${userId}/follow`)

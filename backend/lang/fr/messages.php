@@ -52,6 +52,7 @@ return [
         'left' => 'Vous avez quitte la communaute.',
         'request_approved' => 'Demande approuvee avec succes.',
         'request_rejected' => 'Demande refusee.',
+        'deleted' => 'Communaute supprimee avec succes.',
     ],
     'notifications' => [
         'read' => 'Notification marquee comme lue.',

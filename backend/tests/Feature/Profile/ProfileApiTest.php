@@ -5,8 +5,10 @@ namespace Tests\Feature\Profile;
 use App\Models\Animal;
 use App\Models\Post;
 use App\Models\User;
+use App\Notifications\UserFollowedNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -148,5 +150,35 @@ class ProfileApiTest extends TestCase
         $this->assertNotNull($user->cover_photo);
         Storage::disk('public')->assertExists($user->avatar);
         Storage::disk('public')->assertExists($user->cover_photo);
+    }
+
+    public function test_following_a_profile_notifies_owner_and_relationship_lists_are_visible(): void
+    {
+        Notification::fake();
+
+        $owner = User::factory()->create(['name' => 'Profile Owner']);
+        $follower = User::factory()->create(['name' => 'Follower User']);
+        $followedByOwner = User::factory()->create(['name' => 'Followed By Owner']);
+
+        $owner->following()->attach($followedByOwner->id);
+
+        Sanctum::actingAs($follower, ['*']);
+
+        $this->postJson("/api/users/{$owner->id}/follow")
+            ->assertOk()
+            ->assertJsonPath('data.isFollowing', true)
+            ->assertJsonPath('data.followersCount', 1);
+
+        Notification::assertSentTo($owner, UserFollowedNotification::class);
+
+        $this->getJson("/api/users/{$owner->id}/followers")
+            ->assertOk()
+            ->assertJsonPath('data.0.id', $follower->id)
+            ->assertJsonPath('data.0.name', 'Follower User');
+
+        $this->getJson("/api/users/{$owner->id}/following")
+            ->assertOk()
+            ->assertJsonPath('data.0.id', $followedByOwner->id)
+            ->assertJsonPath('data.0.name', 'Followed By Owner');
     }
 }

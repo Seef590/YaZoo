@@ -3665,6 +3665,57 @@ messages.en = deepMerge(messages.en, {
   },
 })
 
+messages.fr = deepMerge(messages.fr, {
+  profile: {
+    followersTitle: 'Followers',
+    followingTitle: 'Abonnements',
+    relationshipsEmpty: 'Aucun profil a afficher pour le moment.',
+    relationshipsLoadError: 'Impossible de charger cette liste.',
+    reactionsShort: 'react.',
+  },
+  communities: {
+    delete: 'Supprimer',
+    deleteConfirmTitle: 'Supprimer cette communaute ?',
+    deleteConfirmMessage: 'Cette action retire la communaute et ses demandes. Les publications associees restent conservees sans groupe.',
+    deleteSuccess: 'Communaute supprimee avec succes.',
+    deleteError: 'Impossible de supprimer cette communaute.',
+  },
+})
+
+messages.ar = deepMerge(messages.ar, {
+  profile: {
+    followersTitle: 'المتابعون',
+    followingTitle: 'يتابع',
+    relationshipsEmpty: 'لا توجد ملفات شخصية لعرضها حاليا.',
+    relationshipsLoadError: 'تعذر تحميل هذه القائمة.',
+    reactionsShort: 'تفاعل',
+  },
+  communities: {
+    delete: 'حذف',
+    deleteConfirmTitle: 'هل تريد حذف هذا المجتمع؟',
+    deleteConfirmMessage: 'سيؤدي هذا الإجراء إلى حذف المجتمع وطلبات الانضمام إليه. ستبقى المنشورات المرتبطة محفوظة بدون مجموعة.',
+    deleteSuccess: 'تم حذف المجتمع بنجاح.',
+    deleteError: 'تعذر حذف هذا المجتمع.',
+  },
+})
+
+messages.en = deepMerge(messages.en, {
+  profile: {
+    followersTitle: 'Followers',
+    followingTitle: 'Following',
+    relationshipsEmpty: 'No profiles to show yet.',
+    relationshipsLoadError: 'Unable to load this list.',
+    reactionsShort: 'react.',
+  },
+  communities: {
+    delete: 'Delete',
+    deleteConfirmTitle: 'Delete this community?',
+    deleteConfirmMessage: 'This removes the community and its requests. Related posts are kept without a group.',
+    deleteSuccess: 'Community deleted successfully.',
+    deleteError: 'Unable to delete this community.',
+  },
+})
+
 function deepMerge(base, override = {}) {
   const result = { ...base }
 

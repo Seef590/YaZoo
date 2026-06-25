@@ -52,6 +52,7 @@ return [
         'left' => 'You left the community.',
         'request_approved' => 'Request approved successfully.',
         'request_rejected' => 'Request rejected.',
+        'deleted' => 'Community deleted successfully.',
     ],
     'notifications' => [
         'read' => 'Notification marked as read.',

@@ -41,6 +41,14 @@ class CommunityPolicy
     }
 
     /**
+     * Determine whether the user can delete a community.
+     */
+    public function delete(User $user, Community $community): bool
+    {
+        return $this->update($user, $community) || (bool) $user->is_admin;
+    }
+
+    /**
      * Determine whether the user can join the community.
      */
     public function join(User $user, Community $community): bool

@@ -5,7 +5,10 @@ namespace Tests\Feature\Community;
 use App\Models\Community;
 use App\Models\CommunityMember;
 use App\Models\User;
+use App\Notifications\CommunityJoinedNotification;
+use App\Notifications\CommunityJoinRequestNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -68,9 +71,32 @@ class CommunityApiTest extends TestCase
 
     public function test_user_can_join_public_community_and_request_private_community(): void
     {
+        Notification::fake();
+
         $user = User::factory()->create();
-        $publicCommunity = Community::factory()->create(['is_private' => false]);
-        $privateCommunity = Community::factory()->create(['is_private' => true]);
+        $publicOwner = User::factory()->create();
+        $privateOwner = User::factory()->create();
+        $publicCommunity = Community::factory()->create([
+            'is_private' => false,
+            'user_id' => $publicOwner->id,
+        ]);
+        $privateCommunity = Community::factory()->create([
+            'is_private' => true,
+            'user_id' => $privateOwner->id,
+        ]);
+
+        CommunityMember::factory()->create([
+            'community_id' => $publicCommunity->id,
+            'user_id' => $publicOwner->id,
+            'role' => 'admin',
+            'status' => 'approved',
+        ]);
+        CommunityMember::factory()->create([
+            'community_id' => $privateCommunity->id,
+            'user_id' => $privateOwner->id,
+            'role' => 'admin',
+            'status' => 'approved',
+        ]);
 
         Sanctum::actingAs($user, ['*']);
 
@@ -83,6 +109,9 @@ class CommunityApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.membershipStatus', 'pending')
             ->assertJsonPath('data.isMember', false);
+
+        Notification::assertSentTo($publicOwner, CommunityJoinedNotification::class);
+        Notification::assertSentTo($privateOwner, CommunityJoinRequestNotification::class);
     }
 
     public function test_user_can_leave_a_community_but_last_admin_cannot_leave(): void
@@ -238,5 +267,60 @@ class CommunityApiTest extends TestCase
 
         $this->postJson("/api/communities/{$community->id}/membership-requests/{$pendingMembership->id}/approve")
             ->assertForbidden();
+    }
+
+    public function test_owner_and_admin_can_delete_a_community_but_member_cannot(): void
+    {
+        $owner = User::factory()->create();
+        $admin = User::factory()->create();
+        $member = User::factory()->create();
+        $community = Community::factory()->create(['user_id' => $owner->id]);
+
+        CommunityMember::factory()->create([
+            'community_id' => $community->id,
+            'user_id' => $owner->id,
+            'role' => 'admin',
+            'status' => 'approved',
+        ]);
+        CommunityMember::factory()->create([
+            'community_id' => $community->id,
+            'user_id' => $admin->id,
+            'role' => 'admin',
+            'status' => 'approved',
+        ]);
+        CommunityMember::factory()->create([
+            'community_id' => $community->id,
+            'user_id' => $member->id,
+            'role' => 'member',
+            'status' => 'approved',
+        ]);
+
+        Sanctum::actingAs($member, ['*']);
+
+        $this->deleteJson("/api/communities/{$community->id}")
+            ->assertForbidden();
+
+        Sanctum::actingAs($admin, ['*']);
+
+        $this->deleteJson("/api/communities/{$community->id}")
+            ->assertOk()
+            ->assertJsonPath('message', __('messages.communities.deleted'));
+
+        $this->assertDatabaseMissing('communities', [
+            'id' => $community->id,
+        ]);
+
+        $ownerCommunity = Community::factory()->create(['user_id' => $owner->id]);
+        CommunityMember::factory()->create([
+            'community_id' => $ownerCommunity->id,
+            'user_id' => $owner->id,
+            'role' => 'admin',
+            'status' => 'approved',
+        ]);
+
+        Sanctum::actingAs($owner, ['*']);
+
+        $this->deleteJson("/api/communities/{$ownerCommunity->id}")
+            ->assertOk();
     }
 }

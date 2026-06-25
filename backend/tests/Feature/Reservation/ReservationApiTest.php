@@ -8,6 +8,7 @@ use App\Models\Reservation;
 use App\Models\ServiceListing;
 use App\Models\User;
 use App\Notifications\ReservationApprovedNotification;
+use App\Notifications\ReservationCancelledNotification;
 use App\Notifications\ReservationCompletedNotification;
 use App\Notifications\ReservationDeliveryUpdatedNotification;
 use App\Notifications\ReservationRejectedNotification;
@@ -453,6 +454,8 @@ class ReservationApiTest extends TestCase
 
     public function test_buyer_can_cancel_service_reservation_and_invalid_status_is_refused(): void
     {
+        Notification::fake();
+
         $provider = User::factory()->create();
         $buyer = User::factory()->create();
         $service = ServiceListing::factory()->create([
@@ -473,6 +476,8 @@ class ReservationApiTest extends TestCase
         $this->patchJson("/api/reservations/{$reservationId}/cancel")
             ->assertOk()
             ->assertJsonPath('data.status', 'cancelled');
+
+        Notification::assertSentTo($provider, ReservationCancelledNotification::class);
 
         $this->patchJson("/api/reservations/{$reservationId}/approve")
             ->assertForbidden();

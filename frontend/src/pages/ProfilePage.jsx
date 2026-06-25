@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 
 import {
   createCommentRequest,
@@ -9,7 +9,12 @@ import {
   toggleLikeRequest,
   updatePostRequest,
 } from '../api/posts'
-import { getProfileRequest, updateProfileRequest } from '../api/profile'
+import {
+  getProfileFollowersRequest,
+  getProfileFollowingRequest,
+  getProfileRequest,
+  updateProfileRequest,
+} from '../api/profile'
 import { createDirectConversationRequest } from '../api/messages'
 import PostCard from '../components/feed/PostCard'
 import Avatar from '../components/ui/Avatar'
@@ -51,6 +56,11 @@ function ProfilePage() {
   const [isMessageStarting, setIsMessageStarting] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('posts')
+  const [relationshipDialog, setRelationshipDialog] = useState(null)
+  const [relationshipUsers, setRelationshipUsers] = useState([])
+  const [relationshipError, setRelationshipError] = useState('')
+  const [isRelationshipLoading, setIsRelationshipLoading] = useState(false)
+  const publicationsSectionRef = useRef(null)
   const editSectionRef = useRef(null)
   const nameInputRef = useRef(null)
   const requestedProfileId =
@@ -347,6 +357,45 @@ function ProfilePage() {
     }
   }
 
+  const handleOpenPublications = () => {
+    setActiveTab('posts')
+    globalThis.setTimeout(() => {
+      publicationsSectionRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      })
+    }, 80)
+  }
+
+  const handleOpenRelationshipDialog = async (type) => {
+    if (!requestedProfileId) {
+      return
+    }
+
+    setRelationshipDialog(type)
+    setRelationshipUsers([])
+    setRelationshipError('')
+    setIsRelationshipLoading(true)
+
+    try {
+      const response = type === 'followers'
+        ? await getProfileFollowersRequest(requestedProfileId)
+        : await getProfileFollowingRequest(requestedProfileId)
+
+      setRelationshipUsers(extractDataArray(response))
+    } catch (error) {
+      setRelationshipError(getErrorMessage(error, t('profile.relationshipsLoadError')))
+    } finally {
+      setIsRelationshipLoading(false)
+    }
+  }
+
+  const handleCloseRelationshipDialog = () => {
+    setRelationshipDialog(null)
+    setRelationshipUsers([])
+    setRelationshipError('')
+  }
+
   const handleToggleLike = async (postId, reaction = 'like') => {
     let previousPost = null
 
@@ -552,9 +601,9 @@ function ProfilePage() {
           </div>
 
           <div className="mt-6 grid grid-cols-3 gap-3">
-            <StatCard label={t('feed.postsCount')} value={profile?.postsCount ?? 0} />
-            <StatCard label={t('feed.followers')} value={followersCount} />
-            <StatCard label={t('feed.followingCount')} value={followingCount} />
+            <StatCard label={t('feed.postsCount')} value={profile?.postsCount ?? 0} onClick={handleOpenPublications} />
+            <StatCard label={t('feed.followers')} value={followersCount} onClick={() => handleOpenRelationshipDialog('followers')} />
+            <StatCard label={t('feed.followingCount')} value={followingCount} onClick={() => handleOpenRelationshipDialog('following')} />
           </div>
         </div>
       </section>
@@ -571,7 +620,10 @@ function ProfilePage() {
         </div>
       ) : null}
 
-      <section className="rounded-[30px] border border-white/80 bg-white/90 p-5 shadow-[0_20px_48px_rgba(124,58,237,0.08)] dark:border-violet-300/12 dark:bg-white/8">
+      <section
+        ref={publicationsSectionRef}
+        className="scroll-mt-24 rounded-[30px] border border-white/80 bg-white/90 p-5 shadow-[0_20px_48px_rgba(124,58,237,0.08)] dark:border-violet-300/12 dark:bg-white/8"
+      >
         <div className="flex gap-2 overflow-x-auto pb-1">
           {profileTabs.map((tab) => (
             <button
@@ -805,6 +857,16 @@ function ProfilePage() {
         </form>
       ) : null}
 
+      {relationshipDialog ? (
+        <RelationshipDialog
+          errorMessage={relationshipError}
+          isLoading={isRelationshipLoading}
+          onClose={handleCloseRelationshipDialog}
+          title={relationshipDialog === 'followers' ? t('profile.followersTitle') : t('profile.followingTitle')}
+          users={relationshipUsers}
+        />
+      ) : null}
+
       <ScrollTopButton />
     </section>
   )
@@ -855,18 +917,29 @@ function ProfileMediaPreview({ post }) {
   const { t } = useI18n()
   const mediaUrl = post.mediaUrl ?? post.imageUrl
   const isVideo = post.mediaKind === 'video'
+  const stats = getPostStats(post)
 
   return (
-    <article className="overflow-hidden rounded-[24px] border border-violet-100 bg-white/78 dark:border-violet-300/12 dark:bg-white/8">
-      {isVideo ? (
-        <video src={mediaUrl} controls className="h-64 w-full object-cover sm:h-80" />
-      ) : (
-        <img src={mediaUrl} alt={post.content || t('profile.mediaAlt')} className="h-64 w-full object-cover sm:h-80" />
-      )}
+    <Link
+      to={`/feed?post=${post.id}`}
+      className="block overflow-hidden rounded-[24px] border border-violet-100 bg-white/78 transition hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-[0_18px_38px_rgba(124,58,237,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-300 dark:border-violet-300/12 dark:bg-white/8"
+    >
+      <div className="relative">
+        {isVideo ? (
+          <video src={mediaUrl} controls className="h-64 w-full object-cover sm:h-80" />
+        ) : (
+          <img src={mediaUrl} alt={post.content || t('profile.mediaAlt')} className="h-64 w-full object-cover sm:h-80" />
+        )}
+        <div className="absolute inset-x-3 bottom-3 flex flex-wrap justify-center gap-2">
+          <MediaStat label={t('profile.reactionsShort')} value={stats.reactions} />
+          <MediaStat label={t('comments.title')} value={stats.comments} />
+          <MediaStat label={t('post.shares')} value={stats.shares} />
+        </div>
+      </div>
       <p className="line-clamp-2 px-4 py-3 text-sm text-stone-600 dark:text-violet-100/72">
         {post.content || t('post.shareFallback')}
       </p>
-    </article>
+    </Link>
   )
 }
 
@@ -882,15 +955,113 @@ function formatProfileDate(value) {
   }).format(new Date(value))
 }
 
-function StatCard({ label, value }) {
+function MediaStat({ label, value }) {
   return (
-    <div className="rounded-[24px] bg-[linear-gradient(135deg,_rgba(244,237,255,0.96),_rgba(237,233,254,0.72))] px-4 py-4 text-center dark:bg-[linear-gradient(135deg,_rgba(124,58,237,0.18),_rgba(24,6,44,0.92))]">
+    <span className="rounded-full bg-stone-950/62 px-3 py-1 text-xs font-semibold text-white shadow-sm backdrop-blur">
+      <span dir="ltr" className="me-1 inline-block">
+        {value}
+      </span>
+      {label}
+    </span>
+  )
+}
+
+function RelationshipDialog({
+  errorMessage,
+  isLoading,
+  onClose,
+  title,
+  users,
+}) {
+  const { t } = useI18n()
+
+  return (
+    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-stone-950/58 px-4 py-6 backdrop-blur-sm">
+      <section className="w-full max-w-lg rounded-[30px] border border-white/70 bg-white/96 p-5 shadow-[0_28px_70px_rgba(20,9,38,0.24)] dark:border-violet-300/14 dark:bg-[#12051f]">
+        <div className="flex items-center justify-between gap-4">
+          <h2 className="text-lg font-semibold text-stone-950 dark:text-violet-50">{title}</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-violet-100 bg-white text-lg font-semibold text-stone-600 transition hover:bg-violet-50 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-50"
+            aria-label={t('common.close')}
+          >
+            x
+          </button>
+        </div>
+
+        {errorMessage ? (
+          <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            {errorMessage}
+          </div>
+        ) : null}
+
+        {isLoading ? (
+          <div className="mt-4 rounded-2xl border border-dashed border-violet-200 px-4 py-10 text-center text-sm text-stone-500 dark:border-violet-300/14 dark:text-violet-100/70">
+            {t('common.loading')}
+          </div>
+        ) : null}
+
+        {!isLoading && users.length === 0 && !errorMessage ? (
+          <div className="mt-4 rounded-2xl border border-dashed border-violet-200 px-4 py-10 text-center text-sm text-stone-500 dark:border-violet-300/14 dark:text-violet-100/70">
+            {t('profile.relationshipsEmpty')}
+          </div>
+        ) : null}
+
+        {!isLoading && users.length > 0 ? (
+          <div className="mt-4 max-h-[60vh] space-y-3 overflow-y-auto pe-1">
+            {users.map((profileUser) => (
+              <Link
+                key={profileUser.id}
+                to={`/profile/${profileUser.id}`}
+                onClick={onClose}
+                className="flex items-center gap-3 rounded-[22px] border border-violet-100 bg-white/80 p-3 transition hover:border-violet-300 hover:bg-violet-50 dark:border-violet-300/12 dark:bg-white/8 dark:hover:bg-white/12"
+              >
+                <Avatar name={profileUser.name} src={profileUser.avatar || ''} />
+                <div className="min-w-0 flex-1 text-start">
+                  <p className="truncate font-semibold text-stone-950 dark:text-violet-50">{profileUser.name}</p>
+                  <p className="truncate text-xs text-stone-500 dark:text-violet-100/60">
+                    {profileUser.city || t('common.notProvided')}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        ) : null}
+      </section>
+    </div>
+  )
+}
+
+function StatCard({ label, value, onClick }) {
+  const Component = onClick ? 'button' : 'div'
+
+  return (
+    <Component
+      type={onClick ? 'button' : undefined}
+      onClick={onClick}
+      className="rounded-[24px] bg-[linear-gradient(135deg,_rgba(244,237,255,0.96),_rgba(237,233,254,0.72))] px-4 py-4 text-center transition hover:-translate-y-0.5 hover:shadow-[0_16px_32px_rgba(124,58,237,0.14)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-300 dark:bg-[linear-gradient(135deg,_rgba(124,58,237,0.18),_rgba(24,6,44,0.92))]"
+    >
       <p className="text-xs uppercase tracking-[0.18em] text-stone-600 dark:text-violet-100/70">{label}</p>
       <p className="mt-1 text-sm font-semibold text-stone-900 dark:text-violet-50">
         {value}
       </p>
-    </div>
+    </Component>
   )
+}
+
+function getPostStats(post) {
+  const reactionCounts = post.reactionCounts ?? {}
+  const reactionTotal = Object.values(reactionCounts).reduce(
+    (total, value) => total + Number(value || 0),
+    0,
+  )
+
+  return {
+    reactions: post.reactionsCount ?? post.likesCount ?? post.likes ?? reactionTotal,
+    comments: post.commentsCount ?? post.comments?.length ?? 0,
+    shares: post.sharesCount ?? post.shares ?? 0,
+  }
 }
 
 function filterPublications(publications, searchTerm) {
