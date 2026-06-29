@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
 
-import { getUnreadMessagesCountRequest } from '../api/messages'
+import { getConversationsRequest, getUnreadMessagesCountRequest } from '../api/messages'
 import {
   getNotificationsRequest,
   markAllNotificationsReadRequest,
@@ -25,6 +25,11 @@ function Layout() {
   const { isRtl, t } = useI18n()
   const { latestNotification, refreshUnreadCount, unreadCount } = useNotifications()
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0)
+  const [messagePreview, setMessagePreview] = useState([])
+  const [isMessagesOpen, setIsMessagesOpen] = useState(false)
+  const [isMessagesLoading, setIsMessagesLoading] = useState(false)
+  const [messageFilter, setMessageFilter] = useState('all')
+  const messageMenuRef = useRef(null)
   const [notificationPreview, setNotificationPreview] = useState([])
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
   const [isNotificationsLoading, setIsNotificationsLoading] = useState(false)
@@ -74,6 +79,10 @@ function Layout() {
 
   useEffect(() => {
     const handlePointerDown = (event) => {
+      if (!messageMenuRef.current?.contains(event.target)) {
+        setIsMessagesOpen(false)
+      }
+
       if (!notificationMenuRef.current?.contains(event.target)) {
         setIsNotificationsOpen(false)
       }
@@ -83,6 +92,21 @@ function Layout() {
 
     return () => {
       globalThis.removeEventListener('pointerdown', handlePointerDown)
+    }
+  }, [])
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setIsMessagesOpen(false)
+        setIsNotificationsOpen(false)
+      }
+    }
+
+    globalThis.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      globalThis.removeEventListener('keydown', handleKeyDown)
     }
   }, [])
 
@@ -127,6 +151,7 @@ function Layout() {
     const nextOpen = !isNotificationsOpen
 
     setIsNotificationsOpen(nextOpen)
+    setIsMessagesOpen(false)
 
     if (nextOpen) {
       await loadNotificationPreview()
@@ -182,6 +207,35 @@ function Layout() {
     }
   }, [isAuthenticated])
 
+  const loadMessagePreview = useCallback(async () => {
+    if (!isAuthenticated) {
+      setMessagePreview([])
+      return
+    }
+
+    setIsMessagesLoading(true)
+
+    try {
+      const response = await getConversationsRequest()
+      setMessagePreview(sortMessageConversations(extractDataArray(response)).slice(0, 6))
+    } catch {
+      setMessagePreview([])
+    } finally {
+      setIsMessagesLoading(false)
+    }
+  }, [isAuthenticated])
+
+  const handleToggleMessages = async () => {
+    const nextOpen = !isMessagesOpen
+
+    setIsMessagesOpen(nextOpen)
+    setIsNotificationsOpen(false)
+
+    if (nextOpen) {
+      await loadMessagePreview()
+    }
+  }
+
   useEffect(() => {
     if (isBootstrapping) {
       return undefined
@@ -202,6 +256,18 @@ function Layout() {
       globalThis.clearInterval(intervalId)
     }
   }, [isAuthenticated, isBootstrapping, location.pathname, refreshUnreadMessagesCount])
+
+  useEffect(() => {
+    if (latestNotification?.type !== 'new_message') {
+      return
+    }
+
+    void refreshUnreadMessagesCount()
+
+    if (isMessagesOpen) {
+      void loadMessagePreview()
+    }
+  }, [isMessagesOpen, latestNotification, loadMessagePreview, refreshUnreadMessagesCount])
 
   const goToSearch = useCallback(
     (query) => {
@@ -295,13 +361,16 @@ function Layout() {
               </button>
 
               <DesktopActionLink to="/feed" icon="home" label={t('common.feed')} className="hidden lg:inline-flex" />
-              <DesktopActionLink
-                to="/messages"
-                icon="chat"
-                label={t('common.messages')}
-                badgeCount={unreadMessagesCount}
-                badgeLabel={t('messages.unreadAria', { count: unreadMessagesCount })}
-                className="hidden lg:inline-flex"
+              <MessageMenu
+                conversations={messagePreview}
+                filter={messageFilter}
+                isLoading={isMessagesLoading}
+                isOpen={isMessagesOpen}
+                onFilterChange={setMessageFilter}
+                onToggle={handleToggleMessages}
+                refObject={messageMenuRef}
+                t={t}
+                unreadCount={unreadMessagesCount}
               />
               <NotificationMenu
                 refObject={notificationMenuRef}
@@ -370,7 +439,13 @@ function Layout() {
         t={t}
       />
 
-      <MobileBottomDock user={user} onCreateStory={handleCreateStory} t={t} notificationsCount={unreadCount} />
+      <MobileBottomDock
+        user={user}
+        onCreateStory={handleCreateStory}
+        t={t}
+        messagesCount={unreadMessagesCount}
+        notificationsCount={unreadCount}
+      />
     </div>
   )
 }
@@ -711,6 +786,156 @@ function DesktopActionLink({ to, icon, label, badgeCount = 0, badgeLabel = '', c
   )
 }
 
+function MessageMenu({
+  conversations,
+  filter,
+  isLoading,
+  isOpen,
+  onFilterChange,
+  onToggle,
+  refObject,
+  t,
+  unreadCount,
+}) {
+  const safeConversations = sortMessageConversations(conversations)
+  const visibleConversations =
+    filter === 'unread'
+      ? safeConversations.filter((conversation) => (conversation.unreadCount ?? 0) > 0)
+      : safeConversations
+
+  return (
+    <div ref={refObject} className="relative hidden lg:block">
+      <button
+        type="button"
+        onClick={onToggle}
+        className={`relative inline-flex h-10 w-10 items-center justify-center rounded-2xl border transition ${
+          isOpen
+            ? 'border-violet-300 bg-[linear-gradient(135deg,#7c3aed,#a855f7,#c4b5fd)] text-white shadow-[0_10px_22px_rgba(124,58,237,0.18)]'
+            : 'border-white/55 bg-white/35 text-stone-700 hover:border-violet-200 hover:bg-white/55 hover:text-violet-900 dark:border-violet-300/15 dark:bg-white/8 dark:text-violet-50 dark:hover:bg-white/14'
+        }`}
+        aria-label={t('common.messages')}
+        aria-expanded={isOpen}
+        title={t('common.messages')}
+      >
+        <AppIcon name="chat" className="h-5 w-5" />
+        {unreadCount > 0 ? (
+          <UnreadBadge label={t('messages.unreadAria', { count: unreadCount })}>
+            {formatBadgeCount(unreadCount)}
+          </UnreadBadge>
+        ) : null}
+      </button>
+
+      {isOpen ? (
+        <section className="absolute end-0 top-[calc(100%+0.75rem)] z-50 w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-[28px] border border-white/70 bg-white/96 text-start shadow-[0_28px_70px_rgba(35,13,68,0.22)] backdrop-blur-2xl dark:border-violet-300/16 dark:bg-[#150c23]/96">
+          <header className="border-b border-violet-100/70 px-4 py-4 dark:border-violet-300/14">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-lg font-semibold text-stone-950 dark:text-violet-50">
+                {t('messages.dropdown.title')}
+              </h2>
+              {unreadCount > 0 ? (
+                <span
+                  className="rounded-full bg-violet-50 px-3 py-1.5 text-xs font-semibold text-violet-700 dark:bg-white/10 dark:text-violet-100"
+                  dir="ltr"
+                >
+                  {t('messages.dropdown.unreadCount', { count: unreadCount })}
+                </span>
+              ) : null}
+            </div>
+            <div className="mt-3 flex gap-2">
+              {['all', 'unread'].map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => onFilterChange(tab)}
+                  className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                    filter === tab
+                      ? 'bg-violet-600 text-white'
+                      : 'bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-white/10 dark:text-violet-100'
+                  }`}
+                >
+                  {t(`messages.dropdown.${tab}`)}
+                </button>
+              ))}
+            </div>
+          </header>
+
+          <div className="max-h-[28rem] overflow-y-auto p-2">
+            {isLoading ? <NotificationState>{t('common.loading')}</NotificationState> : null}
+            {!isLoading && visibleConversations.length === 0 ? (
+              <NotificationState>{t('messages.dropdown.empty')}</NotificationState>
+            ) : null}
+            {!isLoading && visibleConversations.length > 0 ? (
+              <div className="space-y-1">
+                {visibleConversations.map((conversation) => {
+                  const display = getMessageConversationDisplay(conversation, t)
+                  const conversationUrl = `/messages?conversation=${encodeURIComponent(conversation.id)}`
+                  const unreadConversationCount = conversation.unreadCount ?? 0
+
+                  return (
+                    <Link
+                      key={conversation.id}
+                      to={conversationUrl}
+                      onClick={() => {
+                        onToggle()
+                      }}
+                      className={`flex min-w-0 gap-3 rounded-[22px] px-3 py-3 transition hover:bg-violet-50 dark:hover:bg-white/10 ${
+                        unreadConversationCount > 0 ? 'bg-violet-50/70 dark:bg-violet-500/12' : ''
+                      }`}
+                      aria-label={t('messages.dropdown.openConversation')}
+                    >
+                      <Avatar
+                        name={display.name}
+                        src={display.avatar}
+                        className="h-11 w-11 shrink-0"
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className="flex min-w-0 items-center justify-between gap-3">
+                          <span className="truncate text-sm font-semibold text-stone-950 dark:text-violet-50">
+                            {display.name}
+                          </span>
+                          {unreadConversationCount > 0 ? (
+                            <span
+                              className="shrink-0 rounded-full bg-violet-600 px-2 py-0.5 text-[11px] font-bold text-white"
+                              dir="ltr"
+                            >
+                              {unreadConversationCount}
+                            </span>
+                          ) : null}
+                        </span>
+                        <span className="mt-0.5 line-clamp-2 block text-xs leading-5 text-stone-600 dark:text-violet-100/72">
+                          {display.lastMessage}
+                        </span>
+                        <span className="mt-1 block text-[11px] font-medium text-violet-700 dark:text-violet-200">
+                          {display.updatedAt}
+                        </span>
+                      </span>
+                      {unreadConversationCount > 0 ? (
+                        <span className="mt-2 h-2.5 w-2.5 shrink-0 rounded-full bg-violet-600" />
+                      ) : null}
+                    </Link>
+                  )
+                })}
+              </div>
+            ) : null}
+          </div>
+
+          <footer className="border-t border-violet-100/70 p-3 dark:border-violet-300/14">
+            <Link
+              to="/messages"
+              onClick={() => {
+                onToggle()
+              }}
+              className="block rounded-[18px] bg-violet-50 px-4 py-2.5 text-center text-sm font-semibold text-violet-800 transition hover:bg-violet-100 dark:bg-white/10 dark:text-violet-50 dark:hover:bg-white/14"
+            >
+              {t('messages.dropdown.viewAll')}
+            </Link>
+          </footer>
+        </section>
+      ) : null}
+    </div>
+  )
+}
+
 function NotificationMenu({
   filter,
   isLoading,
@@ -857,7 +1082,7 @@ function NotificationState({ children }) {
   )
 }
 
-function MobileBottomDock({ user, onCreateStory, t, notificationsCount }) {
+function MobileBottomDock({ user, onCreateStory, t, messagesCount, notificationsCount }) {
   return (
     <nav className="fixed bottom-3 left-1/2 z-30 flex w-[calc(100%-1rem)] max-w-md -translate-x-1/2 items-center justify-between rounded-[24px] border border-white/55 bg-[linear-gradient(135deg,_rgba(255,255,255,0.46),_rgba(248,240,255,0.32),_rgba(255,255,255,0.18))] px-1.5 py-1.5 pb-[max(0.375rem,env(safe-area-inset-bottom))] shadow-[0_20px_44px_rgba(124,58,237,0.14)] backdrop-blur-2xl dark:border-violet-300/16 dark:bg-[linear-gradient(135deg,_rgba(24,16,38,0.84),_rgba(49,24,83,0.58),_rgba(12,8,20,0.72))] lg:hidden">
       <MobileDockLink to="/feed" label={t('common.feed')} icon="home" />
@@ -869,7 +1094,13 @@ function MobileBottomDock({ user, onCreateStory, t, notificationsCount }) {
         badgeLabel={t('notifications.unreadAria', { count: notificationsCount })}
       />
       <MobileDockStoryButton onClick={onCreateStory} label={t('common.story')} />
-      <MobileDockLink to="/messages" label={t('common.messagesShort')} icon="chat" />
+      <MobileDockLink
+        to="/messages"
+        label={t('common.messagesShort')}
+        icon="chat"
+        badgeCount={messagesCount}
+        badgeLabel={t('messages.unreadAria', { count: messagesCount })}
+      />
       <MobileDockProfileLink user={user} label={t('common.profile')} />
     </nav>
   )
@@ -908,6 +1139,36 @@ function UnreadBadge({ children, label }) {
 
 function formatBadgeCount(count) {
   return count > 99 ? '99+' : String(count)
+}
+
+function sortMessageConversations(items) {
+  return [...asArray(items)].sort(
+    (firstConversation, secondConversation) =>
+      new Date(secondConversation.updatedAt ?? secondConversation.updated_at ?? 0).getTime() -
+      new Date(firstConversation.updatedAt ?? firstConversation.updated_at ?? 0).getTime(),
+  )
+}
+
+function getMessageConversationDisplay(conversation, t) {
+  const participant = conversation.participant ?? {}
+  const participantName = participant.name ?? participant.username ?? t('common.user')
+  const lastMessage =
+    conversation.latestMessage?.body ??
+    conversation.latest_message?.body ??
+    conversation.last_message ??
+    t('messages.readyToStart')
+  const updatedAt =
+    conversation.updatedAt ??
+    conversation.updated_at ??
+    conversation.latestMessage?.createdAt ??
+    conversation.latest_message?.created_at
+
+  return {
+    avatar: participant.avatar ?? participant.avatarUrl ?? participant.avatar_url ?? '',
+    lastMessage,
+    name: participantName,
+    updatedAt: updatedAt ? formatDate(updatedAt) : t('messages.dropdown.lastMessage'),
+  }
 }
 
 function getNotificationMenuDisplay(notification, t) {
@@ -1176,10 +1437,23 @@ NotificationState.propTypes = {
   children: PropTypes.node,
 }
 
+MessageMenu.propTypes = {
+  conversations: PropTypes.array,
+  filter: PropTypes.string,
+  isLoading: PropTypes.bool,
+  isOpen: PropTypes.bool,
+  onFilterChange: PropTypes.func,
+  onToggle: PropTypes.func,
+  refObject: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
+  t: PropTypes.func,
+  unreadCount: PropTypes.number,
+}
+
 MobileBottomDock.propTypes = {
   user: PropTypes.object,
   onCreateStory: PropTypes.func,
   t: PropTypes.func,
+  messagesCount: PropTypes.number,
   notificationsCount: PropTypes.number,
 }
 

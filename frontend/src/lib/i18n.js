@@ -4247,6 +4247,54 @@ messages.en = deepMerge(messages.en, {
   },
 })
 
+messages.fr = deepMerge(messages.fr, {
+  messages: {
+    dropdown: {
+      title: 'Messages',
+      all: 'Tous',
+      unread: 'Non lus',
+      empty: 'Aucun message pour le moment.',
+      viewAll: 'Voir tous les messages',
+      markAllRead: 'Tout marquer comme lu',
+      lastMessage: 'Dernier message',
+      openConversation: 'Ouvrir la conversation',
+      unreadCount: '{count} non lu',
+    },
+  },
+})
+
+messages.ar = deepMerge(messages.ar, {
+  messages: {
+    dropdown: {
+      title: 'الرسائل',
+      all: 'الكل',
+      unread: 'غير المقروءة',
+      empty: 'لا توجد رسائل حالياً.',
+      viewAll: 'عرض كل الرسائل',
+      markAllRead: 'تعليم الكل كمقروء',
+      lastMessage: 'آخر رسالة',
+      openConversation: 'فتح المحادثة',
+      unreadCount: '{count} غير مقروءة',
+    },
+  },
+})
+
+messages.en = deepMerge(messages.en, {
+  messages: {
+    dropdown: {
+      title: 'Messages',
+      all: 'All',
+      unread: 'Unread',
+      empty: 'No messages yet.',
+      viewAll: 'View all messages',
+      markAllRead: 'Mark all as read',
+      lastMessage: 'Last message',
+      openConversation: 'Open conversation',
+      unreadCount: '{count} unread',
+    },
+  },
+})
+
 function deepMerge(base, override = {}) {
   const result = { ...base }
 
