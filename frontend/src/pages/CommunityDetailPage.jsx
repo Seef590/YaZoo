@@ -86,7 +86,7 @@ function CommunityDetailPage() {
       setCommunity(extractDataObject(response, community))
       setSuccessMessage(response.data.message)
     } catch (error) {
-      setErrorMessage(getErrorMessage(error, "Impossible de rejoindre ce groupe."))
+      setErrorMessage(getErrorMessage(error, t('communities.detail.joinError')))
     } finally {
       setIsJoining(false)
     }
@@ -102,7 +102,7 @@ function CommunityDetailPage() {
       setCommunity(extractDataObject(response, community))
       setSuccessMessage(response.data.message)
     } catch (error) {
-      setErrorMessage(getErrorMessage(error, "Impossible de quitter ce groupe."))
+      setErrorMessage(getErrorMessage(error, t('communities.detail.leaveError')))
     } finally {
       setIsJoining(false)
     }
@@ -239,7 +239,7 @@ function CommunityDetailPage() {
   }
 
   if (!community) {
-    return <StateBox>{errorMessage || 'Groupe introuvable.'}</StateBox>
+    return <StateBox>{errorMessage || t('communities.detail.notFound')}</StateBox>
   }
 
   const safePosts = asArray(posts)
@@ -248,10 +248,10 @@ function CommunityDetailPage() {
   const canDeleteCommunity = Boolean(community.isOwner || community.isAdmin)
   const memberPreview = getUniqueMembers([community.owner, community.isMember ? user : null])
   const communityTabs = [
-    { key: 'about', label: t('communities.about') },
-    { key: 'discussion', label: t('feed.discussion') },
-    { key: 'members', label: t('common.members') },
-    { key: 'media', label: t('common.media') },
+    { key: 'about', label: t('communities.detail.about') },
+    { key: 'discussion', label: t('communities.detail.discussion') },
+    { key: 'members', label: t('communities.detail.members') },
+    { key: 'media', label: t('communities.detail.media') },
   ]
 
   return (
@@ -260,7 +260,7 @@ function CommunityDetailPage() {
         <div className="flex flex-col gap-4 px-4 py-5 sm:px-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 flex-1 text-start">
             <span className="inline-flex rounded-full border border-violet-100 bg-violet-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-violet-800 dark:border-violet-300/18 dark:bg-white/10 dark:text-violet-100">
-              {community.isPrivate ? t('common.private') : t('common.public')}
+              {community.isPrivate ? t('communities.detail.privateGroup') : t('communities.detail.publicGroup')}
             </span>
             <h1 className="mt-3 break-words text-2xl font-semibold text-stone-950 sm:text-3xl dark:text-violet-50">
               {community.name}
@@ -277,12 +277,12 @@ function CommunityDetailPage() {
           <div className="flex w-full flex-wrap gap-2 lg:w-auto lg:justify-end">
             {!community.isMember && community.membershipStatus !== 'pending' ? (
               <Button type="button" onClick={handleJoin} disabled={isJoining} className="flex-1 sm:flex-none">
-                {community.isPrivate ? t('communities.requestAccess') : t('communities.join')}
+                {community.isPrivate ? t('communities.requestAccess') : t('communities.detail.join')}
               </Button>
             ) : null}
             {community.isMember ? (
               <Button type="button" variant="secondary" onClick={handleLeave} disabled={isJoining} className="flex-1 sm:flex-none">
-                {t('communities.leave')}
+                {t('communities.detail.leave')}
               </Button>
             ) : null}
             <Button type="button" variant="ghost" onClick={handleShare} className="flex-1 sm:flex-none">
@@ -295,7 +295,7 @@ function CommunityDetailPage() {
                 onClick={() => setIsDeleteDialogOpen(true)}
                 className="flex-1 border-rose-200 bg-rose-50 text-rose-700 hover:border-rose-300 hover:bg-rose-100 hover:text-rose-800 sm:flex-none dark:border-rose-300/20 dark:bg-rose-500/10 dark:text-rose-100"
               >
-                {t('communities.delete')}
+                {t('communities.detail.delete')}
               </Button>
             ) : null}
           </div>
@@ -315,23 +315,27 @@ function CommunityDetailPage() {
           <div className="hidden">
             <div>
               <span className="rounded-full bg-stone-950/58 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-white backdrop-blur">
-                {community.isPrivate ? 'Groupe prive' : 'Groupe public'}
+                {community.isPrivate ? t('communities.detail.privateGroup') : t('communities.detail.publicGroup')}
               </span>
               <h1 className="mt-3 text-3xl font-semibold text-white sm:text-4xl">{community.name}</h1>
               <p className="mt-2 text-sm font-medium text-white/82">
-                {community.membersCount} membre{community.membersCount > 1 ? 's' : ''} · cree le {formatDate(community.createdAt)}
+                {t('communities.membersMeta', {
+                  count: community.membersCount,
+                  plural: community.membersCount > 1 ? 's' : '',
+                  date: formatDate(community.createdAt),
+                })}
               </p>
             </div>
 
             <div className="flex flex-wrap gap-2">
               {!community.isMember && community.membershipStatus !== 'pending' ? (
                 <Button type="button" onClick={handleJoin} disabled={isJoining}>
-                  {community.isPrivate ? "Demander l'acces" : 'Rejoindre'}
+                  {community.isPrivate ? t('communities.requestAccess') : t('communities.detail.join')}
                 </Button>
               ) : null}
               {community.isMember ? (
                 <Button type="button" variant="secondary" onClick={handleLeave} disabled={isJoining}>
-                  Quitter
+                  {t('communities.detail.leave')}
                 </Button>
               ) : null}
               <Button type="button" variant="ghost" onClick={handleShare}>
@@ -344,7 +348,7 @@ function CommunityDetailPage() {
                   onClick={() => setIsDeleteDialogOpen(true)}
                   className="border-rose-200 bg-rose-50 text-rose-700 hover:border-rose-300 hover:bg-rose-100 hover:text-rose-800 dark:border-rose-300/20 dark:bg-rose-500/10 dark:text-rose-100"
                 >
-                  {t('communities.delete')}
+                  {t('communities.detail.delete')}
                 </Button>
               ) : null}
             </div>
@@ -388,7 +392,7 @@ function CommunityDetailPage() {
 
               {canViewDiscussion && !community.isMember ? (
                 <section className="rounded-[28px] border border-dashed border-violet-200 bg-white/78 p-5 text-sm text-stone-600 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-100/70">
-                  Rejoignez le groupe pour publier et participer a la discussion.
+                  {t('communities.detail.joinToPost')}
                 </section>
               ) : null}
 
@@ -422,12 +426,15 @@ function CommunityDetailPage() {
             <section className="rounded-[28px] border border-white/80 bg-white/92 p-5 shadow-[0_20px_48px_rgba(124,58,237,0.08)] dark:border-violet-300/12 dark:bg-white/8">
               <h2 className="text-xl font-semibold text-stone-950 dark:text-violet-50">{t('communities.aboutGroup')}</h2>
               <p className="mt-3 text-sm leading-7 text-stone-600 dark:text-violet-100/72">
-                {community.description || 'Ce groupe attend encore sa description.'}
+                {community.description || t('communities.detail.noDescriptionYet')}
               </p>
               <div className="mt-5 grid gap-3 text-sm text-stone-600 sm:grid-cols-3 dark:text-violet-100/72">
-                <InfoPill label="Visibilite" value={community.isPrivate ? 'Prive' : 'Public'} />
-                <InfoPill label="Proprietaire" value={community.owner?.name || 'YaZoo'} />
-                <InfoPill label="Statut" value={getMembershipLabel(community)} />
+                <InfoPill
+                  label={t('communities.detail.visibility')}
+                  value={community.isPrivate ? t('communities.form.private') : t('communities.form.public')}
+                />
+                <InfoPill label={t('communities.detail.owner')} value={community.owner?.name || 'YaZoo'} />
+                <InfoPill label={t('communities.detail.status')} value={getMembershipLabel(community, t)} />
               </div>
             </section>
           ) : null}
@@ -442,7 +449,9 @@ function CommunityDetailPage() {
                     <div>
                       <p className="font-semibold text-stone-950 dark:text-violet-50">{member.name}</p>
                       <p className="text-xs text-stone-500 dark:text-violet-100/60">
-                        {String(member.id) === String(community.owner?.id) ? 'Admin' : 'Membre'}
+                        {String(member.id) === String(community.owner?.id)
+                          ? t('communities.detail.admin')
+                          : t('communities.detail.member')}
                       </p>
                     </div>
                   </div>
@@ -460,7 +469,7 @@ function CommunityDetailPage() {
               ) : (
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   {mediaPosts.map((post) => (
-                    <MediaPreview key={post.id} post={post} />
+                    <MediaPreview key={post.id} post={post} t={t} />
                   ))}
                 </div>
               )}
@@ -472,12 +481,12 @@ function CommunityDetailPage() {
           <section className="rounded-[28px] border border-white/80 bg-white/92 p-5 shadow-[0_20px_48px_rgba(124,58,237,0.08)] dark:border-violet-300/12 dark:bg-white/8">
             <h2 className="text-lg font-semibold text-stone-950 dark:text-violet-50">{t('communities.about')}</h2>
             <p className="mt-3 text-sm leading-6 text-stone-600 dark:text-violet-100/70">
-              {community.description || 'Aucune description pour le moment.'}
+              {community.description || t('communities.detail.noDescription')}
             </p>
             <div className="mt-4 space-y-3 text-sm text-stone-600 dark:text-violet-100/70">
-              <p><strong className="text-stone-950 dark:text-violet-50">{t('communities.visibilityLabel')}</strong> {community.isPrivate ? t('common.private') : t('common.public')}</p>
+              <p><strong className="text-stone-950 dark:text-violet-50">{t('communities.visibilityLabel')}</strong> {community.isPrivate ? t('communities.form.private') : t('communities.form.public')}</p>
               <p><strong className="text-stone-950 dark:text-violet-50">{t('communities.ownerLabel')}</strong> {community.owner?.name}</p>
-              <p><strong className="text-stone-950 dark:text-violet-50">{t('communities.statusLabel')}</strong> {getMembershipLabel(community)}</p>
+              <p><strong className="text-stone-950 dark:text-violet-50">{t('communities.statusLabel')}</strong> {getMembershipLabel(community, t)}</p>
             </div>
           </section>
 
@@ -499,14 +508,14 @@ function CommunityDetailPage() {
             to="/communities"
             className="block rounded-[24px] border border-violet-100 bg-white/80 px-5 py-4 text-center text-sm font-semibold text-violet-900 transition hover:bg-violet-50 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-50 dark:hover:bg-white/12"
           >
-            Retour aux groupes
+            {t('communities.detail.backToGroups')}
           </Link>
         </aside>
       </div>
 
       {isDeleteDialogOpen ? (
         <ConfirmDialog
-          confirmLabel={isDeletingCommunity ? t('common.deleting') : t('communities.delete')}
+          confirmLabel={isDeletingCommunity ? t('common.deleting') : t('communities.detail.delete')}
           isProcessing={isDeletingCommunity}
           message={t('communities.deleteConfirmMessage')}
           onCancel={() => setIsDeleteDialogOpen(false)}
@@ -518,16 +527,16 @@ function CommunityDetailPage() {
   )
 }
 
-function getMembershipLabel(community) {
+function getMembershipLabel(community, t) {
   if (community.membershipStatus === 'pending') {
-    return 'Demande en attente'
+    return t('communities.detail.pending')
   }
 
   if (community.isMember) {
-    return 'Membre'
+    return t('communities.detail.member')
   }
 
-  return 'Non membre'
+  return t('communities.detail.notMember')
 }
 
 function Alert({ children, tone = 'success' }) {
@@ -596,7 +605,7 @@ function ConfirmDialog({
   )
 }
 
-function MediaPreview({ post }) {
+function MediaPreview({ post, t }) {
   const mediaUrl = post.mediaUrl ?? post.imageUrl
   const isVideo = post.mediaKind === 'video'
 
@@ -605,10 +614,10 @@ function MediaPreview({ post }) {
       {isVideo ? (
         <video src={mediaUrl} controls className="h-64 w-full object-cover sm:h-80" />
       ) : (
-        <img src={mediaUrl} alt={post.content || 'Media du groupe'} className="h-64 w-full object-cover sm:h-80" />
+        <img src={mediaUrl} alt={post.content || t('communities.detail.mediaAlt')} className="h-64 w-full object-cover sm:h-80" />
       )}
       <p className="line-clamp-2 px-4 py-3 text-sm text-stone-600 dark:text-violet-100/72">
-        {post.content || 'Publication du groupe'}
+        {post.content || t('communities.detail.postFallback')}
       </p>
     </article>
   )
@@ -658,6 +667,7 @@ ConfirmDialog.propTypes = {
 
 MediaPreview.propTypes = {
   post: PropTypes.object,
+  t: PropTypes.func,
 }
 
 function addCommentToPost(post, comment) {

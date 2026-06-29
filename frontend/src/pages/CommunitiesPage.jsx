@@ -247,17 +247,17 @@ function CommunitiesPage() {
 
       if (editingId) {
         await updateCommunityRequest(editingId, payload)
-        setSuccessMessage('Communaute mise a jour.')
+        setSuccessMessage(t('communities.form.updateSuccess'))
       } else {
         await createCommunityRequest(payload)
-        setSuccessMessage('Communaute creee avec succes.')
+        setSuccessMessage(t('communities.form.createSuccess'))
       }
 
       resetForm()
       await fetchCommunities()
     } catch (error) {
       setErrorMessage(
-        getErrorMessage(error, "Impossible d'enregistrer la communaute."),
+        getErrorMessage(error, t('communities.form.saveFailed')),
       )
     } finally {
       setIsSubmitting(false)
@@ -288,7 +288,7 @@ function CommunitiesPage() {
       setSuccessMessage(response.data.message)
     } catch (error) {
       setErrorMessage(
-        getErrorMessage(error, "Impossible de rejoindre la communaute."),
+        getErrorMessage(error, t('communities.detail.joinError')),
       )
     }
   }
@@ -303,7 +303,7 @@ function CommunitiesPage() {
       setSuccessMessage(response.data.message)
     } catch (error) {
       setErrorMessage(
-        getErrorMessage(error, "Impossible de quitter la communaute."),
+        getErrorMessage(error, t('communities.detail.leaveError')),
       )
     }
   }
@@ -324,7 +324,7 @@ function CommunitiesPage() {
       setSuccessMessage(response.data.message)
     } catch (error) {
       setErrorMessage(
-        getErrorMessage(error, "Impossible d'approuver la demande."),
+        getErrorMessage(error, t('communities.requests.approveFailed')),
       )
     } finally {
       setProcessingMembershipIds((current) =>
@@ -349,7 +349,7 @@ function CommunitiesPage() {
       setSuccessMessage(response.data.message)
     } catch (error) {
       setErrorMessage(
-        getErrorMessage(error, 'Impossible de refuser la demande.'),
+        getErrorMessage(error, t('communities.requests.rejectFailed')),
       )
     } finally {
       setProcessingMembershipIds((current) =>
@@ -358,7 +358,7 @@ function CommunitiesPage() {
     }
   }
 
-  const submitLabel = getCommunitySubmitLabel(isSubmitting, editingId)
+  const submitLabel = getCommunitySubmitLabel(isSubmitting, editingId, t)
   const safeCommunities = asArray(communities)
 
   return (
@@ -370,33 +370,32 @@ function CommunitiesPage() {
               {t('communities.titlePlural')}
             </p>
             <h2 className="mt-4 text-2xl font-semibold leading-tight text-stone-950 sm:text-3xl">
-              Faites grandir des communautes animales qui donnent envie de rejoindre et de rester.
+              {t('communities.hero.title')}
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-600">
-              Creez un groupe public ou prive, centralisez les demandes d acces
-              et donnez aux membres un espace clair pour echanger.
+              {t('communities.hero.subtitle')}
             </p>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
             <HeroStatCard label={t('communities.titlePlural')} value={asArray(communities).length} />
-            <HeroStatCard label={t('common.private')} value={heroStats.privateCount} />
-            <HeroStatCard label="Mes groupes" value={heroStats.joinedCount} />
+            <HeroStatCard label={t('communities.stats.private')} value={heroStats.privateCount} />
+            <HeroStatCard label={t('communities.stats.myGroups')} value={heroStats.joinedCount} />
           </div>
         </div>
       </section>
 
       <CollapsiblePanel
-        kicker="Explorer"
-        title={t('communities.search')}
-        description="Cherchez par nom ou description."
-        summary={activeFiltersCount > 0 ? 'Recherche active' : 'Aucun filtre actif'}
+        kicker={t('communities.search.label')}
+        title={t('communities.search.title')}
+        description={t('communities.search.placeholder')}
+        summary={activeFiltersCount > 0 ? t('communities.search.active') : t('communities.search.noActiveFilter')}
         isOpen={isFiltersOpen}
         onToggle={() => setIsFiltersOpen((current) => !current)}
         actions={
           activeFiltersCount > 0 ? (
             <Button type="button" variant="ghost" onClick={handleResetSearch}>
-              Reinitialiser
+              {t('communities.search.reset')}
             </Button>
           ) : null
         }
@@ -428,14 +427,14 @@ function CommunitiesPage() {
 
       <div className="grid gap-6 xl:grid-cols-[360px_1fr]">
         <CollapsiblePanel
-          kicker="Creation"
-          title={editingId ? 'Modifier la communaute' : 'Creer une communaute'}
-          description="Lancez un groupe public ou prive autour d'un sujet animalier."
-          summary={editingId ? 'Modification en cours' : 'Creation'}
+          kicker={t('communities.creation.label')}
+          title={editingId ? t('communities.creation.editTitle') : t('communities.creation.title')}
+          description={t('communities.creation.subtitle')}
+          summary={editingId ? t('communities.creation.editing') : t('communities.creation.label')}
           isOpen={isCreateOpen || Boolean(editingId)}
           onToggle={() => setIsCreateOpen((current) => !current)}
-          showLabel={t('creation.createCommunity')}
-          hideLabel={t('creation.hideForm')}
+          showLabel={t('communities.creation.button')}
+          hideLabel={t('communities.search.hide')}
         >
         <form
           onSubmit={handleSubmit}
@@ -444,28 +443,28 @@ function CommunitiesPage() {
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.18em] text-violet-700">
-                Creation
+                {t('communities.creation.label')}
               </p>
               <h2 className="mt-2 text-xl font-semibold text-stone-950">
-                {editingId ? 'Modifier la communaute' : 'Creer une communaute'}
+                {editingId ? t('communities.creation.editTitle') : t('communities.creation.title')}
               </h2>
               <p className="mt-1 text-sm text-stone-500">
-                Lancez un groupe public ou prive autour d'un sujet animalier.
+                {t('communities.creation.subtitle')}
               </p>
             </div>
 
             {editingId ? (
               <Button type="button" variant="ghost" onClick={resetForm}>
-                Annuler
+                {t('communities.form.cancel')}
               </Button>
             ) : null}
           </div>
 
           <div className="grid gap-4">
-            <Field label="Nom" value={form.name} onChange={handleFormChange('name')} />
+            <Field label={t('communities.form.name')} value={form.name} onChange={handleFormChange('name')} />
             <label className="block">
               <span className="mb-2 block text-sm font-medium text-stone-700">
-                Photo ou video du groupe
+                {t('communities.form.cover')}
               </span>
               <div className="rounded-[24px] border border-dashed border-violet-200 bg-[linear-gradient(135deg,_rgba(248,245,255,0.98),_rgba(255,255,255,0.94))] p-3">
                 {communityMediaPreview ? (
@@ -486,13 +485,13 @@ function CommunitiesPage() {
                   </div>
                 ) : (
                   <div className="flex h-36 items-center justify-center rounded-[18px] bg-violet-50/80 px-4 text-center text-sm text-violet-700">
-                    Ajoutez une image de couverture depuis votre appareil.
+                    {t('communities.form.coverHint')}
                   </div>
                 )}
 
                 <div className="mt-3 flex flex-wrap gap-2">
                   <label className="inline-flex cursor-pointer items-center justify-center rounded-full bg-[linear-gradient(135deg,#7c3aed,#c084fc)] px-4 py-2 text-sm font-semibold text-white shadow-[0_16px_30px_rgba(124,58,237,0.24)]">
-                    Telecharger une image
+                    {t('communities.form.uploadCover')}
                     <input
                       accept="image/*,video/mp4,video/webm,video/quicktime"
                       className="hidden"
@@ -502,14 +501,14 @@ function CommunitiesPage() {
                   </label>
                   {communityMediaPreview ? (
                     <Button type="button" variant="ghost" onClick={handleClearCommunityMedia}>
-                      Retirer
+                      {t('communities.form.removeCover')}
                     </Button>
                   ) : null}
                 </div>
 
                 {form.image_file ? (
                   <p className="mt-2 text-xs text-stone-500">
-                    Fichier selectionne: {form.image_file.name}
+                    {t('communities.form.selectedFile', { name: form.image_file.name })}
                   </p>
                 ) : null}
               </div>
@@ -518,7 +517,7 @@ function CommunitiesPage() {
 
           <label className="mt-4 block">
             <span className="mb-2 block text-sm font-medium text-stone-700">
-              Description
+              {t('communities.form.description')}
             </span>
             <textarea
               rows={5}
@@ -536,7 +535,7 @@ function CommunitiesPage() {
               onChange={handleFormChange('is_private')}
               className="h-4 w-4 rounded border-violet-300 text-violet-600 focus:ring-violet-300"
             />
-            Communaute privee
+            {t('communities.form.private')}
           </label>
 
           <div className="mt-4 flex justify-stretch sm:justify-end">
@@ -552,19 +551,20 @@ function CommunitiesPage() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-xs uppercase tracking-[0.18em] text-violet-700">
-                  Vue liste
+                  {t('communities.list.label')}
                 </p>
                 <h2 className="mt-2 text-xl font-semibold text-stone-950">
-                  Groupes disponibles
+                  {t('communities.list.title')}
                 </h2>
                 <p className="mt-1 text-sm text-stone-500">
-                  {safeCommunities.length} communaute{safeCommunities.length > 1 ? 's' : ''} trouvee
-                  {safeCommunities.length > 1 ? 's' : ''} et {heroStats.pendingCount} demande
-                  {heroStats.pendingCount > 1 ? 's' : ''} en attente.
+                  {t('communities.list.found', {
+                    count: safeCommunities.length,
+                    pending: heroStats.pendingCount,
+                  })}
                 </p>
               </div>
               <div className="rounded-full bg-violet-50 px-4 py-2 text-sm font-medium text-violet-700 dark:bg-white/8 dark:text-violet-100">
-                Groupes actifs
+                {t('communities.list.activeGroups')}
               </div>
             </div>
           </div>
@@ -593,6 +593,7 @@ function CommunitiesPage() {
                   onToggleRequests={handleToggleMembershipRequests}
                   onApproveRequest={handleApproveMembershipRequest}
                   onRejectRequest={handleRejectMembershipRequest}
+                  t={t}
                 />
               ))}
             </div>
@@ -615,8 +616,9 @@ function CommunityCard({
   onToggleRequests,
   onApproveRequest,
   onRejectRequest,
+  t,
 }) {
-  const statusLabel = getCommunityStatusLabel(community)
+  const statusLabel = getCommunityStatusLabel(community, t)
   const statusClass = getCommunityStatusClass(community)
 
   return (
@@ -638,7 +640,7 @@ function CommunityCard({
           )
         ) : (
           <div className="flex h-full items-center justify-center bg-[linear-gradient(135deg,_rgba(124,58,237,0.14),_rgba(216,180,254,0.22),_rgba(255,255,255,0.92))] text-sm font-medium text-violet-700">
-            Espace communaute YaZoo
+            {t('communities.card.placeholder')}
           </div>
         )}
       </div>
@@ -648,7 +650,7 @@ function CommunityCard({
           <div>
             <h3 className="text-lg font-semibold text-stone-950">{community.name}</h3>
             <p className="mt-1 text-sm text-stone-500">
-              Creee le {formatDate(community.createdAt)}
+              {t('communities.detail.createdAt', { date: formatDate(community.createdAt) })}
             </p>
           </div>
 
@@ -664,13 +666,13 @@ function CommunityCard({
               {community.owner.name}
             </p>
             <p className="text-xs text-stone-500">
-              {community.membersCount} membre{community.membersCount > 1 ? 's' : ''}
+              {t('communities.detail.membersCount', { count: community.membersCount })}
             </p>
           </div>
         </div>
 
         <p className="text-sm leading-6 text-stone-600">
-          {community.description || 'Aucune description pour le moment.'}
+          {community.description || t('communities.detail.noDescription')}
         </p>
 
         {community.canManageRequests && community.isPrivate ? (
@@ -678,12 +680,12 @@ function CommunityCard({
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-sm font-semibold text-stone-950">
-                  Administration des demandes
+                  {t('communities.requests.title')}
                 </p>
                 <p className="mt-1 text-sm text-stone-600">
-                  {community.pendingRequestsCount} demande
-                  {community.pendingRequestsCount > 1 ? 's' : ''} en attente
-                  {community.pendingRequestsCount > 1 ? 's' : ''}.
+                  {t('communities.requests.pendingCount', {
+                    pending: community.pendingRequestsCount,
+                  })}
                 </p>
               </div>
 
@@ -692,7 +694,7 @@ function CommunityCard({
                 variant="secondary"
                 onClick={() => onToggleRequests(community)}
               >
-                {isRequestsOpen ? 'Fermer' : 'Gerer les demandes'}
+                {isRequestsOpen ? t('communities.requests.close') : t('communities.requests.manage')}
               </Button>
             </div>
 
@@ -700,13 +702,13 @@ function CommunityCard({
               <div className="mt-4 space-y-3">
                 {isLoadingRequests ? (
                   <div className="rounded-[20px] border border-dashed border-violet-200 bg-white/84 px-4 py-6 text-sm text-stone-500">
-                    Chargement des demandes en attente...
+                    {t('communities.requests.loading')}
                   </div>
                 ) : null}
 
                 {!isLoadingRequests && requests.length === 0 ? (
                   <div className="rounded-[20px] border border-dashed border-violet-200 bg-white/84 px-4 py-6 text-sm text-stone-500">
-                    Aucune demande en attente pour le moment.
+                    {t('communities.requests.empty')}
                   </div>
                 ) : null}
 
@@ -727,7 +729,7 @@ function CommunityCard({
                                 {request.user.email}
                               </p>
                               <p className="mt-1 text-xs text-stone-400">
-                                Demande envoyee le {formatDate(request.requestedAt)}
+                                {t('communities.requests.sentAt', { date: formatDate(request.requestedAt) })}
                               </p>
                             </div>
                           </div>
@@ -742,8 +744,8 @@ function CommunityCard({
                               className="w-full sm:w-auto"
                             >
                               {processingMembershipIds.includes(request.id)
-                                ? 'Mise a jour...'
-                                : 'Approuver'}
+                                ? t('common.updating')
+                                : t('communities.requests.approve')}
                             </Button>
                             <Button
                               type="button"
@@ -754,7 +756,7 @@ function CommunityCard({
                               disabled={processingMembershipIds.includes(request.id)}
                               className="w-full sm:w-auto"
                             >
-                              Refuser
+                              {t('communities.requests.reject')}
                             </Button>
                           </div>
                         </div>
@@ -771,24 +773,24 @@ function CommunityCard({
             to={`/communities/${community.id}`}
             className="inline-flex w-full items-center justify-center rounded-full border border-violet-100 bg-white/90 px-4 py-2 text-sm font-semibold text-violet-900 transition hover:bg-violet-50 dark:border-violet-300/14 dark:bg-white/8 dark:text-violet-50 dark:hover:bg-white/12 sm:w-auto"
           >
-            Entrer dans le groupe
+            {t('communities.card.enter')}
           </Link>
 
           {!community.isMember && community.membershipStatus !== 'pending' ? (
             <Button type="button" onClick={() => onJoin(community.id)} className="w-full sm:w-auto">
-              {community.isPrivate ? "Demander l'acces" : 'Rejoindre'}
+              {community.isPrivate ? t('communities.requestAccess') : t('communities.detail.join')}
             </Button>
           ) : null}
 
           {community.isMember ? (
             <Button type="button" variant="ghost" onClick={() => onLeave(community.id)} className="w-full sm:w-auto">
-              Quitter
+              {t('communities.detail.leave')}
             </Button>
           ) : null}
 
           {community.isAdmin ? (
             <Button type="button" variant="secondary" onClick={() => onEdit(community)} className="w-full sm:w-auto">
-              Modifier
+              {t('communities.form.edit')}
             </Button>
           ) : null}
         </div>
@@ -797,16 +799,16 @@ function CommunityCard({
   )
 }
 
-function getCommunitySubmitLabel(isSubmitting, editingId) {
+function getCommunitySubmitLabel(isSubmitting, editingId, t) {
   if (isSubmitting) {
-    return 'Enregistrement...'
+    return t('communities.form.saving')
   }
 
   if (editingId) {
-    return 'Mettre a jour'
+    return t('communities.form.update')
   }
 
-  return 'Creer la communaute'
+  return t('communities.form.submit')
 }
 
 function buildCommunityPayload(form) {
@@ -837,20 +839,20 @@ function isVideoMedia(value = '') {
   )
 }
 
-function getCommunityStatusLabel(community) {
+function getCommunityStatusLabel(community, t) {
   if (community.membershipStatus === 'pending') {
-    return 'Demande en attente'
+    return t('communities.detail.pending')
   }
 
   if (community.isMember) {
-    return 'Membre'
+    return t('communities.detail.member')
   }
 
   if (community.isPrivate) {
-    return 'Privee'
+    return t('communities.form.private')
   }
 
-  return 'Publique'
+  return t('communities.form.public')
 }
 
 function getCommunityStatusClass(community) {
@@ -908,6 +910,7 @@ CommunityCard.propTypes = {
   onToggleRequests: PropTypes.func,
   onApproveRequest: PropTypes.func,
   onRejectRequest: PropTypes.func,
+  t: PropTypes.func,
 }
 
 HeroStatCard.propTypes = {
