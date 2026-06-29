@@ -3,6 +3,11 @@ import { Link, NavLink, Navigate, Outlet, useLocation, useNavigate } from 'react
 import PropTypes from 'prop-types'
 
 import { getUnreadMessagesCountRequest } from '../api/messages'
+import {
+  getNotificationsRequest,
+  markAllNotificationsReadRequest,
+  markNotificationReadRequest,
+} from '../api/notifications'
 import { searchUsersRequest } from '../api/search'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
@@ -10,14 +15,21 @@ import Footer from '../components/ui/Footer'
 import { useAuth } from '../hooks/useAuth'
 import { useI18n } from '../hooks/useI18n'
 import { useNotifications } from '../hooks/useNotifications'
+import { asArray, extractDataArray, extractDataObject } from '../utils/apiData'
+import { formatDate } from '../utils/formatDate'
 
 function Layout() {
   const navigate = useNavigate()
   const location = useLocation()
   const { isAuthenticated, isBootstrapping, logout, user } = useAuth()
   const { isRtl, t } = useI18n()
-  const { unreadCount } = useNotifications()
+  const { latestNotification, refreshUnreadCount, unreadCount } = useNotifications()
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0)
+  const [notificationPreview, setNotificationPreview] = useState([])
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
+  const [isNotificationsLoading, setIsNotificationsLoading] = useState(false)
+  const [notificationFilter, setNotificationFilter] = useState('all')
+  const notificationMenuRef = useRef(null)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [globalSearch, setGlobalSearch] = useState('')
   const mobileMenuTriggerRef = useRef(null)
@@ -61,6 +73,20 @@ function Layout() {
   }, [isMobileMenuOpen])
 
   useEffect(() => {
+    const handlePointerDown = (event) => {
+      if (!notificationMenuRef.current?.contains(event.target)) {
+        setIsNotificationsOpen(false)
+      }
+    }
+
+    globalThis.addEventListener('pointerdown', handlePointerDown)
+
+    return () => {
+      globalThis.removeEventListener('pointerdown', handlePointerDown)
+    }
+  }, [])
+
+  useEffect(() => {
     const query = new URLSearchParams(location.search).get('q') ?? ''
     const timeoutId = globalThis.setTimeout(() => {
       setGlobalSearch(query)
@@ -70,6 +96,77 @@ function Layout() {
       globalThis.clearTimeout(timeoutId)
     }
   }, [location.search])
+
+  useEffect(() => {
+    if (!latestNotification) {
+      return
+    }
+
+    setNotificationPreview((current) => upsertNotificationPreview(current, latestNotification))
+  }, [latestNotification])
+
+  const loadNotificationPreview = useCallback(async () => {
+    if (!isAuthenticated) {
+      setNotificationPreview([])
+      return
+    }
+
+    setIsNotificationsLoading(true)
+
+    try {
+      const response = await getNotificationsRequest()
+      setNotificationPreview(extractDataArray(response).slice(0, 8))
+    } catch {
+      setNotificationPreview([])
+    } finally {
+      setIsNotificationsLoading(false)
+    }
+  }, [isAuthenticated])
+
+  const handleToggleNotifications = async () => {
+    const nextOpen = !isNotificationsOpen
+
+    setIsNotificationsOpen(nextOpen)
+
+    if (nextOpen) {
+      await loadNotificationPreview()
+    }
+  }
+
+  const handleMarkNotificationRead = async (notification) => {
+    if (!notification?.id || notification.isRead) {
+      return
+    }
+
+    try {
+      const response = await markNotificationReadRequest(notification.id)
+      const updatedNotification = extractDataObject(response, notification)
+
+      setNotificationPreview((current) =>
+        asArray(current).map((item) =>
+          item.id === updatedNotification.id ? updatedNotification : item,
+        ),
+      )
+      await refreshUnreadCount()
+    } catch {
+      await refreshUnreadCount()
+    }
+  }
+
+  const handleMarkAllNotificationsRead = async () => {
+    try {
+      await markAllNotificationsReadRequest()
+      setNotificationPreview((current) =>
+        asArray(current).map((notification) => ({
+          ...notification,
+          isRead: notification.type === 'new_message' ? notification.isRead : true,
+        })),
+      )
+      await refreshUnreadCount()
+    } catch {
+      await refreshUnreadCount()
+    }
+  }
 
   const refreshUnreadMessagesCount = useCallback(async () => {
     if (!isAuthenticated) {
@@ -206,13 +303,18 @@ function Layout() {
                 badgeLabel={t('messages.unreadAria', { count: unreadMessagesCount })}
                 className="hidden lg:inline-flex"
               />
-              <DesktopActionLink
-                to="/notifications"
-                icon="bell"
-                label={t('common.notifications')}
-                badgeCount={unreadCount}
-                badgeLabel={t('notifications.unreadAria', { count: unreadCount })}
-                className="hidden lg:inline-flex"
+              <NotificationMenu
+                refObject={notificationMenuRef}
+                filter={notificationFilter}
+                isLoading={isNotificationsLoading}
+                isOpen={isNotificationsOpen}
+                notifications={notificationPreview}
+                onFilterChange={setNotificationFilter}
+                onMarkAllRead={handleMarkAllNotificationsRead}
+                onMarkRead={handleMarkNotificationRead}
+                onToggle={handleToggleNotifications}
+                t={t}
+                unreadCount={unreadCount}
               />
 
               <Link
@@ -609,6 +711,152 @@ function DesktopActionLink({ to, icon, label, badgeCount = 0, badgeLabel = '', c
   )
 }
 
+function NotificationMenu({
+  filter,
+  isLoading,
+  isOpen,
+  notifications,
+  onFilterChange,
+  onMarkAllRead,
+  onMarkRead,
+  onToggle,
+  refObject,
+  t,
+  unreadCount,
+}) {
+  const safeNotifications = asArray(notifications).filter(
+    (notification) => notification.type !== 'new_message',
+  )
+  const visibleNotifications =
+    filter === 'unread'
+      ? safeNotifications.filter((notification) => !notification.isRead)
+      : safeNotifications
+
+  return (
+    <div ref={refObject} className="relative hidden lg:block">
+      <button
+        type="button"
+        onClick={onToggle}
+        className={`relative inline-flex h-10 w-10 items-center justify-center rounded-2xl border transition ${
+          isOpen
+            ? 'border-violet-300 bg-[linear-gradient(135deg,#7c3aed,#a855f7,#c4b5fd)] text-white shadow-[0_10px_22px_rgba(124,58,237,0.18)]'
+            : 'border-white/55 bg-white/35 text-stone-700 hover:border-violet-200 hover:bg-white/55 hover:text-violet-900 dark:border-violet-300/15 dark:bg-white/8 dark:text-violet-50 dark:hover:bg-white/14'
+        }`}
+        aria-label={t('common.notifications')}
+        aria-expanded={isOpen}
+        title={t('common.notifications')}
+      >
+        <AppIcon name="bell" className="h-5 w-5" />
+        {unreadCount > 0 ? (
+          <UnreadBadge label={t('notifications.unreadAria', { count: unreadCount })}>
+            {formatBadgeCount(unreadCount)}
+          </UnreadBadge>
+        ) : null}
+      </button>
+
+      {isOpen ? (
+        <section className="absolute end-0 top-[calc(100%+0.75rem)] z-50 w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-[28px] border border-white/70 bg-white/96 text-start shadow-[0_28px_70px_rgba(35,13,68,0.22)] backdrop-blur-2xl dark:border-violet-300/16 dark:bg-[#150c23]/96">
+          <header className="border-b border-violet-100/70 px-4 py-4 dark:border-violet-300/14">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-lg font-semibold text-stone-950 dark:text-violet-50">
+                {t('notifications.title')}
+              </h2>
+              <button
+                type="button"
+                onClick={onMarkAllRead}
+                disabled={unreadCount === 0}
+                className="rounded-full px-3 py-1.5 text-xs font-semibold text-violet-700 transition hover:bg-violet-50 disabled:cursor-not-allowed disabled:opacity-50 dark:text-violet-100 dark:hover:bg-white/10"
+              >
+                {t('notifications.markAllRead')}
+              </button>
+            </div>
+            <div className="mt-3 flex gap-2">
+              {['all', 'unread'].map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => onFilterChange(tab)}
+                  className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                    filter === tab
+                      ? 'bg-violet-600 text-white'
+                      : 'bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-white/10 dark:text-violet-100'
+                  }`}
+                >
+                  {t(`notifications.tabs.${tab}`)}
+                </button>
+              ))}
+            </div>
+          </header>
+
+          <div className="max-h-[28rem] overflow-y-auto p-2">
+            {isLoading ? <NotificationState>{t('notifications.loading')}</NotificationState> : null}
+            {!isLoading && visibleNotifications.length === 0 ? (
+              <NotificationState>{t('notifications.empty')}</NotificationState>
+            ) : null}
+            {!isLoading && visibleNotifications.length > 0 ? (
+              <div className="space-y-1">
+                {visibleNotifications.map((notification) => {
+                  const display = getNotificationMenuDisplay(notification, t)
+
+                  return (
+                    <Link
+                      key={notification.id}
+                      to={notification.actionUrl ?? '/notifications'}
+                      onClick={() => {
+                        void onMarkRead(notification)
+                      }}
+                      className={`flex min-w-0 gap-3 rounded-[22px] px-3 py-3 transition hover:bg-violet-50 dark:hover:bg-white/10 ${
+                        notification.isRead ? '' : 'bg-violet-50/70 dark:bg-violet-500/12'
+                      }`}
+                    >
+                      <Avatar
+                        name={display.avatarName}
+                        src={display.avatarSrc}
+                        className="h-11 w-11 shrink-0"
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-sm font-semibold text-stone-950 dark:text-violet-50">
+                          {display.title}
+                        </span>
+                        <span className="mt-0.5 line-clamp-2 block text-xs leading-5 text-stone-600 dark:text-violet-100/72">
+                          {display.body}
+                        </span>
+                        <span className="mt-1 block text-[11px] font-medium text-violet-700 dark:text-violet-200">
+                          {formatDate(notification.createdAt)}
+                        </span>
+                      </span>
+                      {!notification.isRead ? (
+                        <span className="mt-2 h-2.5 w-2.5 shrink-0 rounded-full bg-violet-600" />
+                      ) : null}
+                    </Link>
+                  )
+                })}
+              </div>
+            ) : null}
+          </div>
+
+          <footer className="border-t border-violet-100/70 p-3 dark:border-violet-300/14">
+            <Link
+              to="/notifications"
+              className="block rounded-[18px] bg-violet-50 px-4 py-2.5 text-center text-sm font-semibold text-violet-800 transition hover:bg-violet-100 dark:bg-white/10 dark:text-violet-50 dark:hover:bg-white/14"
+            >
+              {t('notifications.viewAll')}
+            </Link>
+          </footer>
+        </section>
+      ) : null}
+    </div>
+  )
+}
+
+function NotificationState({ children }) {
+  return (
+    <div className="px-4 py-10 text-center text-sm text-stone-500 dark:text-violet-100/70">
+      {children}
+    </div>
+  )
+}
+
 function MobileBottomDock({ user, onCreateStory, t, notificationsCount }) {
   return (
     <nav className="fixed bottom-3 left-1/2 z-30 flex w-[calc(100%-1rem)] max-w-md -translate-x-1/2 items-center justify-between rounded-[24px] border border-white/55 bg-[linear-gradient(135deg,_rgba(255,255,255,0.46),_rgba(248,240,255,0.32),_rgba(255,255,255,0.18))] px-1.5 py-1.5 pb-[max(0.375rem,env(safe-area-inset-bottom))] shadow-[0_20px_44px_rgba(124,58,237,0.14)] backdrop-blur-2xl dark:border-violet-300/16 dark:bg-[linear-gradient(135deg,_rgba(24,16,38,0.84),_rgba(49,24,83,0.58),_rgba(12,8,20,0.72))] lg:hidden">
@@ -660,6 +908,49 @@ function UnreadBadge({ children, label }) {
 
 function formatBadgeCount(count) {
   return count > 99 ? '99+' : String(count)
+}
+
+function getNotificationMenuDisplay(notification, t) {
+  if (notification.type === 'user_followed') {
+    const followerName =
+      notification.meta?.follower_name ??
+      notification.meta?.actor_name ??
+      t('common.user')
+
+    return {
+      title: t('notifications.followTitle'),
+      body: t('notifications.followBody', { name: followerName }),
+      avatarName: followerName,
+      avatarSrc: notification.meta?.follower_avatar ?? notification.meta?.actor_avatar_url ?? '',
+    }
+  }
+
+  const actorName =
+    notification.meta?.actor_name ??
+    notification.meta?.member_name ??
+    notification.meta?.user_name ??
+    notification.meta?.buyer_name ??
+    notification.meta?.seller_name ??
+    ''
+
+  return {
+    title: notification.title ?? t('notifications.title'),
+    body: notification.body ?? '',
+    avatarName: actorName || notification.title || t('notifications.title'),
+    avatarSrc: notification.meta?.actor_avatar_url ?? notification.meta?.avatar ?? '',
+  }
+}
+
+function upsertNotificationPreview(currentNotifications, nextNotification) {
+  if (!nextNotification?.id || nextNotification.type === 'new_message') {
+    return asArray(currentNotifications)
+  }
+
+  const remainingNotifications = asArray(currentNotifications).filter(
+    (notification) => notification.id !== nextNotification.id,
+  )
+
+  return [nextNotification, ...remainingNotifications].slice(0, 8)
 }
 
 function MobileDockProfileLink({ user, label }) {
@@ -865,6 +1156,24 @@ DesktopActionLink.propTypes = {
   badgeCount: PropTypes.number,
   badgeLabel: PropTypes.string,
   className: PropTypes.string,
+}
+
+NotificationMenu.propTypes = {
+  filter: PropTypes.string,
+  isLoading: PropTypes.bool,
+  isOpen: PropTypes.bool,
+  notifications: PropTypes.array,
+  onFilterChange: PropTypes.func,
+  onMarkAllRead: PropTypes.func,
+  onMarkRead: PropTypes.func,
+  onToggle: PropTypes.func,
+  refObject: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
+  t: PropTypes.func,
+  unreadCount: PropTypes.number,
+}
+
+NotificationState.propTypes = {
+  children: PropTypes.node,
 }
 
 MobileBottomDock.propTypes = {

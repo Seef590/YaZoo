@@ -3738,6 +3738,12 @@ messages.fr = deepMerge(messages.fr, {
   notifications: {
     followTitle: 'Nouveau follower',
     followBody: '{name} a commencé à vous suivre.',
+    viewAll: 'Voir toutes les notifications',
+    tabs: {
+      all: 'Tous',
+      unread: 'Non lus',
+      read: 'Lues',
+    },
     types: {
       follow: 'Follow',
     },
@@ -3763,6 +3769,12 @@ messages.ar = deepMerge(messages.ar, {
   notifications: {
     followTitle: 'متابع جديد',
     followBody: 'بدأ {name} بمتابعتك.',
+    viewAll: '\u0639\u0631\u0636 \u0643\u0644 \u0627\u0644\u0625\u0634\u0639\u0627\u0631\u0627\u062a',
+    tabs: {
+      all: '\u0627\u0644\u0643\u0644',
+      unread: '\u063a\u064a\u0631 \u0627\u0644\u0645\u0642\u0631\u0648\u0621\u0629',
+      read: '\u0627\u0644\u0645\u0642\u0631\u0648\u0621\u0629',
+    },
     types: {
       follow: 'متابعة',
     },
@@ -3788,6 +3800,12 @@ messages.en = deepMerge(messages.en, {
   notifications: {
     followTitle: 'New follower',
     followBody: '{name} started following you.',
+    viewAll: 'View all notifications',
+    tabs: {
+      all: 'All',
+      unread: 'Unread',
+      read: 'Read',
+    },
     types: {
       follow: 'Follow',
     },

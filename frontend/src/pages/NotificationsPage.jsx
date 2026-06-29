@@ -27,11 +27,13 @@ function NotificationsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [processingIds, setProcessingIds] = useState([])
   const [isMarkingAll, setIsMarkingAll] = useState(false)
+  const [activeFilter, setActiveFilter] = useState('all')
 
   const safeNotifications = asArray(notifications)
   const unreadCount = safeNotifications.filter((notification) => !notification.isRead).length
   const readCount = safeNotifications.length - unreadCount
-  const visibleNotifications = filterNotifications(safeNotifications, search, t)
+  const filteredNotifications = filterByReadState(safeNotifications, activeFilter)
+  const visibleNotifications = filterNotifications(filteredNotifications, search, t)
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -238,6 +240,23 @@ function NotificationsPage() {
           </div>
         </form>
 
+        <div className="mt-4 flex max-w-full gap-2 overflow-x-auto pb-1">
+          {['all', 'unread', 'read'].map((filter) => (
+            <button
+              key={filter}
+              type="button"
+              onClick={() => setActiveFilter(filter)}
+              className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition ${
+                activeFilter === filter
+                  ? 'bg-violet-600 text-white'
+                  : 'bg-violet-50 text-violet-700 hover:bg-violet-100'
+              }`}
+            >
+              {t(`notifications.tabs.${filter}`)}
+            </button>
+          ))}
+        </div>
+
         {isLoading ? <StateBox>{t('notifications.loading')}</StateBox> : null}
 
         {!isLoading && notifications.length === 0 ? (
@@ -433,6 +452,20 @@ function filterNotifications(notifications, searchTerm, t) {
       ...flattenMetaValues(notification.meta),
     ].some((value) => normalizeSearchText(value).includes(normalizedSearch)),
   )
+}
+
+function filterByReadState(notifications, filter) {
+  const safeNotifications = asArray(notifications)
+
+  if (filter === 'unread') {
+    return safeNotifications.filter((notification) => !notification.isRead)
+  }
+
+  if (filter === 'read') {
+    return safeNotifications.filter((notification) => notification.isRead)
+  }
+
+  return safeNotifications
 }
 
 function flattenMetaValues(meta) {

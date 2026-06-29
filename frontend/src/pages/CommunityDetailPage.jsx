@@ -242,14 +242,6 @@ function CommunityDetailPage() {
     return <StateBox>{errorMessage || 'Groupe introuvable.'}</StateBox>
   }
 
-  const coverStyle = community.imageUrl && !isVideoMedia(community.imageUrl)
-    ? {
-        backgroundImage: `url(${community.imageUrl})`,
-        backgroundSize: 'contain',
-        backgroundRepeat: 'no-repeat',
-        backgroundPosition: 'center',
-      }
-    : undefined
   const safePosts = asArray(posts)
   const mediaPosts = safePosts.filter((post) => post.mediaUrl || post.imageUrl)
   const canViewDiscussion = !community.isPrivate || community.isMember || community.isAdmin
@@ -309,11 +301,17 @@ function CommunityDetailPage() {
           </div>
         </div>
 
-        <div
-          className="relative h-52 bg-[linear-gradient(135deg,#4c1d95,#7c3aed,#c4b5fd)] sm:h-72 lg:h-80"
-          style={coverStyle}
-        >
-          <div className="absolute inset-0 bg-gradient-to-b from-white/0 via-white/0 to-white/10 dark:to-black/8" />
+        <div className="relative flex min-h-52 w-full items-center justify-center overflow-hidden bg-[linear-gradient(135deg,#4c1d95,#7c3aed,#c4b5fd)] sm:min-h-72 lg:min-h-80">
+          {community.imageUrl && !isVideoMedia(community.imageUrl) ? (
+            <img
+              src={community.imageUrl}
+              alt={community.name}
+              className="mx-auto h-auto max-h-[260px] w-full max-w-full object-contain sm:max-h-[360px] lg:max-h-[420px]"
+              loading="lazy"
+              decoding="async"
+            />
+          ) : null}
+          <div className="absolute inset-0 bg-gradient-to-b from-white/0 via-white/0 to-white/8 dark:to-black/10" />
           <div className="hidden">
             <div>
               <span className="rounded-full bg-stone-950/58 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-white backdrop-blur">
@@ -376,8 +374,8 @@ function CommunityDetailPage() {
       {errorMessage ? <Alert tone="error">{errorMessage}</Alert> : null}
       {successMessage ? <Alert>{successMessage}</Alert> : null}
 
-      <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
-        <div className="space-y-5">
+      <div className="grid max-w-full min-w-0 gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="min-w-0 space-y-5">
           {activeTab === 'discussion' ? (
             <>
               {!canViewDiscussion ? (
@@ -470,7 +468,7 @@ function CommunityDetailPage() {
           ) : null}
         </div>
 
-        <aside className="space-y-5">
+        <aside className="min-w-0 space-y-5">
           <section className="rounded-[28px] border border-white/80 bg-white/92 p-5 shadow-[0_20px_48px_rgba(124,58,237,0.08)] dark:border-violet-300/12 dark:bg-white/8">
             <h2 className="text-lg font-semibold text-stone-950 dark:text-violet-50">{t('communities.about')}</h2>
             <p className="mt-3 text-sm leading-6 text-stone-600 dark:text-violet-100/70">
@@ -485,7 +483,7 @@ function CommunityDetailPage() {
 
           <section className="rounded-[28px] border border-white/80 bg-white/92 p-5 shadow-[0_20px_48px_rgba(124,58,237,0.08)] dark:border-violet-300/12 dark:bg-white/8">
             <h2 className="text-lg font-semibold text-stone-950 dark:text-violet-50">{t('communities.recentMembers')}</h2>
-            <div className="mt-4 flex -space-x-3">
+            <div className="mt-4 flex flex-wrap gap-2">
               {memberPreview.map((member, index) => (
                 <Avatar
                   key={`${member.id ?? index}-${member.name}`}

@@ -17,6 +17,7 @@ class NotificationController extends Controller
 
         $notifications = $request->user()
             ->notifications()
+            ->where('type', '!=', NewMessageNotification::class)
             ->orderByDesc('created_at')
             ->paginate($pagination->perPage);
 
@@ -57,6 +58,7 @@ class NotificationController extends Controller
     {
         $markedCount = $request->user()
             ->unreadNotifications()
+            ->where('type', '!=', NewMessageNotification::class)
             ->update(['read_at' => now()]);
 
         return response()->json([

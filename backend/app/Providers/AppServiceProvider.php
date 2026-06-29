@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Events\UserNotificationCreated;
+use App\Notifications\NewMessageNotification;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -71,7 +72,10 @@ class AppServiceProvider extends ServiceProvider
                 (new UserNotificationCreated(
                     $notification,
                     (int) $event->notifiable->getKey(),
-                    (int) $event->notifiable->unreadNotifications()->count(),
+                    (int) $event->notifiable
+                        ->unreadNotifications()
+                        ->where('type', '!=', NewMessageNotification::class)
+                        ->count(),
                 ))->dontBroadcastToCurrentUser(),
             );
         });

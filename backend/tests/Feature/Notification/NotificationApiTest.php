@@ -55,7 +55,10 @@ class NotificationApiTest extends TestCase
 
         $indexResponse
             ->assertOk()
-            ->assertJsonCount(4, 'data')
+            ->assertJsonCount(3, 'data')
+            ->assertJsonMissing([
+                'type' => 'new_message',
+            ])
             ->assertJsonFragment([
                 'type' => 'user_followed',
                 'actionUrl' => '/profile/'.$actor->id,
@@ -79,7 +82,14 @@ class NotificationApiTest extends TestCase
 
         $this->postJson('/api/notifications/read-all')
             ->assertOk()
-            ->assertJsonPath('data.markedCount', 3)
+            ->assertJsonPath('data.markedCount', 2)
             ->assertJsonPath('data.unreadCount', 0);
+
+        $this->assertNotNull(
+            $user->notifications()
+                ->where('type', NewMessageNotification::class)
+                ->whereNull('read_at')
+                ->first(),
+        );
     }
 }
