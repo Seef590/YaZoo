@@ -75,6 +75,13 @@ return [
         'product_deleted' => 'Product deleted by admin moderation.',
         'community_deleted' => 'Community deleted by admin moderation.',
     ],
+    'reports' => [
+        'created' => 'Report sent. Our team will review it.',
+        'self_report' => 'You cannot report your own content.',
+    ],
+    'search' => [
+        'post_fallback' => 'YaZoo post',
+    ],
     'security' => [
         'https_required' => 'HTTPS is required.',
     ],

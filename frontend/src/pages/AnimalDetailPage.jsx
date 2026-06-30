@@ -3,10 +3,14 @@ import { Link, useParams } from 'react-router-dom'
 
 import { getAnimalRequest } from '../api/animals'
 import { createAnimalReservationRequest } from '../api/reservations'
+import AnimalSafetyNotice from '../components/marketplace/AnimalSafetyNotice'
+import ReportButton from '../components/reports/ReportButton'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
+import VerifiedPhoneBadge from '../components/ui/VerifiedPhoneBadge'
 import {
   buildAnimalContactPath,
+  buildPhoneContactHref,
   formatAnimalCategory,
   formatAnimalSex,
   formatAnimalStatus,
@@ -147,6 +151,7 @@ function AnimalDetailPage() {
 
   return (
     <section className="space-y-6">
+      <AnimalSafetyNotice />
       <section className="overflow-hidden rounded-[30px] border border-white/80 bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.16),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(221,214,254,0.52),_transparent_28%),linear-gradient(135deg,_rgba(255,255,255,0.98)_0%,_rgba(247,241,255,0.9)_48%,_rgba(237,233,254,0.84)_100%)] p-5 shadow-[0_24px_60px_rgba(124,58,237,0.1)] sm:rounded-[32px] sm:p-6">
         <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr] xl:items-center">
           <div>
@@ -158,7 +163,15 @@ function AnimalDetailPage() {
                 <LinkButton to={buildAnimalContactPath(animal, t)} variant="secondary">
                   {t('marketplace.contactSeller')}
                 </LinkButton>
+              ) : !animal.isOwner && buildPhoneContactHref(animal.contactPhone || animal.author?.phone) ? (
+                <a
+                  href={buildPhoneContactHref(animal.contactPhone || animal.author?.phone)}
+                  className="inline-flex items-center justify-center rounded-full bg-violet-50 px-4 py-2 text-sm font-medium text-violet-800 transition hover:bg-violet-100"
+                >
+                  {t('marketplace.contactSeller')}
+                </a>
               ) : null}
+              <ReportButton reportableType="animal" reportableId={animal.id} isOwner={animal.isOwner} />
             </div>
 
             <div className="mt-5 flex flex-wrap gap-2">
@@ -180,7 +193,6 @@ function AnimalDetailPage() {
 
           <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
             <HeroStatCard
-              label="Prix estime"
               label={t('marketplace.estimatedPrice')}
               value={animal.isForAdoption ? t('animals.adoption') : `${animal.price ?? 0} MAD`}
             />
@@ -259,9 +271,12 @@ function AnimalDetailPage() {
                   <Avatar name={animal.author.name} src={animal.author?.avatar || ''} />
                 )}
                 <div>
-                  <p className="text-sm font-medium text-stone-900">
-                    {animal.author.name}
-                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-sm font-medium text-stone-900">
+                      {animal.author.name}
+                    </p>
+                    {animal.author?.isPhoneVerified ? <VerifiedPhoneBadge /> : null}
+                  </div>
                   <p className="text-sm text-stone-500">
                     {[animal.author.city, animal.author.country]
                       .filter(Boolean)
@@ -287,6 +302,13 @@ function AnimalDetailPage() {
                     <LinkButton to={buildAnimalContactPath(animal, t)} variant="ghost">
                       {t('marketplace.sendPrivateMessage')}
                     </LinkButton>
+                  ) : buildPhoneContactHref(animal.contactPhone || animal.author?.phone) ? (
+                    <a
+                      href={buildPhoneContactHref(animal.contactPhone || animal.author?.phone)}
+                      className="inline-flex items-center justify-center rounded-full bg-violet-50 px-4 py-2 text-sm font-medium text-violet-800 transition hover:bg-violet-100"
+                    >
+                      {t('common.contact')}
+                    </a>
                   ) : null}
                 </div>
 

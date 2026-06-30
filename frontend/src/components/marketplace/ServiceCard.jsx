@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 
 import { createReservationRequest } from '../../api/reservations'
 import { useI18n } from '../../hooks/useI18n'
+import ReportButton from '../reports/ReportButton'
 import Button from '../ui/Button'
 import { Info, LinkButton } from './MarketplaceCommon'
 
@@ -86,6 +87,7 @@ function ServiceCard({ service, onReserved }) {
               </a>
             ) : null}
           </div>
+          <ReportButton reportableType="service" reportableId={service.id} isOwner={service.isOwner} />
         </div>
       ) : (
         <div className="mt-4">

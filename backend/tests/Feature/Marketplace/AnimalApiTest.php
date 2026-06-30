@@ -71,6 +71,7 @@ class AnimalApiTest extends TestCase
             'age' => 2,
             'sex' => 'male',
             'location' => 'Casablanca',
+            'contact_phone' => '+212600000001',
             'photo_url' => 'https://example.com/milo.jpg',
             'gallery_urls' => [
                 'https://example.com/milo.jpg',
@@ -80,6 +81,7 @@ class AnimalApiTest extends TestCase
             'is_for_adoption' => false,
             'listing_status' => 'available',
             'description' => 'Chat calme et joueur.',
+            'accepts_animal_rules' => true,
         ]);
 
         $animalId = $createResponse->json('data.id');
@@ -89,6 +91,8 @@ class AnimalApiTest extends TestCase
             ->assertJsonPath('data.name', 'Milo')
             ->assertJsonPath('data.category', 'cat')
             ->assertJsonPath('data.type', 'chat')
+            ->assertJsonPath('data.contactPhone', '+212600000001')
+            ->assertJsonPath('data.acceptsAnimalRules', true)
             ->assertJsonPath('data.galleryUrls.1', 'https://example.com/milo-2.jpg')
             ->assertJsonPath('data.listingStatus', 'available');
 
@@ -100,6 +104,7 @@ class AnimalApiTest extends TestCase
             'age' => 3,
             'sex' => 'male',
             'location' => 'Rabat',
+            'contact_phone' => '+212600000002',
             'photo_url' => 'https://example.com/milo.jpg',
             'gallery_urls' => [
                 'https://example.com/milo.jpg',
@@ -109,6 +114,7 @@ class AnimalApiTest extends TestCase
             'is_for_adoption' => true,
             'listing_status' => 'adopted',
             'description' => 'Annonce mise a jour.',
+            'accepts_animal_rules' => true,
         ])
             ->assertOk()
             ->assertJsonPath('data.age', 3)
@@ -143,12 +149,14 @@ class AnimalApiTest extends TestCase
             'age' => 4,
             'sex' => 'male',
             'location' => 'Fes',
+            'contact_phone' => '+212600000003',
             'photo_url' => null,
             'gallery_urls' => [],
             'price' => 1000,
             'is_for_adoption' => false,
             'listing_status' => 'reserved',
             'description' => 'Tentative non autorisee.',
+            'accepts_animal_rules' => true,
         ];
 
         $this->putJson("/api/animals/{$animal->id}", $payload)->assertForbidden();
@@ -171,6 +179,7 @@ class AnimalApiTest extends TestCase
                 'age' => 2,
                 'sex' => 'male',
                 'location' => 'Casablanca',
+                'contact_phone' => '+212600000004',
                 'photo' => $this->fakeImageUpload('milo-main.png'),
                 'gallery_files' => [
                     $this->fakeImageUpload('milo-gallery-1.png'),
@@ -180,6 +189,7 @@ class AnimalApiTest extends TestCase
                 'is_for_adoption' => 'false',
                 'listing_status' => 'available',
                 'description' => 'Annonce avec upload reel.',
+                'accepts_animal_rules' => '1',
             ]);
 
         $animal = Animal::query()->latest('id')->first();
@@ -222,6 +232,7 @@ class AnimalApiTest extends TestCase
                 'age' => 4,
                 'sex' => 'male',
                 'location' => 'Marrakech',
+                'contact_phone' => '+212600000005',
                 'photo' => $this->fakeImageUpload('milo-updated-main.png'),
                 'gallery_files' => [
                     $this->fakeImageUpload('milo-updated-gallery.png'),
@@ -230,6 +241,7 @@ class AnimalApiTest extends TestCase
                 'is_for_adoption' => 'false',
                 'listing_status' => 'reserved',
                 'description' => 'Annonce modifiee avec upload reel.',
+                'accepts_animal_rules' => '1',
             ]);
 
         $animal->refresh();

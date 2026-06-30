@@ -326,6 +326,7 @@ function Layout() {
   if (user?.isAdmin) {
     navigationItems.push(
       { to: '/admin/moderation', label: t('common.adminContent') },
+      { to: '/admin/stats', label: t('common.adminStats') },
       { to: '/admin/orders', label: t('common.adminOrders') },
     )
   }
@@ -484,6 +485,7 @@ function SearchInput({ value, onChange, onSearch }) {
   const [hasError, setHasError] = useState(false)
   const wrapperRef = useRef(null)
   const trimmedValue = value.trim()
+  const isShortSearchQuery = Boolean(trimmedValue) && trimmedValue.length < 2
 
   useEffect(() => {
     if (trimmedValue.length < 2) {
@@ -637,7 +639,7 @@ function SearchInput({ value, onChange, onSearch }) {
           </button>
         </div>
       ) : null}
-      {isOpen && value.trim().length > 0 && value.trim().length < 2 ? (
+      {isOpen && isShortSearchQuery ? (
         <div className="absolute inset-x-0 top-[calc(100%+0.5rem)] z-50 rounded-[22px] border border-white/70 bg-white/95 px-4 py-3 text-sm text-stone-500 shadow-[0_18px_42px_rgba(76,29,149,0.14)] dark:border-violet-300/16 dark:bg-[#160d24]/95 dark:text-violet-100/70">
           {t('search.minChars')}
         </div>

@@ -29,6 +29,7 @@ class AnimalResource extends JsonResource
             'age' => $this->age,
             'sex' => $this->sex,
             'location' => $this->location,
+            'contactPhone' => $this->contact_phone,
             'photoPath' => $this->photo_url,
             'photoUrl' => MarketplaceMedia::resolveUrl($this->photo_url),
             'galleryPaths' => $this->gallery_urls ?? [],
@@ -37,6 +38,7 @@ class AnimalResource extends JsonResource
             'isForAdoption' => (bool) $this->is_for_adoption,
             'listingStatus' => $this->listing_status,
             'description' => $this->description,
+            'acceptsAnimalRules' => (bool) $this->accepts_animal_rules,
             'createdAt' => $this->created_at?->toISOString(),
             'author' => [
                 'id' => $this->user?->id,

@@ -10,6 +10,7 @@ import {
 import * as animalService from '../services/marketplace/animalsMarketplaceService'
 import { asArray } from '../utils/apiData'
 import { getErrorMessage } from '../utils/getErrorMessage'
+import { useI18n } from './useI18n'
 
 const cloneAnimalForm = () => ({
   ...defaultAnimalForm,
@@ -18,6 +19,7 @@ const cloneAnimalForm = () => ({
 })
 
 export function useAnimalsMarketplace() {
+  const { t } = useI18n()
   const [searchParams, setSearchParams] = useSearchParams()
   const queryFromUrl = searchParams.get('q') ?? ''
   const [animals, setAnimals] = useState([])
@@ -43,12 +45,12 @@ export function useAnimalsMarketplace() {
       setErrorMessage('')
     } catch (error) {
       setErrorMessage(
-        getErrorMessage(error, 'Impossible de charger les annonces animaliers.'),
+        getErrorMessage(error, t('animals.loadError')),
       )
     } finally {
       setIsLoading(false)
     }
-  }, [filters])
+  }, [filters, t])
 
   useEffect(() => {
     let cancelled = false
@@ -64,7 +66,7 @@ export function useAnimalsMarketplace() {
       } catch (error) {
         if (!cancelled) {
           setErrorMessage(
-            getErrorMessage(error, 'Impossible de charger les annonces animaliers.'),
+            getErrorMessage(error, t('animals.loadError')),
           )
         }
       } finally {
@@ -77,7 +79,7 @@ export function useAnimalsMarketplace() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [t])
 
   useEffect(() => {
     setFilters((current) => {
@@ -133,6 +135,11 @@ export function useAnimalsMarketplace() {
     event.preventDefault()
     setErrorMessage('')
     setSuccessMessage('')
+    if (!form.accepts_animal_rules) {
+      setErrorMessage(t('animals.rulesRequiredError'))
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
@@ -140,17 +147,17 @@ export function useAnimalsMarketplace() {
 
       if (editingId) {
         await animalService.updateAnimal(editingId, payload)
-        setSuccessMessage('Annonce animal mise a jour.')
+        setSuccessMessage(t('animals.updateSuccess'))
       } else {
         await animalService.createAnimal(payload)
-        setSuccessMessage('Annonce animal creee avec succes.')
+        setSuccessMessage(t('animals.createSuccess'))
       }
 
       resetForm()
       await loadAnimals(filters)
     } catch (error) {
       setErrorMessage(
-        getErrorMessage(error, "Impossible d'enregistrer l'annonce animal."),
+        getErrorMessage(error, t('animals.saveError')),
       )
     } finally {
       setIsSubmitting(false)
@@ -170,8 +177,10 @@ export function useAnimalsMarketplace() {
       age: animal.age ?? '',
       sex: animal.sex ?? 'unknown',
       location: animal.location ?? '',
+      contact_phone: animal.contactPhone ?? '',
       price: animal.price ?? '',
       is_for_adoption: animal.isForAdoption ?? false,
+      accepts_animal_rules: animal.acceptsAnimalRules ?? false,
       listing_status: animal.listingStatus ?? 'available',
       description: animal.description ?? '',
       existing_photo_path: animal.photoPath ?? '',
@@ -191,10 +200,10 @@ export function useAnimalsMarketplace() {
       await animalService.deleteAnimal(animalId)
       setAnimals((current) => asArray(current).filter((animal) => animal.id !== animalId))
       if (editingId === animalId) resetForm()
-      setSuccessMessage('Annonce animal supprimee.')
+      setSuccessMessage(t('animals.deleteSuccess'))
     } catch (error) {
       setErrorMessage(
-        getErrorMessage(error, "Impossible de supprimer l'annonce animal."),
+        getErrorMessage(error, t('animals.deleteError')),
       )
     }
   }

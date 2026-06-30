@@ -21,6 +21,7 @@ import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import FollowButton from '../components/ui/FollowButton'
 import ScrollTopButton from '../components/ui/ScrollTopButton'
+import VerifiedPhoneBadge from '../components/ui/VerifiedPhoneBadge'
 import { useAuth } from '../hooks/useAuth'
 import { useI18n } from '../hooks/useI18n'
 import { asArray, extractDataArray, extractDataObject } from '../utils/apiData'
@@ -543,9 +544,12 @@ function ProfilePage() {
                 <p className="text-xs uppercase tracking-[0.18em] text-violet-700 dark:text-violet-300">
                   {t('profile.publicProfile')}
                 </p>
-                <h2 className="mt-2 text-2xl font-semibold text-stone-950 sm:text-3xl dark:text-violet-50">
-                  {profile?.name ?? user?.name}
-                </h2>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <h2 className="text-2xl font-semibold text-stone-950 sm:text-3xl dark:text-violet-50">
+                    {profile?.name ?? user?.name}
+                  </h2>
+                  {profile?.isPhoneVerified || (isOwnProfile && user?.isPhoneVerified) ? <VerifiedPhoneBadge /> : null}
+                </div>
                 <p className="mt-1 text-sm text-stone-500 dark:text-violet-100/62">
                   @{(profile?.name ?? user?.name ?? 'username').toLowerCase().replace(/\s+/g, '')}
                   {profileLocation || profile?.country ? ' - ' : ''}

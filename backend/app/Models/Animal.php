@@ -47,6 +47,8 @@ class Animal extends Model
         'is_for_adoption',
         'listing_status',
         'description',
+        'contact_phone',
+        'accepts_animal_rules',
     ];
 
     /**
@@ -61,6 +63,7 @@ class Animal extends Model
             'gallery_urls' => 'array',
             'price' => 'decimal:2',
             'is_for_adoption' => 'boolean',
+            'accepts_animal_rules' => 'boolean',
         ];
     }
 

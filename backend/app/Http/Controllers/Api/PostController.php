@@ -48,7 +48,7 @@ class PostController extends Controller
             })
             ->with([
                 'likes:id,user_id,likeable_id,likeable_type,reaction',
-                'user:id,name,avatar,city,country',
+                'user:id,name,phone_verified_at,avatar,city,country',
                 'community:id,name,is_private',
                 'comments' => fn ($query) => $query
                     ->whereNull('parent_id')
@@ -216,7 +216,7 @@ class PostController extends Controller
     {
         $post->load([
             'likes:id,user_id,likeable_id,likeable_type,reaction',
-            'user:id,name,avatar,city,country',
+            'user:id,name,phone_verified_at,avatar,city,country',
             'community:id,name,is_private',
             'comments' => fn ($query) => $query
                 ->whereNull('parent_id')

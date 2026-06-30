@@ -75,6 +75,13 @@ return [
         'product_deleted' => 'تم حذف المنتج من طرف الإدارة.',
         'community_deleted' => 'تم حذف المجتمع من طرف الإدارة.',
     ],
+    'reports' => [
+        'created' => 'تم إرسال البلاغ. سيقوم فريقنا بمراجعته.',
+        'self_report' => 'لا يمكنك التبليغ عن محتواك الخاص.',
+    ],
+    'search' => [
+        'post_fallback' => 'منشور YaZoo',
+    ],
     'security' => [
         'https_required' => 'HTTPS مطلوب.',
     ],

@@ -1,10 +1,10 @@
 # AUDIT I18N UI MOBILE YAZOO
 
-Date: 2026-06-20T01:13:51.527Z
+Date: 2026-06-30T18:26:16.684Z
 
 ## Fichiers audites
 
-- 96 fichiers frontend dans frontend/src
+- 115 fichiers frontend dans frontend/src
 - backend/app/Http, backend/lang et routes API audites manuellement pendant la correction
 
 ## Domaines i18n verifies
@@ -33,8 +33,8 @@ Date: 2026-06-20T01:13:51.527Z
 
 ## Cles utilisees
 
-- 522 cles t(...) detectees
-- 1 cles dynamiques detectees
+- 881 cles t(...) detectees
+- 11 cles dynamiques detectees
 
 ## Domaines sans cle detectee
 
@@ -45,15 +45,21 @@ Date: 2026-06-20T01:13:51.527Z
 
 ## Cles potentiellement manquantes
 
+- adminStats.labels.${key}
+- messages.dropdown.${tab}
+- notifications.tabs.${filter}
+- notifications.tabs.${tab}
+- reports.reasons.${item}
+- reports.reasons.${report.reason}
+- reports.statuses.${status}
+- reports.types.${report.reportableType}
+- search.tabs.${key}
+- search.tabs.${tab}
 - services.priceTypes.${service.priceType}
 
 ## Textes statiques suspects
 
-- frontend\src\pages\ContactPage.jsx: votre@email.com
-- frontend\src\pages\FeedbackPage.jsx: vous@exemple.com
-- frontend\src\pages\LoginPage.jsx: vous@exemple.com
-- frontend\src\pages\MessagesPage.jsx: contact@yazoo.ma
-- frontend\src\pages\RegisterPage.jsx: vous@exemple.com
+- Aucun texte suspect detecte
 
 ## Corrections couvertes
 

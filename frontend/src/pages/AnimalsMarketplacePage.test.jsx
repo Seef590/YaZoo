@@ -44,7 +44,11 @@ describe('AnimalsMarketplacePage', () => {
     await user.type(within(publicationForm).getByLabelText('Nom'), 'Luna')
     await user.type(within(publicationForm).getByLabelText('Type'), 'Chien')
     await user.type(within(publicationForm).getByLabelText('Localisation'), 'Rabat')
-    await user.type(within(publicationForm).getByLabelText('Description'), 'Jeune chienne douce')
+    await user.type(within(publicationForm).getByLabelText('Telephone de contact'), '+212600000000')
+    await user.type(within(publicationForm).getByLabelText('Description'), 'Jeune chienne douce et sociable')
+    await user.click(
+      within(publicationForm).getByLabelText(/respecte les regles de publication YaZoo/i),
+    )
     await user.click(within(publicationForm).getByRole('button', { name: "Publier l'annonce" }))
 
     await waitFor(() => {
@@ -57,6 +61,8 @@ describe('AnimalsMarketplacePage', () => {
     expect(formData.get('name')).toBe('Luna')
     expect(formData.get('type')).toBe('Chien')
     expect(formData.get('location')).toBe('Rabat')
+    expect(formData.get('contact_phone')).toBe('+212600000000')
+    expect(formData.get('accepts_animal_rules')).toBe('1')
     expect(formData.get('listing_status')).toBe('available')
     expect(await screen.findByText('Annonce animal creee avec succes.')).toBeInTheDocument()
   })

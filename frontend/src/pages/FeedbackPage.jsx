@@ -38,10 +38,10 @@ function FeedbackPage() {
             <div>
               <p className="text-xs uppercase tracking-[0.24em] text-violet-700">{t('feedback.title')}</p>
               <h1 className="mt-2 text-3xl font-semibold text-stone-950">
-                Votre avis compte pour YaZoo
+                {t('feedback.heading')}
               </h1>
               <p className="mt-2 text-sm text-stone-600">
-                Dites-nous ce qui fonctionne bien et ce que vous souhaitez ameliorer.
+                {t('feedback.description')}
               </p>
             </div>
 
@@ -49,7 +49,7 @@ function FeedbackPage() {
               to="/"
               className="inline-flex items-center rounded-full border border-violet-100 bg-white px-4 py-2 text-sm font-medium text-violet-900 transition hover:-translate-y-0.5 hover:border-violet-200 hover:bg-violet-50"
             >
-              Retour
+              {t('common.back')}
             </Link>
           </div>
 
@@ -65,7 +65,7 @@ function FeedbackPage() {
               type="email"
               value={form.email}
               onChange={handleChange('email')}
-              placeholder="vous@exemple.com"
+              placeholder={t('feedback.emailPlaceholder')}
             />
 
             <label className="block">
@@ -82,7 +82,7 @@ function FeedbackPage() {
 
             {isSubmitted ? (
               <p className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-                Merci, votre feedback a ete envoye.
+                {t('feedback.success')}
               </p>
             ) : null}
 
@@ -90,7 +90,7 @@ function FeedbackPage() {
               type="submit"
               className="inline-flex items-center rounded-full bg-[linear-gradient(135deg,#7c3aed,#a855f7,#c4b5fd)] px-6 py-3 text-sm font-semibold text-white transition hover:brightness-105"
             >
-              Envoyer le feedback
+              {t('feedback.submit')}
             </button>
           </form>
         </section>

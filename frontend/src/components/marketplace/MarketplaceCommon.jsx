@@ -97,7 +97,7 @@ export function Field({ label, ...props }) {
     <label className="block">
       <span className="mb-2 block text-sm font-medium text-stone-700">{label}</span>
       <input
-        className="w-full rounded-2xl border border-violet-100 bg-violet-50/55 px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-400 focus:bg-white"
+      className="w-full rounded-2xl border border-violet-100 bg-violet-50/55 px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-400 focus:bg-white dark:border-violet-300/18 dark:bg-white/10 dark:text-violet-50 dark:placeholder:text-violet-200/45"
         {...props}
       />
     </label>
@@ -110,7 +110,7 @@ export function FileField({ label, ...props }) {
       <span className="mb-2 block text-sm font-medium text-stone-700">{label}</span>
       <input
         type="file"
-        className="w-full rounded-2xl border border-violet-100 bg-violet-50/55 px-4 py-3 text-sm text-stone-700 file:mr-4 file:rounded-full file:border-0 file:bg-[linear-gradient(135deg,#7c3aed,#a855f7)] file:px-4 file:py-2 file:text-sm file:font-medium file:text-white"
+        className="w-full rounded-2xl border border-violet-100 bg-violet-50/55 px-4 py-3 text-sm text-stone-700 file:mr-4 file:rounded-full file:border-0 file:bg-[linear-gradient(135deg,#7c3aed,#a855f7)] file:px-4 file:py-2 file:text-sm file:font-medium file:text-white dark:border-violet-300/18 dark:bg-white/10 dark:text-violet-50"
         {...props}
       />
     </label>
@@ -124,7 +124,7 @@ export function SelectField({ label, options, ...props }) {
     <label className="block">
       <span className="mb-2 block text-sm font-medium text-stone-700">{label}</span>
       <select
-        className="w-full rounded-2xl border border-violet-100 bg-violet-50/55 px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-400 focus:bg-white"
+        className="w-full rounded-2xl border border-violet-100 bg-violet-50/55 px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-400 focus:bg-white dark:border-violet-300/18 dark:bg-white/10 dark:text-violet-50"
         {...props}
       >
         {options.map((option) => (

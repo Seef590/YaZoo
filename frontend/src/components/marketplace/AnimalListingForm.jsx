@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types'
+import { Link } from 'react-router-dom'
 
 import Button from '../ui/Button'
 import { Field, FileField, SelectField } from './MarketplaceCommon'
@@ -22,14 +23,14 @@ function AnimalListingForm({
   const submitLabel = getSubmitLabel(isSubmitting, editingId, t)
 
   return (
-    <form onSubmit={onSubmit} className="rounded-[30px] border border-white/80 bg-white/92 p-4 shadow-[0_20px_48px_rgba(124,58,237,0.08)] sm:p-5">
+    <form onSubmit={onSubmit} className="rounded-[30px] border border-white/80 bg-white/92 p-4 shadow-[0_20px_48px_rgba(124,58,237,0.08)] dark:border-violet-300/14 dark:bg-white/8 sm:p-5">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs uppercase tracking-[0.18em] text-violet-700">{t('common.publication')}</p>
-          <h2 className="mt-2 text-xl font-semibold text-stone-950">
+          <p className="text-xs uppercase tracking-[0.18em] text-violet-700 dark:text-violet-200">{t('common.publication')}</p>
+          <h2 className="mt-2 text-xl font-semibold text-stone-950 dark:text-violet-50">
             {editingId ? t('animals.formTitleEdit') : t('animals.formTitleCreate')}
           </h2>
-          <p className="mt-1 text-sm text-stone-500">
+          <p className="mt-1 text-sm text-stone-500 dark:text-violet-100/70">
             {t('animals.formDescription')}
           </p>
         </div>
@@ -56,11 +57,12 @@ function AnimalListingForm({
           ]}
         />
         <Field label={t('feed.location')} value={form.location} onChange={onFormChange('location')} />
+        <Field label={t('animals.contactPhone')} value={form.contact_phone} onChange={onFormChange('contact_phone')} required />
         <Field label={t('common.price')} type="number" min="0" step="0.01" value={form.price} onChange={onFormChange('price')} />
         <SelectField label={t('common.status')} value={form.listing_status} onChange={onFormChange('listing_status')} options={animalFormStatusOptions} />
       </div>
 
-      <label className="mt-4 flex items-center gap-3 text-sm text-stone-700">
+      <label className="mt-4 flex items-center gap-3 text-sm text-stone-700 dark:text-violet-100/78">
         <input
           type="checkbox"
           checked={form.is_for_adoption}
@@ -68,6 +70,22 @@ function AnimalListingForm({
           className="h-4 w-4 rounded border-violet-300 text-violet-600 focus:ring-violet-400"
         />
         {t('animals.adoptionNotice')}
+      </label>
+
+      <label className="mt-4 flex items-start gap-3 rounded-[22px] border border-amber-200 bg-amber-50/80 px-4 py-3 text-sm leading-6 text-amber-950 dark:border-amber-300/18 dark:bg-amber-400/10 dark:text-amber-100">
+        <input
+          type="checkbox"
+          checked={form.accepts_animal_rules}
+          onChange={onFormChange('accepts_animal_rules')}
+          required
+          className="mt-1 h-4 w-4 shrink-0 rounded border-amber-300 text-violet-600 focus:ring-violet-400"
+        />
+        <span>
+          {t('animals.rulesAttestation')}{' '}
+          <Link to="/rules" className="font-semibold text-violet-800 underline underline-offset-4 dark:text-violet-100">
+            {t('animals.rulesLink')}
+          </Link>
+        </span>
       </label>
 
       <div className="mt-4 grid gap-4 md:grid-cols-2">
@@ -79,12 +97,14 @@ function AnimalListingForm({
       <ExistingImages urls={existingPreviewUrls} t={t} />
 
       <label className="mt-4 block">
-        <span className="mb-2 block text-sm font-medium text-stone-700">{t('common.description')}</span>
+        <span className="mb-2 block text-sm font-medium text-stone-700 dark:text-violet-100">{t('common.description')}</span>
         <textarea
           rows={4}
           value={form.description}
           onChange={onFormChange('description')}
-          className="w-full rounded-2xl border border-violet-100 bg-violet-50/55 px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-400 focus:bg-white"
+          required
+          minLength={20}
+          className="w-full rounded-2xl border border-violet-100 bg-violet-50/55 px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-400 focus:bg-white dark:border-violet-300/18 dark:bg-white/10 dark:text-violet-50"
           placeholder={t('animals.descriptionPlaceholder')}
         />
       </label>

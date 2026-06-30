@@ -33,7 +33,9 @@ export function buildAnimalFormData(form, photoFile, galleryFiles) {
   formData.append('breed', form.breed)
   formData.append('sex', form.sex)
   formData.append('location', form.location)
+  formData.append('contact_phone', form.contact_phone)
   formData.append('is_for_adoption', form.is_for_adoption ? '1' : '0')
+  formData.append('accepts_animal_rules', form.accepts_animal_rules ? '1' : '0')
   formData.append('listing_status', form.listing_status)
   formData.append('description', form.description)
 
@@ -86,6 +88,25 @@ export function buildAnimalContactPath(animal, t = null) {
   }
 
   return `/messages?message=${encodeURIComponent(message)}`
+}
+
+export function buildPhoneContactHref(phone) {
+  const safePhone = String(phone ?? '').trim()
+  const digits = safePhone.replace(/\D/g, '')
+
+  if (!digits) {
+    return ''
+  }
+
+  return digits.length >= 10 ? `https://wa.me/${digits}` : `tel:${safePhone}`
+}
+
+export function hasAnimalContact(animal) {
+  return Boolean(animal?.author?.id || animal?.contactPhone || animal?.author?.phone)
+}
+
+export function hasProductContact(product) {
+  return Boolean(product?.author?.id || product?.contactPhone || product?.author?.phone)
 }
 
 export function buildProductContactPath(product, t = null) {

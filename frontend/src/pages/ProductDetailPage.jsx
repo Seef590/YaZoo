@@ -3,10 +3,13 @@ import { Link, useParams } from 'react-router-dom'
 
 import { getProductRequest } from '../api/products'
 import { createProductReservationRequest } from '../api/reservations'
+import ReportButton from '../components/reports/ReportButton'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
+import VerifiedPhoneBadge from '../components/ui/VerifiedPhoneBadge'
 import {
   buildProductContactPath,
+  buildPhoneContactHref,
   formatCondition,
   formatProductCategory,
   formatProductStatus,
@@ -161,7 +164,15 @@ function ProductDetailPage() {
                 <LinkButton to={buildProductContactPath(product, t)} variant="secondary">
                   {t('marketplace.contactSeller')}
                 </LinkButton>
+              ) : !product.isOwner && buildPhoneContactHref(product.author?.phone) ? (
+                <a
+                  href={buildPhoneContactHref(product.author?.phone)}
+                  className="inline-flex items-center justify-center rounded-full bg-violet-50 px-4 py-2 text-sm font-medium text-violet-800 transition hover:bg-violet-100"
+                >
+                  {t('marketplace.contactSeller')}
+                </a>
               ) : null}
+              <ReportButton reportableType="product" reportableId={product.id} isOwner={product.isOwner} />
             </div>
 
             <div className="mt-5 flex flex-wrap gap-2">
@@ -258,9 +269,12 @@ function ProductDetailPage() {
                   <Avatar name={product.author.name} src={product.author?.avatar || ''} />
                 )}
                 <div>
-                  <p className="text-sm font-medium text-stone-900">
-                    {product.author.name}
-                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-sm font-medium text-stone-900">
+                      {product.author.name}
+                    </p>
+                    {product.author?.isPhoneVerified ? <VerifiedPhoneBadge /> : null}
+                  </div>
                   <p className="text-sm text-stone-500">
                     {[product.author.city, product.author.country]
                       .filter(Boolean)
@@ -286,6 +300,13 @@ function ProductDetailPage() {
                     <LinkButton to={buildProductContactPath(product, t)} variant="ghost">
                       {t('marketplace.sendPrivateMessage')}
                     </LinkButton>
+                  ) : buildPhoneContactHref(product.author?.phone) ? (
+                    <a
+                      href={buildPhoneContactHref(product.author?.phone)}
+                      className="inline-flex items-center justify-center rounded-full bg-violet-50 px-4 py-2 text-sm font-medium text-violet-800 transition hover:bg-violet-100"
+                    >
+                      {t('common.contact')}
+                    </a>
                   ) : null}
                 </div>
 

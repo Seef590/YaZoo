@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AdminModerationController;
 use App\Http\Controllers\Api\AdminOrdersController;
+use App\Http\Controllers\Api\AdminStatsController;
 use App\Http\Controllers\Api\AnimalController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CommentController;
@@ -18,6 +19,7 @@ use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ReservationController;
 use App\Http\Controllers\Api\ReservationReviewController;
+use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\ServiceListingController;
 use App\Http\Controllers\Api\StoryController;
@@ -166,10 +168,14 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
 
         Route::get('/search', [SearchController::class, 'index']);
         Route::get('/search/users', [SearchController::class, 'users']);
+        Route::post('/reports', [ReportController::class, 'store']);
 
         Route::prefix('admin')->group(function (): void {
             Route::get('/users', [UserController::class, 'index']);
             Route::post('/users', [UserController::class, 'store']);
+            Route::get('/stats', AdminStatsController::class);
+            Route::get('/reports', [ReportController::class, 'index']);
+            Route::patch('/reports/{report}/status', [ReportController::class, 'updateStatus']);
             Route::get('/orders', [AdminOrdersController::class, 'index']);
             Route::get('/moderation', [AdminModerationController::class, 'index']);
             Route::delete('/posts/{post}', [AdminModerationController::class, 'destroyPost']);

@@ -75,6 +75,13 @@ return [
         'product_deleted' => 'Produit supprime par moderation admin.',
         'community_deleted' => 'Communaute supprimee par moderation admin.',
     ],
+    'reports' => [
+        'created' => 'Signalement envoye. Notre equipe le verifiera.',
+        'self_report' => 'Vous ne pouvez pas signaler votre propre contenu.',
+    ],
+    'search' => [
+        'post_fallback' => 'Publication YaZoo',
+    ],
     'security' => [
         'https_required' => 'HTTPS est obligatoire.',
     ],

@@ -28,7 +28,7 @@ class AnimalMarketplaceService
     protected function query(Request $request)
     {
         return Animal::query()
-            ->with('user:id,name,avatar,city,country')
+            ->with('user:id,name,email,phone,phone_verified_at,avatar,city,country')
             ->when($request->filled('q'), function ($query) use ($request): void {
                 $this->search($query, ['name', 'type', 'breed', 'description'], (string) $request->string('q')->trim());
             })
@@ -107,7 +107,7 @@ class AnimalMarketplaceService
 
     public function loadForResponse(Animal $animal): Animal
     {
-        return $animal->load('user:id,name,avatar,city,country');
+        return $animal->load('user:id,name,email,phone,phone_verified_at,avatar,city,country');
     }
 
     /**

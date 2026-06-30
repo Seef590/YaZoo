@@ -9,6 +9,8 @@ import { useI18n } from '../../hooks/useI18n'
 import Avatar from '../ui/Avatar'
 import Button from '../ui/Button'
 import FollowButton from '../ui/FollowButton'
+import ReportButton from '../reports/ReportButton'
+import VerifiedPhoneBadge from '../ui/VerifiedPhoneBadge'
 import CommentList from './CommentList'
 
 const POST_REACTIONS = [
@@ -197,9 +199,12 @@ function PostCard({
           <ProfileAvatar user={post.author} t={t} />
 
           <div className="min-w-0 flex-1 text-start">
-            <h3 className="truncate text-base font-semibold text-stone-900 dark:text-violet-50">
-              {post.author?.name}
-            </h3>
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="truncate text-base font-semibold text-stone-900 dark:text-violet-50">
+                {post.author?.name}
+              </h3>
+              {post.author?.isPhoneVerified ? <VerifiedPhoneBadge /> : null}
+            </div>
             <p className="truncate text-sm text-stone-500 dark:text-violet-100/60">{metadata}</p>
             <div className="mt-2 flex w-full max-w-full flex-wrap items-center gap-2">
               <span className="inline-flex max-w-full rounded-full border border-violet-100 bg-white/70 px-2.5 py-1 text-[11px] font-semibold text-violet-800 dark:border-violet-300/15 dark:bg-white/8 dark:text-violet-100">
@@ -211,6 +216,7 @@ function PostCard({
                 hidden={canManagePost}
                 compact
               />
+              <ReportButton reportableType="post" reportableId={post.id} isOwner={canManagePost} />
             </div>
           </div>
 

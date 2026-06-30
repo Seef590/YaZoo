@@ -32,6 +32,7 @@ class StoreAnimalRequest extends FormRequest
             'age' => ['nullable', 'integer', 'min:0', 'max:100'],
             'sex' => ['required', Rule::in(['male', 'female', 'unknown'])],
             'location' => ['required', 'string', 'max:150'],
+            'contact_phone' => ['required', 'string', 'max:50'],
             'photo_url' => ['nullable', 'string', 'max:2048'],
             'photo' => ['nullable', 'image', 'max:5120'],
             'gallery_urls' => ['nullable', 'array', 'max:6'],
@@ -41,7 +42,8 @@ class StoreAnimalRequest extends FormRequest
             'price' => ['nullable', 'numeric', 'min:0', 'max:999999.99'],
             'is_for_adoption' => ['required', 'boolean'],
             'listing_status' => ['required', Rule::in(Animal::LISTING_STATUSES)],
-            'description' => ['nullable', 'string', 'max:5000'],
+            'description' => ['required', 'string', 'min:20', 'max:5000'],
+            'accepts_animal_rules' => ['required', 'accepted'],
         ];
     }
 
@@ -50,7 +52,7 @@ class StoreAnimalRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        $fields = ['name', 'category', 'type', 'breed', 'location', 'photo_url', 'listing_status', 'description'];
+        $fields = ['name', 'category', 'type', 'breed', 'location', 'contact_phone', 'photo_url', 'listing_status', 'description'];
         $normalized = [];
 
         foreach ($fields as $field) {
@@ -71,6 +73,13 @@ class StoreAnimalRequest extends FormRequest
             FILTER_VALIDATE_BOOLEAN,
             FILTER_NULL_ON_FAILURE
         );
+        if ($this->has('accepts_animal_rules')) {
+            $normalized['accepts_animal_rules'] = filter_var(
+                $this->input('accepts_animal_rules'),
+                FILTER_VALIDATE_BOOLEAN,
+                FILTER_NULL_ON_FAILURE
+            );
+        }
         $normalized['category'] = $normalized['category'] ?: 'other';
         $normalized['listing_status'] = $normalized['listing_status'] ?: 'available';
 

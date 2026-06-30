@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types'
 
 import { useI18n } from '../../hooks/useI18n'
+import ReportButton from '../reports/ReportButton'
 
 function VeterinarianCard({ veterinarian }) {
   const { t } = useI18n()
@@ -74,6 +75,13 @@ function VeterinarianCard({ veterinarian }) {
         {mapsUrl ? (
           <ContactLink href={mapsUrl} label={t('veterinarians.viewLocation')} value={t('veterinarians.location')} external />
         ) : null}
+      </div>
+      <div className="mt-4">
+        <ReportButton
+          reportableType="veterinarian"
+          reportableId={veterinarian.id}
+          isOwner={veterinarian.isOwner}
+        />
       </div>
     </article>
   )

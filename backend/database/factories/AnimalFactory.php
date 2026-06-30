@@ -34,6 +34,7 @@ class AnimalFactory extends Factory
             'age' => fake()->numberBetween(1, 12),
             'sex' => fake()->randomElement(['male', 'female', 'unknown']),
             'location' => fake()->city(),
+            'contact_phone' => fake()->phoneNumber(),
             'photo_url' => fake()->imageUrl(640, 480, 'animals'),
             'gallery_urls' => [
                 fake()->imageUrl(640, 480, 'animals'),
@@ -42,7 +43,8 @@ class AnimalFactory extends Factory
             'price' => fake()->randomFloat(2, 0, 2000),
             'is_for_adoption' => fake()->boolean(),
             'listing_status' => fake()->randomElement(Animal::LISTING_STATUSES),
-            'description' => fake()->sentence(12),
+            'description' => fake()->paragraph(2),
+            'accepts_animal_rules' => true,
         ];
     }
 }

@@ -28,7 +28,7 @@ class ProductMarketplaceService
     protected function query(Request $request)
     {
         return Product::query()
-            ->with('user:id,name,avatar,city,country')
+            ->with('user:id,name,email,phone,phone_verified_at,avatar,city,country')
             ->when($request->filled('q'), function ($query) use ($request): void {
                 $this->search($query, ['name', 'description'], (string) $request->string('q')->trim());
             })
@@ -98,7 +98,7 @@ class ProductMarketplaceService
 
     public function loadForResponse(Product $product): Product
     {
-        return $product->load('user:id,name,avatar,city,country');
+        return $product->load('user:id,name,email,phone,phone_verified_at,avatar,city,country');
     }
 
     /**

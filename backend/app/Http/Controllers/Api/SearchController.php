@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Animal;
 use App\Models\Community;
+use App\Models\Post;
 use App\Models\Product;
 use App\Models\ServiceListing;
 use App\Models\User;
@@ -40,6 +41,7 @@ class SearchController extends Controller
                     'communities' => [],
                     'animals' => [],
                     'products' => [],
+                    'posts' => [],
                     'services' => [],
                     'veterinarians' => [],
                 ],
@@ -48,7 +50,7 @@ class SearchController extends Controller
 
         $types = $type && $type !== 'all'
             ? [$type]
-            : ['users', 'communities', 'animals', 'products', 'services', 'veterinarians'];
+            : ['users', 'communities', 'animals', 'products', 'posts', 'services', 'veterinarians'];
 
         return response()->json([
             'data' => [
@@ -56,6 +58,7 @@ class SearchController extends Controller
                 'communities' => in_array('communities', $types, true) ? $this->communityResults($query, 8) : [],
                 'animals' => in_array('animals', $types, true) ? $this->animalResults($query, 8) : [],
                 'products' => in_array('products', $types, true) ? $this->productResults($query, 8) : [],
+                'posts' => in_array('posts', $types, true) ? $this->postResults($query, 8) : [],
                 'services' => in_array('services', $types, true) ? $this->serviceResults($query, 8) : [],
                 'veterinarians' => in_array('veterinarians', $types, true) ? $this->veterinarianResults($query, 8) : [],
             ],
@@ -168,6 +171,46 @@ class SearchController extends Controller
                 'price' => $product->price !== null ? (float) $product->price : null,
                 'url' => "/marketplace/products/{$product->id}",
             ])
+            ->all();
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    protected function postResults(string $query, int $limit): array
+    {
+        return Post::query()
+            ->with('user:id,name,avatar')
+            ->where('visibility', Post::VISIBILITY_PUBLIC)
+            ->where(function (Builder $builder) use ($query): void {
+                $this->whereLike($builder, ['content', 'location'], $query);
+                $builder->orWhereJsonContains('tags', $query);
+            })
+            ->latest()
+            ->limit($limit)
+            ->get()
+            ->map(function (Post $post): array {
+                $resolvedMediaPath = $post->media_path ?: $post->image_path;
+                $resolvedMediaKind = $post->media_kind ?: ($resolvedMediaPath ? 'image' : null);
+
+                return [
+                    'id' => $post->id,
+                    'type' => 'post',
+                    'name' => str($post->content ?: __('messages.search.post_fallback'))->limit(80)->toString(),
+                    'description' => $post->content,
+                    'imageUrl' => $resolvedMediaKind === 'image'
+                        ? MediaStorage::resolveUrl($resolvedMediaPath)
+                        : null,
+                    'mediaUrl' => MediaStorage::resolveUrl($resolvedMediaPath),
+                    'author' => [
+                        'id' => $post->user?->id,
+                        'name' => $post->user?->name,
+                        'avatarUrl' => MediaStorage::resolveUrl($post->user?->avatar),
+                    ],
+                    'city' => $post->location,
+                    'url' => "/feed?post={$post->id}",
+                ];
+            })
             ->all();
     }
 

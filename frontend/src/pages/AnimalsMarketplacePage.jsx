@@ -3,6 +3,7 @@ import { useState } from 'react'
 import animalFamilyImage from '../assets/images/cute-animals-group-white-background-removebg-preview.webp'
 import AnimalCard from '../components/marketplace/AnimalCard'
 import AnimalListingForm from '../components/marketplace/AnimalListingForm'
+import AnimalSafetyNotice from '../components/marketplace/AnimalSafetyNotice'
 import AnimalsFilters from '../components/marketplace/AnimalsFilters'
 import { MarketplaceHero } from '../components/marketplace/MarketplaceCommon'
 import CollapsiblePanel from '../components/ui/CollapsiblePanel'
@@ -28,6 +29,8 @@ function AnimalsMarketplacePage() {
           { label: t('common.filtersActive'), value: marketplace.activeFiltersCount },
         ]}
       />
+
+      <AnimalSafetyNotice />
 
       <AnimalsFilters
         filters={marketplace.filters}

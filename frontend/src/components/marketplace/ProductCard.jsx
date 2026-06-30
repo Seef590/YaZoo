@@ -1,9 +1,12 @@
 import Avatar from '../ui/Avatar'
 import Button from '../ui/Button'
 import { Link } from 'react-router-dom'
+import ReportButton from '../reports/ReportButton'
+import VerifiedPhoneBadge from '../ui/VerifiedPhoneBadge'
 import { Info, LinkButton } from './MarketplaceCommon'
 import {
   buildProductContactPath,
+  buildPhoneContactHref,
   formatCondition,
   formatProductCategory,
   formatProductStatus,
@@ -17,7 +20,7 @@ function ProductCard({ product, onDelete, onEdit }) {
   const gallery = uniqueUrls([product.imageUrl, ...(product.galleryUrls ?? [])])
 
   return (
-    <article className="overflow-hidden rounded-[28px] border border-white/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.99),_rgba(246,239,255,0.9))] shadow-[0_18px_42px_rgba(124,58,237,0.08)]">
+    <article className="overflow-hidden rounded-[28px] border border-white/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.99),_rgba(246,239,255,0.9))] shadow-[0_18px_42px_rgba(124,58,237,0.08)] dark:border-violet-300/14 dark:bg-[linear-gradient(180deg,_rgba(24,16,38,0.96),_rgba(36,20,61,0.92))]">
       <div className="h-48 bg-stone-100 sm:h-60 md:h-72 lg:h-80">
         {gallery[0] ? (
           <img src={gallery[0]} alt={product.name} loading="lazy" decoding="async" className="h-full w-full object-cover" />
@@ -46,11 +49,14 @@ function ProductCard({ product, onDelete, onEdit }) {
           </span>
         </div>
 
-        <div className="flex items-center gap-3 rounded-[22px] bg-white/88 px-4 py-3 shadow-sm">
+        <div className="flex items-center gap-3 rounded-[22px] bg-white/88 px-4 py-3 shadow-sm dark:bg-white/8">
           <AuthorAvatar author={product.author} t={t} />
           <div className="min-w-0">
-            <p className="truncate text-sm font-medium text-stone-900">{product.author.name}</p>
-            <p className="text-xs text-stone-500">{[product.location, formatDate(product.createdAt)].filter(Boolean).join(' - ')}</p>
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="truncate text-sm font-medium text-stone-900 dark:text-violet-50">{product.author.name}</p>
+              {product.author?.isPhoneVerified ? <VerifiedPhoneBadge /> : null}
+            </div>
+            <p className="text-xs text-stone-500 dark:text-violet-100/60">{[product.location, formatDate(product.createdAt)].filter(Boolean).join(' - ')}</p>
           </div>
         </div>
 
@@ -69,7 +75,7 @@ function ProductCard({ product, onDelete, onEdit }) {
           <Info label={t('common.stock')} value={product.stock} />
         </div>
 
-        <p className="text-sm leading-6 text-stone-600">{product.description}</p>
+        <p className="text-sm leading-6 text-stone-600 dark:text-violet-100/76">{product.description}</p>
         <ProductActions product={product} onDelete={onDelete} onEdit={onEdit} />
       </div>
     </article>
@@ -92,9 +98,17 @@ function ProductActions({ product, onDelete, onEdit }) {
   return (
     <div className="grid gap-3 sm:flex sm:flex-wrap">
       <LinkButton to={`/marketplace/products/${product.id}`} variant="secondary" className="w-full sm:w-auto">{t('common.details')}</LinkButton>
-      {product.author?.email ? (
+      {product.author?.id ? (
         <LinkButton to={buildProductContactPath(product, t)} variant="ghost" className="w-full sm:w-auto">{t('common.contact')}</LinkButton>
+      ) : buildPhoneContactHref(product.contactPhone || product.author?.phone) ? (
+        <a
+          href={buildPhoneContactHref(product.contactPhone || product.author?.phone)}
+          className="inline-flex w-full items-center justify-center rounded-full bg-violet-50 px-4 py-2 text-sm font-medium text-violet-800 transition hover:bg-violet-100 sm:w-auto"
+        >
+          {t('common.contact')}
+        </a>
       ) : null}
+      <ReportButton reportableType="product" reportableId={product.id} isOwner={product.isOwner} />
     </div>
   )
 }

@@ -6,8 +6,10 @@ import { useI18n } from './hooks/useI18n'
 
 const AdminModerationPage = lazy(() => import('./pages/AdminModerationPage'))
 const AdminOrdersDashboardPage = lazy(() => import('./pages/AdminOrdersDashboardPage'))
+const AdminStatsPage = lazy(() => import('./pages/AdminStatsPage'))
 const AnimalDetailPage = lazy(() => import('./pages/AnimalDetailPage'))
 const AnimalsMarketplacePage = lazy(() => import('./pages/AnimalsMarketplacePage'))
+const AboutPage = lazy(() => import('./pages/AboutPage'))
 const CommunitiesPage = lazy(() => import('./pages/CommunitiesPage'))
 const CommunityDetailPage = lazy(() => import('./pages/CommunityDetailPage'))
 const ContactPage = lazy(() => import('./pages/ContactPage'))
@@ -17,17 +19,23 @@ const InvoicePage = lazy(() => import('./pages/InvoicePage'))
 const LandingPage = lazy(() => import('./pages/LandingPage'))
 const Layout = lazy(() => import('./layouts/Layout'))
 const LoginPage = lazy(() => import('./pages/LoginPage'))
+const MobileDemoPage = lazy(() => import('./pages/MobileDemoPage'))
 const MessagesPage = lazy(() => import('./pages/MessagesPage'))
 const NotificationsPage = lazy(() => import('./pages/NotificationsPage'))
 const OrderHistoryPage = lazy(() => import('./pages/OrderHistoryPage'))
+const PartnerPage = lazy(() => import('./pages/PartnerPage'))
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage'))
 const ProductDetailPage = lazy(() => import('./pages/ProductDetailPage'))
 const ProductsMarketplacePage = lazy(() => import('./pages/ProductsMarketplacePage'))
 const ProfilePage = lazy(() => import('./pages/ProfilePage'))
+const ProsPage = lazy(() => import('./pages/ProsPage'))
+const PublishingRulesPage = lazy(() => import('./pages/PublishingRulesPage'))
 const RegisterPage = lazy(() => import('./pages/RegisterPage'))
 const ReservationsPage = lazy(() => import('./pages/ReservationsPage'))
 const SearchPage = lazy(() => import('./pages/SearchPage'))
 const ServicesMarketplacePage = lazy(() => import('./pages/ServicesMarketplacePage'))
 const SettingsPage = lazy(() => import('./pages/SettingsPage'))
+const TermsPage = lazy(() => import('./pages/TermsPage'))
 const VeterinariansMarketplacePage = lazy(() => import('./pages/VeterinariansMarketplacePage'))
 
 function App() {
@@ -44,12 +52,20 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/feedback" element={<FeedbackPage />} />
         <Route path="/contact" element={<ContactPage />} />
+        <Route path="/cgu" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/rules" element={<PublishingRulesPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/partner" element={<PartnerPage />} />
+        <Route path="/pros" element={<ProsPage />} />
+        <Route path="/demo-mobile" element={<MobileDemoPage />} />
         <Route element={<Layout />}>
           <Route path="/feed" element={<FeedPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/profile/:userId" element={<ProfilePage />} />
           <Route path="/admin/moderation" element={<AdminModerationPage />} />
           <Route path="/admin/orders" element={<AdminOrdersDashboardPage />} />
+          <Route path="/admin/stats" element={<AdminStatsPage />} />
           <Route path="/reservations" element={<ReservationsPage />} />
           <Route path="/orders/history" element={<OrderHistoryPage />} />
           <Route path="/reservations/:reservationId/invoice" element={<InvoicePage />} />

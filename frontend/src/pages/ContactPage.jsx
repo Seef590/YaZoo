@@ -140,7 +140,7 @@ function ContactPage() {
                       ? 'border-stone-200 bg-white/70 text-stone-500 dark:border-violet-300/18 dark:bg-[linear-gradient(135deg,_rgba(5,3,10,0.98),_rgba(20,10,35,0.96))] dark:text-violet-100/72'
                       : 'border-violet-100 bg-white/90 text-stone-700 focus:border-violet-300 dark:border-violet-300/24 dark:bg-[linear-gradient(135deg,_rgba(5,3,10,0.98),_rgba(24,11,43,0.96))] dark:text-white'
                   }`}
-                  placeholder="votre@email.com"
+                  placeholder={t('contact.emailPlaceholder')}
                 />
               </label>
 

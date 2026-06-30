@@ -7,13 +7,14 @@ import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import { useI18n } from '../hooks/useI18n'
 
-const SEARCH_TABS = ['all', 'users', 'communities', 'animals', 'products', 'services', 'veterinarians']
+const SEARCH_TABS = ['all', 'users', 'communities', 'animals', 'products', 'posts', 'services', 'veterinarians']
 
 const emptyResults = {
   users: [],
   communities: [],
   animals: [],
   products: [],
+  posts: [],
   services: [],
   veterinarians: [],
 }
@@ -30,6 +31,8 @@ function SearchPage() {
   const [errorMessage, setErrorMessage] = useState('')
 
   const trimmedQuery = queryFromUrl.trim()
+  const isShortQuery = Boolean(trimmedQuery) && trimmedQuery.length < 2
+  const hasSearchQuery = trimmedQuery.length >= 2
   const totalResults = useMemo(
     () => Object.values(results).reduce((sum, items) => sum + items.length, 0),
     [results],
@@ -147,13 +150,13 @@ function SearchPage() {
         </div>
       </nav>
 
-      {trimmedQuery.length > 0 && trimmedQuery.length < 2 ? (
+      {isShortQuery ? (
         <StateBox>{t('search.minChars')}</StateBox>
       ) : null}
 
       {isLoading ? <StateBox>{t('search.searching')}</StateBox> : null}
       {errorMessage ? <StateBox>{errorMessage}</StateBox> : null}
-      {!isLoading && trimmedQuery.length >= 2 && totalResults === 0 && !errorMessage ? (
+      {!isLoading && hasSearchQuery && totalResults === 0 && !errorMessage ? (
         <StateBox>{t('search.noResults')}</StateBox>
       ) : null}
 
@@ -163,11 +166,41 @@ function SearchPage() {
           {renderSection('communities', results.communities, activeTab, t, GenericResultCard)}
           {renderSection('animals', results.animals, activeTab, t, GenericResultCard)}
           {renderSection('products', results.products, activeTab, t, GenericResultCard)}
+          {renderSection('posts', results.posts, activeTab, t, PostResultCard)}
           {renderSection('services', results.services, activeTab, t, GenericResultCard)}
           {renderSection('veterinarians', results.veterinarians, activeTab, t, GenericResultCard)}
         </div>
       ) : null}
     </section>
+  )
+}
+
+function PostResultCard({ item, t }) {
+  return (
+    <Link
+      to={item.url}
+      className="flex min-w-0 gap-3 rounded-[26px] border border-white/80 bg-white/86 p-4 text-start shadow-[0_18px_40px_rgba(124,58,237,0.08)] transition hover:-translate-y-0.5 hover:border-violet-200 dark:border-violet-300/12 dark:bg-white/8"
+    >
+      <div className="h-16 w-16 shrink-0 overflow-hidden rounded-[20px] bg-violet-100 dark:bg-violet-500/20">
+        {item.imageUrl ? (
+          <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover" loading="lazy" decoding="async" />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-lg font-bold text-violet-700 dark:text-violet-100">
+            {(item.author?.name ?? item.name ?? '?').charAt(0)}
+          </div>
+        )}
+      </div>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-semibold text-stone-950 dark:text-violet-50">{item.name}</span>
+        <span className="mt-1 line-clamp-2 block text-xs leading-5 text-stone-500 dark:text-violet-100/65">
+          {item.description || t('post.shareFallback')}
+        </span>
+        <span className="mt-2 block truncate text-xs text-violet-700 dark:text-violet-200">
+          {item.author?.name ?? t('common.user')}
+          {item.city ? ` - ${item.city}` : ''}
+        </span>
+      </span>
+    </Link>
   )
 }
 
@@ -254,6 +287,11 @@ UserResultCard.propTypes = {
 }
 
 GenericResultCard.propTypes = {
+  item: PropTypes.object,
+  t: PropTypes.func,
+}
+
+PostResultCard.propTypes = {
   item: PropTypes.object,
   t: PropTypes.func,
 }

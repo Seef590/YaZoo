@@ -1,9 +1,12 @@
 import Avatar from '../ui/Avatar'
 import Button from '../ui/Button'
 import { Link } from 'react-router-dom'
+import ReportButton from '../reports/ReportButton'
+import VerifiedPhoneBadge from '../ui/VerifiedPhoneBadge'
 import { Info, LinkButton } from './MarketplaceCommon'
 import {
   buildAnimalContactPath,
+  buildPhoneContactHref,
   formatAnimalCategory,
   formatAnimalSex,
   formatAnimalStatus,
@@ -17,7 +20,7 @@ function AnimalCard({ animal, onDelete, onEdit }) {
   const gallery = uniqueUrls([animal.photoUrl, ...(animal.galleryUrls ?? [])])
 
   return (
-    <article className="overflow-hidden rounded-[28px] border border-white/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.99),_rgba(246,239,255,0.9))] shadow-[0_18px_42px_rgba(124,58,237,0.08)]">
+    <article className="overflow-hidden rounded-[28px] border border-white/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.99),_rgba(246,239,255,0.9))] shadow-[0_18px_42px_rgba(124,58,237,0.08)] dark:border-violet-300/14 dark:bg-[linear-gradient(180deg,_rgba(24,16,38,0.96),_rgba(36,20,61,0.92))]">
       <div className="h-48 bg-stone-100 sm:h-60 md:h-72 lg:h-80">
         {gallery[0] ? (
           <img src={gallery[0]} alt={animal.name} loading="lazy" decoding="async" className="h-full w-full object-cover" />
@@ -46,11 +49,14 @@ function AnimalCard({ animal, onDelete, onEdit }) {
           </span>
         </div>
 
-        <div className="flex items-center gap-3 rounded-[22px] bg-white/88 px-4 py-3 shadow-sm">
+        <div className="flex items-center gap-3 rounded-[22px] bg-white/88 px-4 py-3 shadow-sm dark:bg-white/8">
           <AuthorAvatar author={animal.author} t={t} />
           <div className="min-w-0">
-            <p className="truncate text-sm font-medium text-stone-900">{animal.author.name}</p>
-            <p className="text-xs text-stone-500">{[animal.location, formatDate(animal.createdAt)].filter(Boolean).join(' - ')}</p>
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="truncate text-sm font-medium text-stone-900 dark:text-violet-50">{animal.author.name}</p>
+              {animal.author?.isPhoneVerified ? <VerifiedPhoneBadge /> : null}
+            </div>
+            <p className="text-xs text-stone-500 dark:text-violet-100/60">{[animal.location, formatDate(animal.createdAt)].filter(Boolean).join(' - ')}</p>
           </div>
         </div>
 
@@ -69,7 +75,7 @@ function AnimalCard({ animal, onDelete, onEdit }) {
           <Info label={t('common.category')} value={formatAnimalCategory(animal.category, t)} />
         </div>
 
-        <p className="text-sm leading-6 text-stone-600">{animal.description || t('marketplace.noDescription')}</p>
+        <p className="text-sm leading-6 text-stone-600 dark:text-violet-100/76">{animal.description || t('marketplace.noDescription')}</p>
         <AnimalActions animal={animal} onDelete={onDelete} onEdit={onEdit} />
       </div>
     </article>
@@ -92,9 +98,17 @@ function AnimalActions({ animal, onDelete, onEdit }) {
   return (
     <div className="grid gap-3 sm:flex sm:flex-wrap">
       <LinkButton to={`/marketplace/animals/${animal.id}`} variant="secondary" className="w-full sm:w-auto">{t('common.details')}</LinkButton>
-      {animal.author?.email ? (
+      {animal.author?.id ? (
         <LinkButton to={buildAnimalContactPath(animal, t)} variant="ghost" className="w-full sm:w-auto">{t('common.contact')}</LinkButton>
+      ) : buildPhoneContactHref(animal.contactPhone || animal.author?.phone) ? (
+        <a
+          href={buildPhoneContactHref(animal.contactPhone || animal.author?.phone)}
+          className="inline-flex w-full items-center justify-center rounded-full bg-violet-50 px-4 py-2 text-sm font-medium text-violet-800 transition hover:bg-violet-100 sm:w-auto"
+        >
+          {t('common.contact')}
+        </a>
       ) : null}
+      <ReportButton reportableType="animal" reportableId={animal.id} isOwner={animal.isOwner} />
     </div>
   )
 }

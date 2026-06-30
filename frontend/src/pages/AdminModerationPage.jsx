@@ -6,7 +6,9 @@ import {
   deleteAdminCommunityRequest,
   deleteAdminPostRequest,
   deleteAdminProductRequest,
+  getAdminReportsRequest,
   getAdminModerationRequest,
+  updateAdminReportStatusRequest,
 } from '../api/admin'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
@@ -16,10 +18,11 @@ import { formatDate } from '../utils/formatDate'
 import { getErrorMessage } from '../utils/getErrorMessage'
 
 const moderationTabs = [
-  { key: 'posts', label: 'Feed' },
-  { key: 'animals', label: 'Animaux' },
-  { key: 'products', label: 'Produits' },
-  { key: 'communities', label: 'Communautes' },
+  { key: 'posts', labelKey: 'admin.moderation.tabs.posts' },
+  { key: 'animals', labelKey: 'admin.moderation.tabs.animals' },
+  { key: 'products', labelKey: 'admin.moderation.tabs.products' },
+  { key: 'communities', labelKey: 'admin.moderation.tabs.communities' },
+  { key: 'reports', labelKey: 'admin.moderation.tabs.reports' },
 ]
 
 function AdminModerationPage() {
@@ -31,6 +34,7 @@ function AdminModerationPage() {
     animals: [],
     products: [],
     communities: [],
+    reports: [],
   })
   const [activeTab, setActiveTab] = useState('posts')
   const [errorMessage, setErrorMessage] = useState('')
@@ -48,15 +52,19 @@ function AdminModerationPage() {
     const bootstrap = async () => {
       try {
         const response = await getAdminModerationRequest()
+        const reportsResponse = await getAdminReportsRequest()
 
         if (!cancelled) {
-          setDashboard(response.data)
+          setDashboard({
+            ...response.data,
+            reports: reportsResponse.data?.data ?? [],
+          })
           setErrorMessage('')
         }
       } catch (error) {
         if (!cancelled) {
           setErrorMessage(
-            getErrorMessage(error, "Impossible de charger l'espace de moderation."),
+            getErrorMessage(error, t('admin.moderation.loadError')),
           )
         }
       } finally {
@@ -71,7 +79,7 @@ function AdminModerationPage() {
     return () => {
       cancelled = true
     }
-  }, [user?.isAdmin])
+  }, [t, user?.isAdmin])
 
   if (!user?.isAdmin) {
     return <Navigate to="/feed" replace />
@@ -80,14 +88,14 @@ function AdminModerationPage() {
   const items = dashboard[activeTab] ?? []
   const stats = dashboard.stats ?? {}
   const overviewStats = [
-    { label: 'Utilisateurs', value: stats.users ?? 0 },
-    { label: 'Admins', value: stats.admins ?? 0 },
-    { label: 'Posts', value: stats.posts ?? 0 },
-    { label: 'Animaux', value: stats.animals ?? 0 },
-    { label: 'Produits', value: stats.products ?? 0 },
-    { label: 'Communautes', value: stats.communities ?? 0 },
+    { label: t('admin.moderation.stats.users'), value: stats.users ?? 0 },
+    { label: t('admin.moderation.stats.admins'), value: stats.admins ?? 0 },
+    { label: t('admin.moderation.stats.posts'), value: stats.posts ?? 0 },
+    { label: t('admin.moderation.stats.animals'), value: stats.animals ?? 0 },
+    { label: t('admin.moderation.stats.products'), value: stats.products ?? 0 },
+    { label: t('admin.moderation.stats.communities'), value: stats.communities ?? 0 },
     {
-      label: 'Demandes privees',
+      label: t('admin.moderation.stats.pendingCommunityRequests'),
       value: stats.pendingCommunityRequests ?? 0,
     },
   ]
@@ -95,19 +103,23 @@ function AdminModerationPage() {
   const loadDashboard = async () => {
     try {
       const response = await getAdminModerationRequest()
+      const reportsResponse = await getAdminReportsRequest()
 
-      setDashboard(response.data)
+      setDashboard({
+        ...response.data,
+        reports: reportsResponse.data?.data ?? [],
+      })
       setErrorMessage('')
     } catch (error) {
       setErrorMessage(
-        getErrorMessage(error, "Impossible de charger l'espace de moderation."),
+        getErrorMessage(error, t('admin.moderation.loadError')),
       )
     }
   }
 
   const handleDelete = async (type, item) => {
     const confirmed = globalThis.confirm(
-      `Voulez-vous vraiment supprimer ${buildDeleteLabel(type, item)} ?`,
+      t('admin.moderation.deleteConfirm', { label: buildDeleteLabel(type, item, t) }),
     )
 
     if (!confirmed) {
@@ -135,14 +147,33 @@ function AdminModerationPage() {
         await deleteAdminCommunityRequest(item.id)
       }
 
-      setSuccessMessage(`${buildDeleteLabel(type, item)} a ete supprime avec succes.`)
+      setSuccessMessage(t('admin.moderation.deleteSuccess', { label: buildDeleteLabel(type, item, t) }))
       await loadDashboard()
     } catch (error) {
       setErrorMessage(
-        getErrorMessage(error, 'Impossible de supprimer ce contenu.'),
+        getErrorMessage(error, t('admin.moderation.deleteError')),
       )
     } finally {
       setDeletingKey('')
+    }
+  }
+
+  const handleReportStatusChange = async (reportId, status) => {
+    setErrorMessage('')
+    setSuccessMessage('')
+
+    try {
+      const response = await updateAdminReportStatusRequest(reportId, status)
+      const updatedReport = response.data?.data
+      setDashboard((current) => ({
+        ...current,
+        reports: (current.reports ?? []).map((report) =>
+          report.id === reportId ? updatedReport : report,
+        ),
+      }))
+      setSuccessMessage(t('admin.moderation.reportStatusUpdated'))
+    } catch (error) {
+      setErrorMessage(getErrorMessage(error, t('admin.moderation.reportStatusError')))
     }
   }
 
@@ -151,22 +182,21 @@ function AdminModerationPage() {
       <section className="overflow-hidden rounded-[30px] border border-white/80 bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.18),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(221,214,254,0.5),_transparent_28%),linear-gradient(135deg,_rgba(255,255,255,0.98)_0%,_rgba(247,241,255,0.9)_48%,_rgba(237,233,254,0.84)_100%)] p-5 shadow-[0_24px_60px_rgba(124,58,237,0.1)] sm:rounded-[32px] sm:p-6">
         <div className="grid gap-6 xl:grid-cols-[1.12fr_0.88fr] xl:items-center">
           <div>
-            <p className="inline-flex rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-violet-700">
-              Moderation admin
+            <p className="inline-flex rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-violet-700 dark:border-violet-300/18 dark:bg-white/10 dark:text-violet-100">
+              {t('admin.moderation.eyebrow')}
             </p>
-            <h2 className="mt-4 text-2xl font-semibold leading-tight text-stone-950 sm:text-3xl">
-              Pilotez la qualite de YaZoo dans un espace admin plus net, plus rapide et plus rassurant.
+            <h2 className="mt-4 text-2xl font-semibold leading-tight text-stone-950 dark:text-violet-50 sm:text-3xl">
+              {t('admin.moderation.title')}
             </h2>
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-600">
-              Les indicateurs cles, les onglets de moderation et les contenus
-              a verifier restent regroupes pour prendre les bonnes decisions rapidement.
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-600 dark:text-violet-100/76">
+              {t('admin.moderation.subtitle')}
             </p>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
-            <HeroStatCard label="Contenus" value={items.length} />
-            <HeroStatCard label="Posts" value={stats.posts ?? 0} />
-            <HeroStatCard label="Demandes privees" value={stats.pendingCommunityRequests ?? 0} />
+            <HeroStatCard label={t('admin.moderation.stats.contents')} value={items.length} />
+            <HeroStatCard label={t('admin.moderation.stats.posts')} value={stats.posts ?? 0} />
+            <HeroStatCard label={t('admin.moderation.stats.pendingCommunityRequests')} value={stats.pendingCommunityRequests ?? 0} />
           </div>
         </div>
       </section>
@@ -183,17 +213,17 @@ function AdminModerationPage() {
         </div>
       ) : null}
 
-      <section className="rounded-[30px] border border-white/80 bg-white/92 p-5 shadow-[0_20px_48px_rgba(124,58,237,0.08)]">
+      <section className="rounded-[30px] border border-white/80 bg-white/92 p-5 shadow-[0_20px_48px_rgba(124,58,237,0.08)] dark:border-violet-300/14 dark:bg-white/8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-xs uppercase tracking-[0.18em] text-violet-700">
-              Vue d ensemble
+              {t('admin.moderation.overviewEyebrow')}
             </p>
-            <h2 className="mt-2 text-xl font-semibold text-stone-950">
-              Suivi global du contenu publie
+            <h2 className="mt-2 text-xl font-semibold text-stone-950 dark:text-violet-50">
+              {t('admin.moderation.overviewTitle')}
             </h2>
-            <p className="mt-1 text-sm text-stone-500">
-              Vue rapide sur les volumes, les roles et les demandes a traiter.
+            <p className="mt-1 text-sm text-stone-500 dark:text-violet-100/68">
+              {t('admin.moderation.overviewSubtitle')}
             </p>
           </div>
 
@@ -202,10 +232,10 @@ function AdminModerationPage() {
               to="/admin/orders"
               className="inline-flex w-full items-center justify-center rounded-full bg-violet-50 px-4 py-2 text-sm font-medium text-violet-800 transition hover:bg-violet-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-300 sm:w-auto"
             >
-              Dashboard commandes
+              {t('common.adminOrders')}
             </Link>
             <Button type="button" variant="ghost" onClick={loadDashboard} className="w-full sm:w-auto">
-              Actualiser
+              {t('common.refresh')}
             </Button>
           </div>
         </div>
@@ -217,7 +247,7 @@ function AdminModerationPage() {
         </div>
       </section>
 
-      <section className="rounded-[30px] border border-white/80 bg-white/92 p-5 shadow-[0_20px_48px_rgba(124,58,237,0.08)]">
+      <section className="rounded-[30px] border border-white/80 bg-white/92 p-5 shadow-[0_20px_48px_rgba(124,58,237,0.08)] dark:border-violet-300/14 dark:bg-white/8">
         <div className="grid gap-3 sm:flex sm:flex-wrap">
           {moderationTabs.map((tab) => (
             <button
@@ -230,7 +260,7 @@ function AdminModerationPage() {
                   : 'bg-violet-50 text-violet-800 hover:bg-violet-100'
               }`}
             >
-              {tab.label}
+              {t(tab.labelKey)}
             </button>
           ))}
         </div>
@@ -243,7 +273,11 @@ function AdminModerationPage() {
           <StateBox>{t('admin.moderationEmpty')}</StateBox>
         ) : null}
 
-        {!isLoading && items.length > 0 ? (
+        {!isLoading && activeTab === 'reports' && items.length > 0 ? (
+          <ReportsPanel reports={items} onStatusChange={handleReportStatusChange} t={t} />
+        ) : null}
+
+        {!isLoading && activeTab !== 'reports' && items.length > 0 ? (
           <div className="mt-5 grid gap-4 lg:grid-cols-2">
             {items.map((item) => (
               <ModerationCard
@@ -252,6 +286,7 @@ function AdminModerationPage() {
                 type={activeTab}
                 isDeleting={deletingKey === `${activeTab}-${item.id}`}
                 onDelete={handleDelete}
+                t={t}
               />
             ))}
           </div>
@@ -263,38 +298,38 @@ function AdminModerationPage() {
 
 function HeroStatCard({ label, value }) {
   return (
-    <div className="rounded-[24px] border border-violet-100 bg-white/88 px-4 py-4 shadow-sm">
-      <p className="text-xs uppercase tracking-[0.18em] text-stone-500">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-stone-950">{value}</p>
+    <div className="rounded-[24px] border border-violet-100 bg-white/88 px-4 py-4 shadow-sm dark:border-violet-300/14 dark:bg-white/8">
+      <p className="text-xs uppercase tracking-[0.18em] text-stone-500 dark:text-violet-100/58">{label}</p>
+      <p className="mt-2 text-2xl font-semibold text-stone-950 dark:text-violet-50">{value}</p>
     </div>
   )
 }
 
 function StatCard({ label, value }) {
   return (
-    <div className="rounded-[24px] border border-violet-100 bg-[linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.82))] px-4 py-4 shadow-sm">
-      <p className="text-xs uppercase tracking-[0.18em] text-stone-500">{label}</p>
-      <p className="mt-2 text-3xl font-semibold text-stone-950">{value}</p>
+    <div className="rounded-[24px] border border-violet-100 bg-[linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.82))] px-4 py-4 shadow-sm dark:border-violet-300/14 dark:bg-white/8">
+      <p className="text-xs uppercase tracking-[0.18em] text-stone-500 dark:text-violet-100/58">{label}</p>
+      <p className="mt-2 text-3xl font-semibold text-stone-950 dark:text-violet-50">{value}</p>
     </div>
   )
 }
 
 function StateBox({ children }) {
   return (
-    <div className="mt-5 rounded-[24px] border border-dashed border-violet-200 bg-white/84 px-5 py-12 text-center text-sm text-stone-500">
+    <div className="mt-5 rounded-[24px] border border-dashed border-violet-200 bg-white/84 px-5 py-12 text-center text-sm text-stone-500 dark:border-violet-300/18 dark:bg-white/8 dark:text-violet-100/70">
       {children}
     </div>
   )
 }
 
-function ModerationCard({ item, type, onDelete, isDeleting }) {
+function ModerationCard({ item, type, onDelete, isDeleting, t }) {
   const imageUrl = item.imageUrl ?? null
   const mediaUrl = item.mediaUrl ?? null
   const mediaKind = item.mediaKind ?? null
-  const meta = buildMeta(type, item)
+  const meta = buildMeta(type, item, t)
 
   return (
-    <article className="overflow-hidden rounded-[28px] border border-white/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.99),_rgba(246,239,255,0.9))] shadow-[0_18px_42px_rgba(124,58,237,0.08)]">
+    <article className="overflow-hidden rounded-[28px] border border-white/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.99),_rgba(246,239,255,0.9))] shadow-[0_18px_42px_rgba(124,58,237,0.08)] dark:border-violet-300/14 dark:bg-[linear-gradient(180deg,_rgba(24,16,38,0.96),_rgba(36,20,61,0.92))]">
       {imageUrl ? (
         <div className="h-44 bg-stone-200 sm:h-48">
           <img src={imageUrl} alt={item.title} className="h-full w-full object-cover" />
@@ -315,9 +350,9 @@ function ModerationCard({ item, type, onDelete, isDeleting }) {
       <div className="space-y-4 p-5">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <TypeBadge type={type} />
-            <h3 className="mt-3 text-lg font-semibold text-stone-950">{item.title}</h3>
-            <p className="mt-1 text-sm text-stone-500">{formatDate(item.createdAt)}</p>
+            <TypeBadge type={type} t={t} />
+            <h3 className="mt-3 text-lg font-semibold text-stone-950 dark:text-violet-50">{item.title}</h3>
+            <p className="mt-1 text-sm text-stone-500 dark:text-violet-100/62">{formatDate(item.createdAt)}</p>
           </div>
 
           <Button
@@ -327,37 +362,37 @@ function ModerationCard({ item, type, onDelete, isDeleting }) {
             onClick={() => onDelete(type, item)}
             className="w-full border-rose-200 text-rose-700 hover:border-rose-300 hover:bg-rose-50 hover:text-rose-800 focus-visible:outline-rose-200 sm:w-auto"
           >
-            {isDeleting ? 'Suppression...' : 'Supprimer'}
+            {isDeleting ? t('admin.moderation.deleting') : t('common.delete')}
           </Button>
         </div>
 
-        <div className="flex items-center gap-3 rounded-[22px] bg-white/90 px-4 py-3 shadow-sm">
+        <div className="flex items-center gap-3 rounded-[22px] bg-white/90 px-4 py-3 shadow-sm dark:bg-white/8">
           <Avatar
-            name={item.author?.name ?? 'Auteur'}
+            name={item.author?.name ?? t('admin.moderation.unknownAuthor')}
             src={item.author?.avatar ?? ''}
             size="sm"
           />
           <div className="min-w-0">
-            <p className="truncate text-sm font-medium text-stone-900">
-              {item.author?.name ?? 'Auteur inconnu'}
+            <p className="truncate text-sm font-medium text-stone-900 dark:text-violet-50">
+              {item.author?.name ?? t('admin.moderation.unknownAuthor')}
             </p>
-            <p className="truncate text-xs text-stone-500">
-              {item.author?.email ?? 'Email indisponible'}
+            <p className="truncate text-xs text-stone-500 dark:text-violet-100/62">
+              {item.author?.email ?? t('admin.moderation.emailUnavailable')}
             </p>
           </div>
         </div>
 
         {item.content ? (
-          <p className="text-sm leading-6 text-stone-600">{item.content}</p>
+          <p className="text-sm leading-6 text-stone-600 dark:text-violet-100/76">{item.content}</p>
         ) : null}
 
         {item.description ? (
-          <p className="text-sm leading-6 text-stone-600">{item.description}</p>
+          <p className="text-sm leading-6 text-stone-600 dark:text-violet-100/76">{item.description}</p>
         ) : null}
 
         {mediaKind === 'video' ? (
           <div className="rounded-full bg-violet-50 px-3 py-2 text-xs font-medium text-violet-700">
-            Media video attache au post
+            {t('admin.moderation.videoAttached')}
           </div>
         ) : null}
 
@@ -366,7 +401,7 @@ function ModerationCard({ item, type, onDelete, isDeleting }) {
             {item.tags.map((tag) => (
               <span
                 key={tag}
-                className="rounded-full bg-white/92 px-3 py-1 text-xs font-medium text-violet-700 ring-1 ring-inset ring-violet-100"
+              className="rounded-full bg-white/92 px-3 py-1 text-xs font-medium text-violet-700 ring-1 ring-inset ring-violet-100 dark:bg-white/10 dark:text-violet-100 dark:ring-violet-300/14"
               >
                 #{tag}
               </span>
@@ -378,12 +413,12 @@ function ModerationCard({ item, type, onDelete, isDeleting }) {
           {meta.map((entry) => (
             <div
               key={entry.label}
-              className="rounded-[20px] bg-[linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.82))] px-4 py-3"
+              className="rounded-[20px] bg-[linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.82))] px-4 py-3 dark:bg-white/8"
             >
-              <p className="text-xs uppercase tracking-[0.16em] text-stone-500">
+              <p className="text-xs uppercase tracking-[0.16em] text-stone-500 dark:text-violet-100/58">
                 {entry.label}
               </p>
-              <p className="mt-1 text-sm font-medium text-stone-900">
+              <p className="mt-1 text-sm font-medium text-stone-900 dark:text-violet-50">
                 {entry.value}
               </p>
             </div>
@@ -394,12 +429,12 @@ function ModerationCard({ item, type, onDelete, isDeleting }) {
   )
 }
 
-function TypeBadge({ type }) {
+function TypeBadge({ type, t }) {
   const labels = {
-    posts: 'Feed',
-    animals: 'Animal',
-    products: 'Produit',
-    communities: 'Communaute',
+    posts: t('admin.moderation.tabs.posts'),
+    animals: t('admin.moderation.type.animals'),
+    products: t('admin.moderation.type.products'),
+    communities: t('admin.moderation.type.communities'),
   }
 
   const tones = {
@@ -415,98 +450,149 @@ function TypeBadge({ type }) {
         tones[type] ?? 'bg-violet-100 text-violet-800'
       }`}
     >
-      {labels[type] ?? 'Contenu'}
+      {labels[type] ?? t('admin.moderation.type.content')}
     </span>
   )
 }
 
-function buildMeta(type, item) {
+function ReportsPanel({ reports, onStatusChange, t }) {
+  return (
+    <div className="mt-5 space-y-3">
+      {reports.map((report) => (
+        <article
+          key={report.id}
+          className="rounded-[24px] border border-violet-100 bg-white/86 p-4 shadow-sm dark:border-violet-300/14 dark:bg-white/8"
+        >
+          <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-start">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full bg-violet-50 px-3 py-1 text-xs font-semibold text-violet-800 dark:bg-white/10 dark:text-violet-100">
+                  {t(`reports.types.${report.reportableType}`)}
+                </span>
+                <span className="text-xs text-stone-500 dark:text-violet-100/58">
+                  #{report.reportableId} - {formatDate(report.createdAt)}
+                </span>
+              </div>
+              <h3 className="mt-3 text-base font-semibold text-stone-950 dark:text-violet-50">
+                {t(`reports.reasons.${report.reason}`)}
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-stone-600 dark:text-violet-100/76">
+                {report.details || t('reports.noDetails')}
+              </p>
+              <p className="mt-2 text-xs text-stone-500 dark:text-violet-100/58">
+                {t('reports.reportedBy')}: {report.reporter?.name ?? t('admin.moderation.unknownAuthor')}
+              </p>
+            </div>
+            <label className="block min-w-[12rem]">
+              <span className="mb-2 block text-xs font-semibold uppercase tracking-[0.14em] text-stone-500 dark:text-violet-100/58">
+                {t('reports.status')}
+              </span>
+              <select
+                value={report.status}
+                onChange={(event) => onStatusChange(report.id, event.target.value)}
+                className="w-full rounded-2xl border border-violet-100 bg-violet-50/55 px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-400 focus:bg-white dark:border-violet-300/18 dark:bg-white/10 dark:text-violet-50"
+              >
+                {['pending', 'reviewed', 'dismissed', 'actioned'].map((status) => (
+                  <option key={status} value={status}>
+                    {t(`reports.statuses.${status}`)}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        </article>
+      ))}
+    </div>
+  )
+}
+
+function buildMeta(type, item, t) {
   if (type === 'posts') {
     return [
       { label: 'Likes', value: item.likes ?? 0 },
-      { label: 'Commentaires', value: item.commentsCount ?? 0 },
-      { label: 'Lieu', value: item.location || 'Non renseigne' },
+      { label: t('admin.moderation.meta.comments'), value: item.commentsCount ?? 0 },
+      { label: t('admin.moderation.meta.location'), value: item.location || t('common.notProvided') },
     ]
   }
 
   if (type === 'animals') {
     return [
-      { label: 'Categorie', value: formatAnimalCategory(item.category) },
-      { label: 'Statut', value: formatListingStatus(item.listingStatus) },
-      { label: 'Mode', value: item.isForAdoption ? 'Adoption' : `${item.price ?? 0} MAD` },
-      { label: 'Lieu', value: item.location || 'Non renseigne' },
+      { label: t('admin.moderation.meta.category'), value: formatAnimalCategory(item.category, t) },
+      { label: t('admin.moderation.meta.status'), value: formatListingStatus(item.listingStatus, t) },
+      { label: t('admin.moderation.meta.mode'), value: item.isForAdoption ? t('marketplace.adoption') : `${item.price ?? 0} MAD` },
+      { label: t('admin.moderation.meta.location'), value: item.location || t('common.notProvided') },
     ]
   }
 
   if (type === 'products') {
     return [
-      { label: 'Categorie', value: formatProductCategory(item.category) },
-      { label: 'Statut', value: formatListingStatus(item.listingStatus) },
-      { label: 'Etat', value: item.conditionStatus === 'used' ? 'Occasion' : 'Neuf' },
-      { label: 'Prix', value: `${item.price ?? 0} MAD` },
+      { label: t('admin.moderation.meta.category'), value: formatProductCategory(item.category, t) },
+      { label: t('admin.moderation.meta.status'), value: formatListingStatus(item.listingStatus, t) },
+      { label: t('admin.moderation.meta.condition'), value: item.conditionStatus === 'used' ? t('products.labels.used') : t('products.labels.new') },
+      { label: t('admin.moderation.meta.price'), value: `${item.price ?? 0} MAD` },
     ]
   }
 
   return [
-    { label: 'Visibilite', value: item.isPrivate ? 'Privee' : 'Publique' },
-    { label: 'Membres', value: item.membersCount ?? 0 },
-    { label: 'Demandes', value: item.pendingRequestsCount ?? 0 },
+    { label: t('admin.moderation.meta.visibility'), value: item.isPrivate ? t('communities.detail.privateGroup') : t('communities.detail.publicGroup') },
+    { label: t('admin.moderation.meta.members'), value: item.membersCount ?? 0 },
+    { label: t('admin.moderation.meta.requests'), value: item.pendingRequestsCount ?? 0 },
   ]
 }
 
-function buildDeleteLabel(type, item) {
+function buildDeleteLabel(type, item, t) {
   if (type === 'posts') {
-    return 'ce post'
+    return t('admin.moderation.deleteLabels.post')
   }
 
   if (type === 'animals') {
-    return `l'annonce animal "${item.title}"`
+    return t('admin.moderation.deleteLabels.animal', { title: item.title })
   }
 
   if (type === 'products') {
-    return `le produit "${item.title}"`
+    return t('admin.moderation.deleteLabels.product', { title: item.title })
   }
 
-  return `la communaute "${item.title}"`
+  return t('admin.moderation.deleteLabels.community', { title: item.title })
 }
 
-function formatAnimalCategory(category) {
+function formatAnimalCategory(category, t) {
   const labels = {
-    dog: 'Chiens',
-    cat: 'Chats',
-    bird: 'Oiseaux',
-    fish: 'Poissons',
-    rabbit: 'Lapins',
-    reptile: 'Reptiles',
-    other: 'Autres',
+    dog: t('animals.labels.dog'),
+    cat: t('animals.labels.cat'),
+    bird: t('animals.labels.bird'),
+    fish: t('animals.labels.fish'),
+    rabbit: t('animals.labels.rabbit'),
+    reptile: t('animals.labels.reptile'),
+    other: t('animals.labels.other'),
   }
 
-  return labels[category] ?? 'Autres'
+  return labels[category] ?? labels.other
 }
 
-function formatProductCategory(category) {
+function formatProductCategory(category, t) {
   const labels = {
-    food: 'Alimentation',
-    toy: 'Jouets',
-    accessory: 'Accessoires',
-    hygiene: 'Hygiene',
-    health: 'Sante',
-    habitat: 'Habitat',
-    other: 'Autres',
+    food: t('products.labels.food'),
+    toy: t('products.labels.toy'),
+    accessory: t('products.labels.accessory'),
+    hygiene: t('products.labels.hygiene'),
+    health: t('products.labels.health'),
+    habitat: t('products.labels.habitat'),
+    other: t('products.labels.other'),
   }
 
-  return labels[category] ?? 'Autres'
+  return labels[category] ?? labels.other
 }
 
-function formatListingStatus(status) {
+function formatListingStatus(status, t) {
   const labels = {
-    available: 'Disponible',
-    reserved: 'Reserve',
-    adopted: 'Adopte',
-    sold: 'Vendu',
+    available: t('animals.labels.available'),
+    reserved: t('animals.labels.reserved'),
+    adopted: t('animals.labels.adopted'),
+    sold: t('animals.labels.sold'),
   }
 
-  return labels[status] ?? 'Disponible'
+  return labels[status] ?? labels.available
 }
 
 export default AdminModerationPage
