@@ -2,6 +2,7 @@ import { useContext, useMemo, useState } from 'react'
 import { Link, Navigate, useSearchParams } from 'react-router-dom'
 
 import { getGoogleAuthUrl, isGoogleAuthEnabled } from '../api/auth'
+import { createPrivacyConsent } from '../api/privacy'
 import Button from '../components/ui/Button'
 import Footer from '../components/ui/Footer'
 import PasswordField from '../components/ui/PasswordField'
@@ -28,6 +29,7 @@ function RegisterPage() {
     city: '',
   })
   const [errorMessage, setErrorMessage] = useState('')
+  const [acceptsSmsOtp, setAcceptsSmsOtp] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const googleAuthEnabled = isGoogleAuthEnabled()
   const authError = searchParams.get('auth_error')
@@ -64,6 +66,12 @@ function RegisterPage() {
   const handleSubmit = async (event) => {
     event.preventDefault()
     setErrorMessage('')
+
+    if (!acceptsSmsOtp) {
+      setErrorMessage(t('privacy.settings.smsOtpRequired'))
+      return
+    }
+
     setIsSubmitting(true)
     const formData = new FormData(event.currentTarget)
     const payload = {
@@ -80,6 +88,15 @@ function RegisterPage() {
 
     try {
       await register(payload)
+      try {
+        await createPrivacyConsent({
+          type: 'sms_otp',
+          accepted: true,
+          locale: i18n?.locale ?? 'fr',
+        })
+      } catch {
+        // Registration should not fail if consent persistence is temporarily unavailable.
+      }
     } catch (error) {
       setErrorMessage(
         getErrorMessage(error, t('auth.register.failed')),
@@ -211,6 +228,16 @@ function RegisterPage() {
                 autoComplete="address-level2"
               />
             </div>
+
+            <label className="flex gap-3 rounded-[20px] border border-violet-100 bg-violet-50/60 p-4 text-sm leading-6 text-stone-700 dark:border-violet-300/16 dark:bg-white/8 dark:text-violet-100">
+              <input
+                type="checkbox"
+                checked={acceptsSmsOtp}
+                onChange={(event) => setAcceptsSmsOtp(event.target.checked)}
+                className="mt-1 h-4 w-4 rounded border-violet-300 text-violet-700 focus:ring-violet-500"
+              />
+              <span>{t('privacy.settings.smsOtpConsent')}</span>
+            </label>
 
             {authError === 'google_not_configured' ? (
               <p className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-300/20 dark:bg-amber-500/12 dark:text-amber-100">

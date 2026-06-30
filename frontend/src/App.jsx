@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 
 import { useAuth } from './hooks/useAuth'
 import { useI18n } from './hooks/useI18n'
+import CookieConsentBanner from './components/privacy/CookieConsentBanner'
 
 const AdminModerationPage = lazy(() => import('./pages/AdminModerationPage'))
 const AdminOrdersDashboardPage = lazy(() => import('./pages/AdminOrdersDashboardPage'))
@@ -25,6 +26,7 @@ const NotificationsPage = lazy(() => import('./pages/NotificationsPage'))
 const OrderHistoryPage = lazy(() => import('./pages/OrderHistoryPage'))
 const PartnerPage = lazy(() => import('./pages/PartnerPage'))
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'))
+const PrivacySettingsPage = lazy(() => import('./pages/PrivacySettingsPage'))
 const ProductDetailPage = lazy(() => import('./pages/ProductDetailPage'))
 const ProductsMarketplacePage = lazy(() => import('./pages/ProductsMarketplacePage'))
 const ProfilePage = lazy(() => import('./pages/ProfilePage'))
@@ -96,12 +98,14 @@ function App() {
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/settings/privacy" element={<PrivacySettingsPage />} />
         </Route>
         <Route
           path="*"
           element={<Navigate to={isAuthenticated ? '/feed' : '/'} replace />}
         />
       </Routes>
+      <CookieConsentBanner />
     </Suspense>
   )
 }

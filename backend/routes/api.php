@@ -9,12 +9,15 @@ use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\CommunityController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\ConversationController;
+use App\Http\Controllers\Api\DataDeletionRequestController;
 use App\Http\Controllers\Api\HistoryController;
 use App\Http\Controllers\Api\MediaController;
 use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\MonitoringController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PostController;
+use App\Http\Controllers\Api\PrivacyConsentController;
+use App\Http\Controllers\Api\PrivacyController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ReservationController;
@@ -44,6 +47,9 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
 
     Route::post('/contact', [ContactController::class, 'send'])
         ->middleware('throttle:5,1');
+
+    Route::post('/privacy/consents/public', [PrivacyConsentController::class, 'storePublic'])
+        ->middleware('throttle:20,1');
 
     Route::prefix('auth')->group(function (): void {
         Route::post('/otp/request', [AuthController::class, 'requestOtp'])->middleware('throttle:5,1');
@@ -169,6 +175,11 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
         Route::get('/search', [SearchController::class, 'index']);
         Route::get('/search/users', [SearchController::class, 'users']);
         Route::post('/reports', [ReportController::class, 'store']);
+        Route::get('/privacy/export', [PrivacyController::class, 'export']);
+        Route::post('/privacy/consents', [PrivacyConsentController::class, 'store']);
+        Route::get('/privacy/consents', [PrivacyConsentController::class, 'index']);
+        Route::post('/privacy/delete-request', [DataDeletionRequestController::class, 'store']);
+        Route::get('/privacy/delete-request', [DataDeletionRequestController::class, 'show']);
 
         Route::prefix('admin')->group(function (): void {
             Route::get('/users', [UserController::class, 'index']);
@@ -176,6 +187,8 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
             Route::get('/stats', AdminStatsController::class);
             Route::get('/reports', [ReportController::class, 'index']);
             Route::patch('/reports/{report}/status', [ReportController::class, 'updateStatus']);
+            Route::get('/privacy/delete-requests', [DataDeletionRequestController::class, 'adminIndex']);
+            Route::patch('/privacy/delete-requests/{dataDeletionRequest}/status', [DataDeletionRequestController::class, 'updateStatus']);
             Route::get('/orders', [AdminOrdersController::class, 'index']);
             Route::get('/moderation', [AdminModerationController::class, 'index']);
             Route::delete('/posts/{post}', [AdminModerationController::class, 'destroyPost']);

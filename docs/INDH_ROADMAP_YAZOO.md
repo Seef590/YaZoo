@@ -42,7 +42,7 @@ Objectif: securiser le partage local du projet, documenter les exclusions, renfo
 
 ### Phase 2 - CNDP / Loi 09-08
 
-Statut: non demarree.
+Statut: terminee.
 
 Objectif: consentements, export utilisateur, demande de suppression, cookies et preferences privacy.
 
@@ -81,11 +81,47 @@ Objectif: PWA, SEO, accessibilite, documentation INDH finale et checklists de pr
 - `frontend/src/lib/i18n.js` enrichi avec nouvelles chaines FR/AR/EN.
 - `AUDIT_I18N_UI_MOBILE_YAZOO.md` regenere par l'audit i18n.
 
+### Phase 2
+
+- `backend/database/migrations/2026_06_30_190000_create_privacy_consents_table.php` creee.
+- `backend/database/migrations/2026_06_30_190100_create_data_deletion_requests_table.php` creee.
+- `backend/app/Models/PrivacyConsent.php` cree.
+- `backend/app/Models/DataDeletionRequest.php` cree.
+- `backend/app/Http/Controllers/Api/PrivacyConsentController.php` cree.
+- `backend/app/Http/Controllers/Api/PrivacyController.php` cree.
+- `backend/app/Http/Controllers/Api/DataDeletionRequestController.php` cree.
+- `backend/app/Http/Requests/Privacy/StorePrivacyConsentRequest.php` cree.
+- `backend/app/Http/Requests/Privacy/StoreDataDeletionRequestRequest.php` cree.
+- `backend/app/Http/Resources/PrivacyConsentResource.php` cree.
+- `backend/app/Http/Resources/DataDeletionRequestResource.php` cree.
+- `backend/tests/Feature/PrivacyApiTest.php` cree.
+- `backend/app/Models/User.php` modifie pour ajouter les relations privacy.
+- `backend/routes/api.php` modifie pour les routes privacy.
+- `backend/lang/fr/messages.php`, `backend/lang/ar/messages.php`, `backend/lang/en/messages.php` modifies.
+- `frontend/src/api/privacy.js` cree.
+- `frontend/src/components/privacy/CookieConsentBanner.jsx` cree.
+- `frontend/src/components/privacy/ExportDataButton.jsx` cree.
+- `frontend/src/components/privacy/DeleteAccountRequestModal.jsx` cree.
+- `frontend/src/pages/PrivacySettingsPage.jsx` cree.
+- `frontend/src/App.jsx` modifie pour le bandeau cookies et `/settings/privacy`.
+- `frontend/src/pages/SettingsPage.jsx` modifie avec lien privacy.
+- `frontend/src/pages/RegisterPage.jsx` modifie avec consentement SMS OTP obligatoire.
+- `frontend/src/lib/i18n.js` modifie avec les cles FR/AR/EN phase 2.
+- `docs/CNDP_COMPLIANCE_NOTES.md` cree.
+- `AUDIT_I18N_UI_MOBILE_YAZOO.md` regenere par l'audit i18n.
+
 ## 6. Migrations creees
 
 ### Phase 1
 
 Aucune migration creee ou appliquee.
+
+### Phase 2
+
+Migrations creees et appliquees localement via Docker:
+
+- `2026_06_30_190000_create_privacy_consents_table` - batch 4, Ran.
+- `2026_06_30_190100_create_data_deletion_requests_table` - batch 4, Ran.
 
 ## 7. Tests executes
 
@@ -96,12 +132,24 @@ Aucune migration creee ou appliquee.
 - `npm run build` dans `frontend`: OK.
 - `node scripts/audit-i18n.mjs`: OK, 881 cles detectees, 0 texte statique suspect.
 
+### Phase 2
+
+- `php artisan migrate` depuis Windows: annule par Laravel car l'application est detectee en production et demande une confirmation interactive. `.env` non modifie.
+- Migration appliquee localement via Docker avec backend monte et `php artisan migrate --force`: OK.
+- `php artisan test` dans `backend`: OK, 99 tests, 573 assertions.
+- `npm run lint` dans `frontend`: OK.
+- `npm test -- --run` dans `frontend`: OK, 11 fichiers, 26 tests.
+- `npm run build` dans `frontend`: OK.
+- `node scripts/audit-i18n.mjs`: OK, 927 cles detectees, 0 texte statique suspect.
+
 ## 8. Points non termines
 
-- Ne pas demarrer la phase 2 avant rapport de fin de phase 1.
 - Completer les phases 2 a 5 apres validation.
 - Remplacer les placeholders `[A completer]` par les informations administratives reelles avant production ou depot officiel.
-- Finaliser les procedures CNDP, ONSSA, moderation institutionnelle, PWA, SEO, accessibilite et dossier INDH complet dans les phases suivantes.
+- Finaliser ONSSA, professionnels et annonces animales en phase 3 uniquement apres validation.
+- Finaliser back-office privacy complet, historique moderation et exports admin en phase 4.
+- Completer PWA, SEO, accessibilite et dossier INDH final en phase 5.
+- Remplacer les contacts CNDP `[A completer]` par les informations reelles.
 
 ## 9. Decisions prises
 
@@ -112,6 +160,10 @@ Aucune migration creee ou appliquee.
 - Les pages legales existantes seront enrichies via le systeme i18n et `PublicPageShell`, sans reconstruire l'architecture.
 - La page `/about` porte les mentions legales placeholders; aucune route `/legal-notice` separee n'a ete ajoutee en phase 1.
 - Le scan local a confirme la presence de sauvegardes et logs a exclure du partage: `infra/backups`, `backend/storage/logs`, fichiers `.sql.gz`, `.zip`, `.log`.
+- Phase 2: les IP et user-agents de consentement sont haches, pas stockes en clair.
+- Phase 2: l'export exclut les messages prives complets pour ne pas exposer les donnees d'autres utilisateurs.
+- Phase 2: la suppression de compte n'est pas automatique; elle cree une demande manuelle.
+- Phase 2: une API admin minimale de suivi des demandes de suppression existe, l'interface admin complete reste prevue en phase 4.
 
 ## 10. Confirmation de securite locale
 

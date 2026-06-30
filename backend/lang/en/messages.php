@@ -79,6 +79,14 @@ return [
         'created' => 'Report sent. Our team will review it.',
         'self_report' => 'You cannot report your own content.',
     ],
+    'privacy' => [
+        'consent_saved' => 'Privacy preference saved.',
+        'export_ready' => 'Your data export is ready.',
+        'export_private_messages_excluded' => 'Full private messages are excluded to avoid exposing another user personal data.',
+        'deletion_request_created' => 'Deletion request created. It will be reviewed manually.',
+        'deletion_request_already_pending' => 'A deletion request is already pending.',
+        'deletion_request_updated' => 'Deletion request status updated.',
+    ],
     'search' => [
         'post_fallback' => 'YaZoo post',
     ],

@@ -210,6 +210,16 @@ class User extends Authenticatable
         return $this->hasMany(ActivityLog::class);
     }
 
+    public function privacyConsents(): HasMany
+    {
+        return $this->hasMany(PrivacyConsent::class);
+    }
+
+    public function dataDeletionRequests(): HasMany
+    {
+        return $this->hasMany(DataDeletionRequest::class);
+    }
+
     /**
      * Get the reviews written by the user.
      */

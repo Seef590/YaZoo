@@ -79,6 +79,14 @@ return [
         'created' => 'Signalement envoye. Notre equipe le verifiera.',
         'self_report' => 'Vous ne pouvez pas signaler votre propre contenu.',
     ],
+    'privacy' => [
+        'consent_saved' => 'Preference de confidentialite enregistree.',
+        'export_ready' => 'Export de vos donnees prepare.',
+        'export_private_messages_excluded' => 'Les messages prives complets sont exclus afin de ne pas exposer les donnees personnelles d autres utilisateurs.',
+        'deletion_request_created' => 'Demande de suppression creee. Elle sera traitee manuellement.',
+        'deletion_request_already_pending' => 'Une demande de suppression est deja en attente.',
+        'deletion_request_updated' => 'Statut de la demande de suppression mis a jour.',
+    ],
     'search' => [
         'post_fallback' => 'Publication YaZoo',
     ],
