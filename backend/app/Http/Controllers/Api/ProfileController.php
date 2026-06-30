@@ -155,6 +155,10 @@ class ProfileController extends Controller
         if (Schema::hasTable('reservation_reviews')) {
             $user->loadAvg('reviewsReceived', 'rating');
         }
+
+        if (Schema::hasTable('professional_verifications')) {
+            $user->load('latestProfessionalVerification');
+        }
     }
 
     private function resolveUser(string $user): User

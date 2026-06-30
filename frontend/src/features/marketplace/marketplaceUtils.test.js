@@ -43,6 +43,14 @@ describe('marketplaceUtils', () => {
       is_for_adoption: false,
       listing_status: 'available',
       description: 'Douce',
+      contact_phone: '+212600000000',
+      accepts_animal_rules: true,
+      seller_type: 'professional',
+      origin: 'Rabat',
+      identification_number: 'ID-123',
+      health_certificate_path: 'private/health.pdf',
+      vaccination_book_path: 'private/vaccine.pdf',
+      onssa_authorization_number: 'ONSSA-123',
       existing_photo_path: 'old/main.webp',
       existing_gallery_paths: ['old/gallery.webp'],
     }
@@ -51,6 +59,11 @@ describe('marketplaceUtils', () => {
 
     expect(payload.get('name')).toBe('Luna')
     expect(payload.get('is_for_adoption')).toBe('0')
+    expect(payload.get('contact_phone')).toBe('+212600000000')
+    expect(payload.get('accepts_animal_rules')).toBe('1')
+    expect(payload.get('seller_type')).toBe('professional')
+    expect(payload.get('origin')).toBe('Rabat')
+    expect(payload.get('onssa_authorization_number')).toBe('ONSSA-123')
     expect(payload.get('photo')).toBe(image)
     expect(payload.getAll('gallery_urls[]')).toEqual(['old/gallery.webp'])
     expect(payload.getAll('gallery_files[]')).toEqual([gallery])

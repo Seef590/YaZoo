@@ -327,6 +327,8 @@ function Layout() {
     navigationItems.push(
       { to: '/admin/moderation', label: t('common.adminContent') },
       { to: '/admin/stats', label: t('common.adminStats') },
+      { to: '/admin/animals/review', label: t('common.adminAnimalReview') },
+      { to: '/admin/professional-verifications', label: t('common.adminProfessionalVerifications') },
       { to: '/admin/orders', label: t('common.adminOrders') },
     )
   }

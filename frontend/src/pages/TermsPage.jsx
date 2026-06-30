@@ -13,6 +13,7 @@ export default function TermsPage() {
         { titleKey: 'legal.sections.dataTitle', bodyKey: 'legal.sections.dataBody' },
         { titleKey: 'legal.sections.moderationTitle', bodyKey: 'legal.sections.moderationBody' },
         { titleKey: 'legal.sections.animalsTitle', bodyKey: 'legal.sections.animalsBody' },
+        { titleKey: 'legal.sections.professionalVerificationTitle', bodyKey: 'legal.sections.professionalVerificationBody' },
         { titleKey: 'legal.sections.claimTitle', bodyKey: 'legal.sections.claimBody' },
       ]}
     />

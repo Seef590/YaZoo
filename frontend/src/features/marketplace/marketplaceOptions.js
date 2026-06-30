@@ -25,6 +25,19 @@ export const animalFormStatusOptions = animalStatusOptions.filter(
   (option) => option.value !== '',
 )
 
+export const animalSellerTypeOptions = [
+  { value: 'individual', labelKey: 'animals.sellerTypes.individual' },
+  { value: 'professional', labelKey: 'animals.sellerTypes.professional' },
+  { value: 'association', labelKey: 'animals.sellerTypes.association' },
+]
+
+export const animalLegalStatusOptions = [
+  { value: 'pending_review', labelKey: 'animals.legalStatuses.pending_review' },
+  { value: 'approved', labelKey: 'animals.legalStatuses.approved' },
+  { value: 'rejected', labelKey: 'animals.legalStatuses.rejected' },
+  { value: 'suspended', labelKey: 'animals.legalStatuses.suspended' },
+]
+
 export const defaultAnimalForm = {
   name: '',
   category: 'other',
@@ -39,6 +52,12 @@ export const defaultAnimalForm = {
   accepts_animal_rules: false,
   listing_status: 'available',
   description: '',
+  seller_type: 'individual',
+  origin: '',
+  identification_number: '',
+  health_certificate_path: '',
+  vaccination_book_path: '',
+  onssa_authorization_number: '',
   existing_photo_path: '',
   existing_photo_url: '',
   existing_gallery_paths: [],

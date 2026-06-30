@@ -44,6 +44,12 @@ class StoreAnimalRequest extends FormRequest
             'listing_status' => ['required', Rule::in(Animal::LISTING_STATUSES)],
             'description' => ['required', 'string', 'min:20', 'max:5000'],
             'accepts_animal_rules' => ['required', 'accepted'],
+            'seller_type' => ['required', 'string', Rule::in(Animal::SELLER_TYPES)],
+            'origin' => ['nullable', 'string', 'max:190'],
+            'identification_number' => ['nullable', 'string', 'max:120'],
+            'health_certificate_path' => ['nullable', 'string', 'max:2048'],
+            'vaccination_book_path' => ['nullable', 'string', 'max:2048'],
+            'onssa_authorization_number' => ['nullable', 'string', 'max:100'],
         ];
     }
 
@@ -52,7 +58,23 @@ class StoreAnimalRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        $fields = ['name', 'category', 'type', 'breed', 'location', 'contact_phone', 'photo_url', 'listing_status', 'description'];
+        $fields = [
+            'name',
+            'category',
+            'type',
+            'breed',
+            'location',
+            'contact_phone',
+            'photo_url',
+            'listing_status',
+            'description',
+            'seller_type',
+            'origin',
+            'identification_number',
+            'health_certificate_path',
+            'vaccination_book_path',
+            'onssa_authorization_number',
+        ];
         $normalized = [];
 
         foreach ($fields as $field) {
@@ -82,6 +104,7 @@ class StoreAnimalRequest extends FormRequest
         }
         $normalized['category'] = $normalized['category'] ?: 'other';
         $normalized['listing_status'] = $normalized['listing_status'] ?: 'available';
+        $normalized['seller_type'] = $normalized['seller_type'] ?: 'individual';
 
         if (! $normalized['photo_url'] && ! empty($galleryUrls)) {
             $normalized['photo_url'] = $galleryUrls[0];

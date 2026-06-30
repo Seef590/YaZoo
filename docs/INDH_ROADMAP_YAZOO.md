@@ -27,7 +27,7 @@ YaZoo n'est pas un vendeur direct d'animaux. Le dossier INDH doit presenter YaZo
 ## 3. Risques critiques restants
 
 - Conformite CNDP / Loi 09-08 encore incomplete: consentements, export, demandes de suppression et registre documentaire a renforcer.
-- Conformite ONSSA et verification professionnelle encore incomplete: documents, statuts, moderation specialisee et badges fiables.
+- Conformite ONSSA et verification professionnelle partielle: base technique Phase 3 en place, mais verification administrative reelle, stockage prive documentaire renforce et historique admin restent a finaliser.
 - Back-office institutionnel encore a completer: suspensions, historique des actions, exports CSV et gouvernance admin.
 - Documentation INDH finale, accessibilite, SEO et PWA encore a finaliser.
 - Des fichiers locaux sensibles ou volumineux existent dans l'environnement de travail et doivent etre exclus de tout partage: `.env`, `.git`, `node_modules`, `vendor`, `infra/backups`, `backend/storage/logs`, dumps SQL, logs et artefacts de build.
@@ -48,7 +48,7 @@ Objectif: consentements, export utilisateur, demande de suppression, cookies et 
 
 ### Phase 3 - ONSSA / annonces animales / professionnels
 
-Statut: non demarree.
+Statut: terminee.
 
 Objectif: verification professionnelle, champs de conformite animale, statuts de revision et badges fiables.
 
@@ -110,6 +110,36 @@ Objectif: PWA, SEO, accessibilite, documentation INDH finale et checklists de pr
 - `docs/CNDP_COMPLIANCE_NOTES.md` cree.
 - `AUDIT_I18N_UI_MOBILE_YAZOO.md` regenere par l'audit i18n.
 
+### Phase 3
+
+- `backend/database/migrations/2026_06_30_200000_create_professional_verifications_table.php` creee.
+- `backend/database/migrations/2026_06_30_200100_add_compliance_fields_to_animals_table.php` creee.
+- `backend/app/Models/ProfessionalVerification.php` cree.
+- `backend/app/Http/Controllers/Api/ProfessionalVerificationController.php` cree.
+- `backend/app/Http/Controllers/Api/AdminAnimalReviewController.php` cree.
+- `backend/app/Http/Requests/ProfessionalVerification/StoreProfessionalVerificationRequest.php` cree.
+- `backend/app/Http/Requests/ProfessionalVerification/UpdateProfessionalVerificationStatusRequest.php` cree.
+- `backend/app/Http/Requests/Admin/UpdateAnimalLegalStatusRequest.php` cree.
+- `backend/app/Http/Resources/ProfessionalVerificationResource.php` cree.
+- `backend/tests/Feature/ProfessionalVerificationApiTest.php` cree.
+- `backend/tests/Feature/AdminAnimalReviewApiTest.php` cree.
+- `backend/app/Models/Animal.php`, `backend/app/Models/User.php`, `backend/app/Http/Requests/Marketplace/StoreAnimalRequest.php`, `backend/app/Http/Resources/Marketplace/AnimalResource.php`, `backend/app/Services/Marketplace/AnimalMarketplaceService.php`, `backend/database/factories/AnimalFactory.php` modifies.
+- `backend/app/Http/Controllers/Api/ProfileController.php` et `backend/app/Http/Resources/Profile/UserProfileResource.php` modifies pour exposer le statut professionnel.
+- `backend/routes/api.php` modifie pour les routes verification pro et revue animaux.
+- `backend/lang/fr/messages.php`, `backend/lang/ar/messages.php`, `backend/lang/en/messages.php` modifies.
+- `frontend/src/api/professionalVerifications.js` cree.
+- `frontend/src/components/ui/ComplianceBadge.jsx` cree.
+- `frontend/src/features/marketplace/animalCompliance.js` cree.
+- `frontend/src/pages/ProfessionalVerificationPage.jsx` cree.
+- `frontend/src/pages/AdminProfessionalVerificationsPage.jsx` cree.
+- `frontend/src/pages/AdminAnimalReviewPage.jsx` cree.
+- `frontend/src/App.jsx`, `frontend/src/layouts/Layout.jsx`, `frontend/src/pages/SettingsPage.jsx` modifies pour les routes/liens Phase 3.
+- `frontend/src/components/marketplace/AnimalListingForm.jsx`, `frontend/src/components/marketplace/AnimalCard.jsx`, `frontend/src/pages/AnimalDetailPage.jsx`, `frontend/src/pages/ProfilePage.jsx` modifies.
+- `frontend/src/features/marketplace/marketplaceOptions.js`, `frontend/src/features/marketplace/marketplaceUtils.js`, `frontend/src/hooks/useAnimalsMarketplace.js`, `frontend/src/features/marketplace/marketplaceUtils.test.js` modifies.
+- `frontend/src/pages/PublishingRulesPage.jsx`, `frontend/src/pages/TermsPage.jsx`, `frontend/src/lib/i18n.js` modifies.
+- `docs/ONSSA_COMPLIANCE_NOTES.md` cree.
+- `AUDIT_I18N_UI_MOBILE_YAZOO.md` regenere par l'audit i18n.
+
 ## 6. Migrations creees
 
 ### Phase 1
@@ -122,6 +152,13 @@ Migrations creees et appliquees localement via Docker:
 
 - `2026_06_30_190000_create_privacy_consents_table` - batch 4, Ran.
 - `2026_06_30_190100_create_data_deletion_requests_table` - batch 4, Ran.
+
+### Phase 3
+
+Migrations creees et appliquees localement sur MySQL Docker:
+
+- `2026_06_30_200000_create_professional_verifications_table` - batch 5, Ran.
+- `2026_06_30_200100_add_compliance_fields_to_animals_table` - batch 5, Ran.
 
 ## 7. Tests executes
 
@@ -142,11 +179,23 @@ Migrations creees et appliquees localement via Docker:
 - `npm run build` dans `frontend`: OK.
 - `node scripts/audit-i18n.mjs`: OK, 927 cles detectees, 0 texte statique suspect.
 
+### Phase 3
+
+- `php artisan migrate` depuis Windows: annule par Laravel car l'application est detectee en production et demande une confirmation interactive. `.env` non modifie.
+- `php artisan migrate` depuis Windows avec `DB_HOST=127.0.0.1` et `DB_PORT=3307` temporaires: connexion MySQL refusee pour l'utilisateur configure dans le `.env` Windows. `.env` non modifie.
+- Migration appliquee localement via Docker apres copie des deux fichiers de migration dans le conteneur Laravel qui ne monte pas le code applicatif local: OK, batch 5.
+- `docker exec yazoo-app-1 php artisan migrate:status`: OK, migrations Phase 3 Ran.
+- `php artisan test` dans `backend`: OK, 103 tests, 591 assertions.
+- `npm run lint` dans `frontend`: OK.
+- `npm test -- --run` dans `frontend`: OK, 11 fichiers, 26 tests.
+- `npm run build` dans `frontend`: OK.
+- `node scripts/audit-i18n.mjs`: OK, 977 cles detectees, 0 texte statique suspect.
+
 ## 8. Points non termines
 
-- Completer les phases 2 a 5 apres validation.
+- Completer les phases 4 et 5 apres validation.
 - Remplacer les placeholders `[A completer]` par les informations administratives reelles avant production ou depot officiel.
-- Finaliser ONSSA, professionnels et annonces animales en phase 3 uniquement apres validation.
+- Renforcer le stockage prive des documents professionnels/animaux avant production publique.
 - Finaliser back-office privacy complet, historique moderation et exports admin en phase 4.
 - Completer PWA, SEO, accessibilite et dossier INDH final en phase 5.
 - Remplacer les contacts CNDP `[A completer]` par les informations reelles.
@@ -164,6 +213,10 @@ Migrations creees et appliquees localement via Docker:
 - Phase 2: l'export exclut les messages prives complets pour ne pas exposer les donnees d'autres utilisateurs.
 - Phase 2: la suppression de compte n'est pas automatique; elle cree une demande manuelle.
 - Phase 2: une API admin minimale de suivi des demandes de suppression existe, l'interface admin complete reste prevue en phase 4.
+- Phase 3: ne pas presenter YaZoo comme autorite ONSSA; utiliser des mentions prudentes comme informations de conformite, documents en cours de verification et professionnel verifie par l'administration YaZoo.
+- Phase 3: les champs documentaires animaux et professionnels restent des references texte; aucun upload prive documentaire n'a ete introduit pour eviter un stockage dangereux premature.
+- Phase 3: les nouvelles annonces animaux sont creees en `pending_review`; les anciennes annonces restent compatibles avec des valeurs par defaut.
+- Phase 3: le conteneur Docker local `yazoo-app-1` utilise une image sans montage complet du code local; les migrations Phase 3 ont ete copiees dans le conteneur pour appliquer la base sans reconstruire ni deployer.
 
 ## 10. Confirmation de securite locale
 

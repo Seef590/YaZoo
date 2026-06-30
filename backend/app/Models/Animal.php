@@ -28,6 +28,22 @@ class Animal extends Model
         'sold',
     ];
 
+    public const SELLER_TYPES = [
+        'individual',
+        'professional',
+        'association',
+    ];
+
+    public const LEGAL_STATUSES = [
+        'draft',
+        'pending_review',
+        'approved',
+        'rejected',
+        'suspended',
+    ];
+
+    public const LEGAL_STATUS_PENDING_REVIEW = 'pending_review';
+
     /**
      * The attributes that are mass assignable.
      *
@@ -49,6 +65,14 @@ class Animal extends Model
         'description',
         'contact_phone',
         'accepts_animal_rules',
+        'seller_type',
+        'origin',
+        'identification_number',
+        'health_certificate_path',
+        'vaccination_book_path',
+        'onssa_authorization_number',
+        'legal_status',
+        'moderation_note',
     ];
 
     /**

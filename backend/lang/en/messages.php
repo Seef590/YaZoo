@@ -72,8 +72,13 @@ return [
     'admin' => [
         'post_deleted' => 'Post deleted by admin moderation.',
         'animal_deleted' => 'Animal listing deleted by admin moderation.',
+        'animal_legal_status_updated' => 'Animal listing review status updated.',
         'product_deleted' => 'Product deleted by admin moderation.',
         'community_deleted' => 'Community deleted by admin moderation.',
+    ],
+    'professional_verifications' => [
+        'submitted' => 'Professional verification request sent. It will be reviewed manually.',
+        'status_updated' => 'Professional verification status updated.',
     ],
     'reports' => [
         'created' => 'Report sent. Our team will review it.',

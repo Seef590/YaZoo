@@ -45,6 +45,14 @@ class AnimalFactory extends Factory
             'listing_status' => fake()->randomElement(Animal::LISTING_STATUSES),
             'description' => fake()->paragraph(2),
             'accepts_animal_rules' => true,
+            'seller_type' => 'individual',
+            'origin' => fake()->city(),
+            'identification_number' => null,
+            'health_certificate_path' => null,
+            'vaccination_book_path' => null,
+            'onssa_authorization_number' => null,
+            'legal_status' => 'approved',
+            'moderation_note' => null,
         ];
     }
 }

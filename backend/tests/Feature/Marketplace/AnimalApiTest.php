@@ -82,6 +82,8 @@ class AnimalApiTest extends TestCase
             'listing_status' => 'available',
             'description' => 'Chat calme et joueur.',
             'accepts_animal_rules' => true,
+            'seller_type' => 'individual',
+            'origin' => 'Casablanca',
         ]);
 
         $animalId = $createResponse->json('data.id');
@@ -93,6 +95,8 @@ class AnimalApiTest extends TestCase
             ->assertJsonPath('data.type', 'chat')
             ->assertJsonPath('data.contactPhone', '+212600000001')
             ->assertJsonPath('data.acceptsAnimalRules', true)
+            ->assertJsonPath('data.sellerType', 'individual')
+            ->assertJsonPath('data.legalStatus', 'pending_review')
             ->assertJsonPath('data.galleryUrls.1', 'https://example.com/milo-2.jpg')
             ->assertJsonPath('data.listingStatus', 'available');
 
@@ -115,6 +119,8 @@ class AnimalApiTest extends TestCase
             'listing_status' => 'adopted',
             'description' => 'Annonce mise a jour.',
             'accepts_animal_rules' => true,
+            'seller_type' => 'association',
+            'origin' => 'Rabat',
         ])
             ->assertOk()
             ->assertJsonPath('data.age', 3)
@@ -157,6 +163,7 @@ class AnimalApiTest extends TestCase
             'listing_status' => 'reserved',
             'description' => 'Tentative non autorisee.',
             'accepts_animal_rules' => true,
+            'seller_type' => 'individual',
         ];
 
         $this->putJson("/api/animals/{$animal->id}", $payload)->assertForbidden();
@@ -190,6 +197,7 @@ class AnimalApiTest extends TestCase
                 'listing_status' => 'available',
                 'description' => 'Annonce avec upload reel.',
                 'accepts_animal_rules' => '1',
+                'seller_type' => 'individual',
             ]);
 
         $animal = Animal::query()->latest('id')->first();
@@ -242,6 +250,7 @@ class AnimalApiTest extends TestCase
                 'listing_status' => 'reserved',
                 'description' => 'Annonce modifiee avec upload reel.',
                 'accepts_animal_rules' => '1',
+                'seller_type' => 'individual',
             ]);
 
         $animal->refresh();

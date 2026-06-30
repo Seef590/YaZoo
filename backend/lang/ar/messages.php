@@ -72,8 +72,13 @@ return [
     'admin' => [
         'post_deleted' => 'تم حذف المنشور من طرف إدارة المحتوى.',
         'animal_deleted' => 'تم حذف إعلان الحيوان من طرف الإدارة.',
+        'animal_legal_status_updated' => 'تم تحديث حالة مراجعة إعلان الحيوان.',
         'product_deleted' => 'تم حذف المنتج من طرف الإدارة.',
         'community_deleted' => 'تم حذف المجتمع من طرف الإدارة.',
+    ],
+    'professional_verifications' => [
+        'submitted' => 'تم إرسال طلب التحقق المهني وسيتم مراجعته يدويا.',
+        'status_updated' => 'تم تحديث حالة التحقق المهني.',
     ],
     'reports' => [
         'created' => 'تم إرسال البلاغ. سيقوم فريقنا بمراجعته.',

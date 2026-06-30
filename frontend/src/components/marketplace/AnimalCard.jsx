@@ -2,16 +2,20 @@ import Avatar from '../ui/Avatar'
 import Button from '../ui/Button'
 import { Link } from 'react-router-dom'
 import ReportButton from '../reports/ReportButton'
+import ComplianceBadge from '../ui/ComplianceBadge'
 import VerifiedPhoneBadge from '../ui/VerifiedPhoneBadge'
 import { Info, LinkButton } from './MarketplaceCommon'
 import {
   buildAnimalContactPath,
   buildPhoneContactHref,
   formatAnimalCategory,
+  formatAnimalLegalStatus,
   formatAnimalSex,
+  formatAnimalSellerType,
   formatAnimalStatus,
   uniqueUrls,
 } from '../../features/marketplace/marketplaceUtils'
+import { getAnimalComplianceBadgeTypes } from '../../features/marketplace/animalCompliance'
 import { formatDate } from '../../utils/formatDate'
 import { useI18n } from '../../hooks/useI18n'
 
@@ -40,7 +44,7 @@ function AnimalCard({ animal, onDelete, onEdit }) {
                 {formatAnimalCategory(animal.category, t)}
               </span>
             </div>
-            <h3 className="mt-3 text-lg font-semibold text-stone-950">{animal.name}</h3>
+            <h3 className="mt-3 text-lg font-semibold text-stone-950 dark:text-violet-50">{animal.name}</h3>
             <p className="text-sm text-stone-500">{[animal.type, animal.breed].filter(Boolean).join(' - ')}</p>
           </div>
 
@@ -60,6 +64,12 @@ function AnimalCard({ animal, onDelete, onEdit }) {
           </div>
         </div>
 
+        <div className="flex flex-wrap gap-2">
+          {getAnimalComplianceBadgeTypes(animal).map((badgeType) => (
+            <ComplianceBadge key={badgeType} type={badgeType} />
+          ))}
+        </div>
+
         {gallery.length > 1 ? (
           <div className="flex gap-3 overflow-x-auto pb-1 snap-x snap-mandatory">
             {gallery.slice(0, 4).map((imageUrl) => (
@@ -73,6 +83,8 @@ function AnimalCard({ animal, onDelete, onEdit }) {
           <Info label={t('common.age')} value={animal.age ?? '-'} />
           <Info label={t('common.status')} value={formatAnimalStatus(animal.listingStatus, t)} />
           <Info label={t('common.category')} value={formatAnimalCategory(animal.category, t)} />
+          <Info label={t('animals.sellerType')} value={formatAnimalSellerType(animal.sellerType, t)} />
+          <Info label={t('animals.reviewStatus')} value={formatAnimalLegalStatus(animal.legalStatus, t)} />
         </div>
 
         <p className="text-sm leading-6 text-stone-600 dark:text-violet-100/76">{animal.description || t('marketplace.noDescription')}</p>

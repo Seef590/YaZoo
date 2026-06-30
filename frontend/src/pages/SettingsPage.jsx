@@ -116,6 +116,12 @@ function SettingsPage() {
             >
               {t('privacy.settings.shortTitle')}
             </Link>
+            <Link
+              to="/settings/professional-verification"
+              className="rounded-full border border-violet-100 bg-white/80 px-4 py-2 text-sm font-semibold text-violet-900 transition hover:bg-violet-50 dark:border-violet-300/16 dark:bg-white/8 dark:text-violet-50"
+            >
+              {t('professionalVerification.shortTitle')}
+            </Link>
             <Button type="button" variant="secondary" onClick={logout}>
               {t('common.logout')}
             </Button>

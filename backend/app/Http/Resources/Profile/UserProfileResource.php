@@ -43,6 +43,8 @@ class UserProfileResource extends JsonResource
                 ? round((float) $this->reviews_received_avg_rating, 1)
                 : null,
             'isPhoneVerified' => $this->hasVerifiedPhone(),
+            'isProfessionalVerified' => $this->latestProfessionalVerification?->status === 'approved',
+            'professionalVerificationStatus' => $this->latestProfessionalVerification?->status,
             'isFollowing' => $viewer
                 ? $this->followers()->where('follower_user_id', $viewer->id)->exists()
                 : false,

@@ -19,6 +19,7 @@ import { createDirectConversationRequest } from '../api/messages'
 import PostCard from '../components/feed/PostCard'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
+import ComplianceBadge from '../components/ui/ComplianceBadge'
 import FollowButton from '../components/ui/FollowButton'
 import ScrollTopButton from '../components/ui/ScrollTopButton'
 import VerifiedPhoneBadge from '../components/ui/VerifiedPhoneBadge'
@@ -549,6 +550,7 @@ function ProfilePage() {
                     {profile?.name ?? user?.name}
                   </h2>
                   {profile?.isPhoneVerified || (isOwnProfile && user?.isPhoneVerified) ? <VerifiedPhoneBadge /> : null}
+                  {profile?.isProfessionalVerified ? <ComplianceBadge type="professionalApproved" /> : null}
                 </div>
                 <p className="mt-1 text-sm text-stone-500 dark:text-violet-100/62">
                   @{(profile?.name ?? user?.name ?? 'username').toLowerCase().replace(/\s+/g, '')}

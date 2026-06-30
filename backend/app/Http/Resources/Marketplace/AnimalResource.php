@@ -39,6 +39,17 @@ class AnimalResource extends JsonResource
             'listingStatus' => $this->listing_status,
             'description' => $this->description,
             'acceptsAnimalRules' => (bool) $this->accepts_animal_rules,
+            'sellerType' => $this->seller_type ?? 'individual',
+            'origin' => $this->origin,
+            'identificationNumber' => $this->identification_number,
+            'healthCertificatePath' => $this->health_certificate_path,
+            'vaccinationBookPath' => $this->vaccination_book_path,
+            'onssaAuthorizationNumber' => $this->onssa_authorization_number,
+            'legalStatus' => $this->legal_status ?? Animal::LEGAL_STATUS_PENDING_REVIEW,
+            'moderationNote' => $this->when(
+                ($request->user()?->is_admin ?? false) || ($request->user()?->is($this->user) ?? false),
+                $this->moderation_note,
+            ),
             'createdAt' => $this->created_at?->toISOString(),
             'author' => [
                 'id' => $this->user?->id,
@@ -49,6 +60,8 @@ class AnimalResource extends JsonResource
                 'avatar' => MediaStorage::resolveUrl($this->user?->avatar),
                 'city' => $this->user?->city,
                 'country' => $this->user?->country,
+                'isProfessionalVerified' => $this->user?->latestProfessionalVerification?->status === 'approved',
+                'professionalVerificationStatus' => $this->user?->latestProfessionalVerification?->status,
             ],
             'isOwner' => $request->user()?->is($this->user) ?? false,
         ];

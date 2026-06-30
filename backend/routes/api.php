@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AdminAnimalReviewController;
 use App\Http\Controllers\Api\AdminModerationController;
 use App\Http\Controllers\Api\AdminOrdersController;
 use App\Http\Controllers\Api\AdminStatsController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\MonitoringController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PostController;
+use App\Http\Controllers\Api\ProfessionalVerificationController;
 use App\Http\Controllers\Api\PrivacyConsentController;
 use App\Http\Controllers\Api\PrivacyController;
 use App\Http\Controllers\Api\ProductController;
@@ -180,6 +182,8 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
         Route::get('/privacy/consents', [PrivacyConsentController::class, 'index']);
         Route::post('/privacy/delete-request', [DataDeletionRequestController::class, 'store']);
         Route::get('/privacy/delete-request', [DataDeletionRequestController::class, 'show']);
+        Route::post('/professional-verifications', [ProfessionalVerificationController::class, 'store']);
+        Route::get('/professional-verifications/me', [ProfessionalVerificationController::class, 'me']);
 
         Route::prefix('admin')->group(function (): void {
             Route::get('/users', [UserController::class, 'index']);
@@ -189,6 +193,10 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
             Route::patch('/reports/{report}/status', [ReportController::class, 'updateStatus']);
             Route::get('/privacy/delete-requests', [DataDeletionRequestController::class, 'adminIndex']);
             Route::patch('/privacy/delete-requests/{dataDeletionRequest}/status', [DataDeletionRequestController::class, 'updateStatus']);
+            Route::get('/professional-verifications', [ProfessionalVerificationController::class, 'adminIndex']);
+            Route::patch('/professional-verifications/{professionalVerification}/status', [ProfessionalVerificationController::class, 'updateStatus']);
+            Route::get('/animals/review', [AdminAnimalReviewController::class, 'index']);
+            Route::patch('/animals/{animal}/legal-status', [AdminAnimalReviewController::class, 'updateStatus']);
             Route::get('/orders', [AdminOrdersController::class, 'index']);
             Route::get('/moderation', [AdminModerationController::class, 'index']);
             Route::delete('/posts/{post}', [AdminModerationController::class, 'destroyPost']);

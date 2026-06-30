@@ -12,6 +12,12 @@ export const getAdminReportsRequest = (params = {}) =>
 export const updateAdminReportStatusRequest = (reportId, status) =>
   api.patch(`/admin/reports/${reportId}/status`, { status })
 
+export const getAdminAnimalReviewsRequest = (params = {}) =>
+  api.get('/admin/animals/review', { params })
+
+export const updateAdminAnimalLegalStatusRequest = (animalId, payload) =>
+  api.patch(`/admin/animals/${animalId}/legal-status`, payload)
+
 export const deleteAdminPostRequest = (postId) => api.delete(`/admin/posts/${postId}`)
 
 export const deleteAdminAnimalRequest = (animalId) =>

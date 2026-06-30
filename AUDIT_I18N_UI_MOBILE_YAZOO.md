@@ -1,10 +1,10 @@
 # AUDIT I18N UI MOBILE YAZOO
 
-Date: 2026-06-30T18:57:23.840Z
+Date: 2026-06-30T19:30:04.282Z
 
 ## Fichiers audites
 
-- 120 fichiers frontend dans frontend/src
+- 126 fichiers frontend dans frontend/src
 - backend/app/Http, backend/lang et routes API audites manuellement pendant la correction
 
 ## Domaines i18n verifies
@@ -33,8 +33,8 @@ Date: 2026-06-30T18:57:23.840Z
 
 ## Cles utilisees
 
-- 927 cles t(...) detectees
-- 15 cles dynamiques detectees
+- 977 cles t(...) detectees
+- 20 cles dynamiques detectees
 
 ## Domaines sans cle detectee
 
@@ -46,6 +46,7 @@ Date: 2026-06-30T18:57:23.840Z
 ## Cles potentiellement manquantes
 
 - adminStats.labels.${key}
+- compliance.badges.${type}
 - messages.dropdown.${tab}
 - notifications.tabs.${filter}
 - notifications.tabs.${tab}
@@ -53,6 +54,10 @@ Date: 2026-06-30T18:57:23.840Z
 - privacy.settings.consentLabels.${type}
 - privacy.settings.rights.${item}
 - privacy.settings.statuses.${deletionRequests[0]?.status ?? 
+- professionalVerification.businessTypes.${item.businessType}
+- professionalVerification.businessTypes.${type}
+- professionalVerification.businessTypes.${verification.businessType}
+- professionalVerification.statuses.${status}
 - reports.reasons.${item}
 - reports.reasons.${report.reason}
 - reports.statuses.${status}

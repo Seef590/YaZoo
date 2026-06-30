@@ -3,7 +3,11 @@ import { Link } from 'react-router-dom'
 
 import Button from '../ui/Button'
 import { Field, FileField, SelectField } from './MarketplaceCommon'
-import { animalFormCategoryOptions, animalFormStatusOptions } from '../../features/marketplace/marketplaceOptions'
+import {
+  animalFormCategoryOptions,
+  animalFormStatusOptions,
+  animalSellerTypeOptions,
+} from '../../features/marketplace/marketplaceOptions'
 import { useI18n } from '../../hooks/useI18n'
 
 function AnimalListingForm({
@@ -60,7 +64,23 @@ function AnimalListingForm({
         <Field label={t('animals.contactPhone')} value={form.contact_phone} onChange={onFormChange('contact_phone')} required />
         <Field label={t('common.price')} type="number" min="0" step="0.01" value={form.price} onChange={onFormChange('price')} />
         <SelectField label={t('common.status')} value={form.listing_status} onChange={onFormChange('listing_status')} options={animalFormStatusOptions} />
+        <SelectField label={t('animals.sellerType')} value={form.seller_type} onChange={onFormChange('seller_type')} options={animalSellerTypeOptions} />
+        <Field label={t('animals.origin')} value={form.origin} onChange={onFormChange('origin')} />
+        <Field label={t('animals.identificationNumber')} value={form.identification_number} onChange={onFormChange('identification_number')} />
+        <Field label={t('animals.healthCertificatePath')} value={form.health_certificate_path} onChange={onFormChange('health_certificate_path')} />
+        <Field label={t('animals.vaccinationBookPath')} value={form.vaccination_book_path} onChange={onFormChange('vaccination_book_path')} />
+        <Field label={t('animals.onssaAuthorizationNumber')} value={form.onssa_authorization_number} onChange={onFormChange('onssa_authorization_number')} />
       </div>
+
+      <div className="mt-4 rounded-[22px] border border-violet-200 bg-violet-50/80 px-4 py-3 text-sm leading-6 text-violet-950 dark:border-violet-300/18 dark:bg-violet-400/10 dark:text-violet-100">
+        {t('animals.complianceNotice')}
+      </div>
+
+      {form.seller_type === 'professional' ? (
+        <div className="mt-3 rounded-[22px] border border-amber-200 bg-amber-50/80 px-4 py-3 text-sm leading-6 text-amber-950 dark:border-amber-300/18 dark:bg-amber-400/10 dark:text-amber-100">
+          {t('animals.professionalSellerWarning')}
+        </div>
+      ) : null}
 
       <label className="mt-4 flex items-center gap-3 text-sm text-stone-700 dark:text-violet-100/78">
         <input

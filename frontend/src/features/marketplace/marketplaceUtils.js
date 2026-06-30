@@ -38,9 +38,15 @@ export function buildAnimalFormData(form, photoFile, galleryFiles) {
   formData.append('accepts_animal_rules', form.accepts_animal_rules ? '1' : '0')
   formData.append('listing_status', form.listing_status)
   formData.append('description', form.description)
+  formData.append('seller_type', form.seller_type || 'individual')
 
   if (form.age !== '') formData.append('age', String(form.age))
   if (form.price !== '') formData.append('price', String(form.price))
+  if (form.origin) formData.append('origin', form.origin)
+  if (form.identification_number) formData.append('identification_number', form.identification_number)
+  if (form.health_certificate_path) formData.append('health_certificate_path', form.health_certificate_path)
+  if (form.vaccination_book_path) formData.append('vaccination_book_path', form.vaccination_book_path)
+  if (form.onssa_authorization_number) formData.append('onssa_authorization_number', form.onssa_authorization_number)
   if (form.existing_photo_path) formData.append('photo_url', form.existing_photo_path)
 
   ;(form.existing_gallery_paths ?? []).forEach((path) => {
@@ -145,6 +151,28 @@ export function formatAnimalStatus(status, t = null) {
   }
 
   return labels[status] ?? labels.available
+}
+
+export function formatAnimalSellerType(sellerType, t = null) {
+  const labels = {
+    individual: t?.('animals.sellerTypes.individual') ?? 'Particulier',
+    professional: t?.('animals.sellerTypes.professional') ?? 'Professionnel',
+    association: t?.('animals.sellerTypes.association') ?? 'Association',
+  }
+
+  return labels[sellerType] ?? labels.individual
+}
+
+export function formatAnimalLegalStatus(status, t = null) {
+  const labels = {
+    draft: t?.('animals.legalStatuses.draft') ?? 'Brouillon',
+    pending_review: t?.('animals.legalStatuses.pending_review') ?? 'En revision',
+    approved: t?.('animals.legalStatuses.approved') ?? 'Approuvee',
+    rejected: t?.('animals.legalStatuses.rejected') ?? 'Rejetee',
+    suspended: t?.('animals.legalStatuses.suspended') ?? 'Suspendue',
+  }
+
+  return labels[status] ?? labels.pending_review
 }
 
 export function formatAnimalSex(sex, t = null) {

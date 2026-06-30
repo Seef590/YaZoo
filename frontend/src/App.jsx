@@ -6,7 +6,9 @@ import { useI18n } from './hooks/useI18n'
 import CookieConsentBanner from './components/privacy/CookieConsentBanner'
 
 const AdminModerationPage = lazy(() => import('./pages/AdminModerationPage'))
+const AdminAnimalReviewPage = lazy(() => import('./pages/AdminAnimalReviewPage'))
 const AdminOrdersDashboardPage = lazy(() => import('./pages/AdminOrdersDashboardPage'))
+const AdminProfessionalVerificationsPage = lazy(() => import('./pages/AdminProfessionalVerificationsPage'))
 const AdminStatsPage = lazy(() => import('./pages/AdminStatsPage'))
 const AnimalDetailPage = lazy(() => import('./pages/AnimalDetailPage'))
 const AnimalsMarketplacePage = lazy(() => import('./pages/AnimalsMarketplacePage'))
@@ -27,6 +29,7 @@ const OrderHistoryPage = lazy(() => import('./pages/OrderHistoryPage'))
 const PartnerPage = lazy(() => import('./pages/PartnerPage'))
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'))
 const PrivacySettingsPage = lazy(() => import('./pages/PrivacySettingsPage'))
+const ProfessionalVerificationPage = lazy(() => import('./pages/ProfessionalVerificationPage'))
 const ProductDetailPage = lazy(() => import('./pages/ProductDetailPage'))
 const ProductsMarketplacePage = lazy(() => import('./pages/ProductsMarketplacePage'))
 const ProfilePage = lazy(() => import('./pages/ProfilePage'))
@@ -66,6 +69,8 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/profile/:userId" element={<ProfilePage />} />
           <Route path="/admin/moderation" element={<AdminModerationPage />} />
+          <Route path="/admin/animals/review" element={<AdminAnimalReviewPage />} />
+          <Route path="/admin/professional-verifications" element={<AdminProfessionalVerificationsPage />} />
           <Route path="/admin/orders" element={<AdminOrdersDashboardPage />} />
           <Route path="/admin/stats" element={<AdminStatsPage />} />
           <Route path="/reservations" element={<ReservationsPage />} />
@@ -99,6 +104,7 @@ function App() {
           <Route path="/search" element={<SearchPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/settings/privacy" element={<PrivacySettingsPage />} />
+          <Route path="/settings/professional-verification" element={<ProfessionalVerificationPage />} />
         </Route>
         <Route
           path="*"

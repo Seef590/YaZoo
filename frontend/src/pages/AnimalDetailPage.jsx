@@ -7,14 +7,18 @@ import AnimalSafetyNotice from '../components/marketplace/AnimalSafetyNotice'
 import ReportButton from '../components/reports/ReportButton'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
+import ComplianceBadge from '../components/ui/ComplianceBadge'
 import VerifiedPhoneBadge from '../components/ui/VerifiedPhoneBadge'
 import {
   buildAnimalContactPath,
   buildPhoneContactHref,
   formatAnimalCategory,
+  formatAnimalLegalStatus,
   formatAnimalSex,
+  formatAnimalSellerType,
   formatAnimalStatus,
 } from '../features/marketplace/marketplaceUtils'
+import { getAnimalComplianceBadgeTypes } from '../features/marketplace/animalCompliance'
 import { useI18n } from '../hooks/useI18n'
 import { formatDate } from '../utils/formatDate'
 import { getErrorMessage } from '../utils/getErrorMessage'
@@ -180,6 +184,12 @@ function AnimalDetailPage() {
               <Chip>{animal.isForAdoption ? t('animals.adoption') : t('animals.sale')}</Chip>
             </div>
 
+            <div className="mt-4 flex flex-wrap gap-2">
+              {getAnimalComplianceBadgeTypes(animal).map((badgeType) => (
+                <ComplianceBadge key={badgeType} type={badgeType} />
+              ))}
+            </div>
+
             <h1 className="mt-4 text-2xl font-semibold leading-tight text-stone-950 sm:text-3xl">
               {animal.name}
             </h1>
@@ -254,6 +264,11 @@ function AnimalDetailPage() {
               <Info label={t('common.status')} value={formatAnimalStatus(animal.listingStatus, t)} />
               <Info label={t('common.city')} value={animal.location || t('common.notProvided')} />
               <Info label={t('common.published')} value={formatDate(animal.createdAt)} />
+              <Info label={t('animals.sellerType')} value={formatAnimalSellerType(animal.sellerType, t)} />
+              <Info label={t('animals.reviewStatus')} value={formatAnimalLegalStatus(animal.legalStatus, t)} />
+              <Info label={t('animals.origin')} value={animal.origin || t('common.notProvided')} />
+              <Info label={t('animals.identificationNumber')} value={animal.identificationNumber || t('common.notProvided')} />
+              <Info label={t('animals.onssaAuthorizationNumber')} value={animal.onssaAuthorizationNumber || t('common.notProvided')} />
             </div>
 
             <div className="rounded-[24px] border border-violet-100 bg-[linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.82))] p-4">

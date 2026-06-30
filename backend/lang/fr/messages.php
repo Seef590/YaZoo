@@ -72,8 +72,13 @@ return [
     'admin' => [
         'post_deleted' => 'Post supprime par moderation admin.',
         'animal_deleted' => 'Annonce animal supprimee par moderation admin.',
+        'animal_legal_status_updated' => 'Statut de revision de l annonce animal mis a jour.',
         'product_deleted' => 'Produit supprime par moderation admin.',
         'community_deleted' => 'Communaute supprimee par moderation admin.',
+    ],
+    'professional_verifications' => [
+        'submitted' => 'Demande de verification professionnelle envoyee. Elle sera traitee manuellement.',
+        'status_updated' => 'Statut de verification professionnelle mis a jour.',
     ],
     'reports' => [
         'created' => 'Signalement envoye. Notre equipe le verifiera.',

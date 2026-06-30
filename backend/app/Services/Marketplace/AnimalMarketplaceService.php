@@ -28,7 +28,10 @@ class AnimalMarketplaceService
     protected function query(Request $request)
     {
         return Animal::query()
-            ->with('user:id,name,email,phone,phone_verified_at,avatar,city,country')
+            ->with([
+                'user:id,name,email,phone,phone_verified_at,avatar,city,country',
+                'user.latestProfessionalVerification',
+            ])
             ->when($request->filled('q'), function ($query) use ($request): void {
                 $this->search($query, ['name', 'type', 'breed', 'description'], (string) $request->string('q')->trim());
             })
@@ -70,6 +73,7 @@ class AnimalMarketplaceService
             'photo',
             'marketplace/animals',
         );
+        $payload['legal_status'] = Animal::LEGAL_STATUS_PENDING_REVIEW;
 
         $animal = $user->animals()->create($payload);
 
@@ -107,7 +111,10 @@ class AnimalMarketplaceService
 
     public function loadForResponse(Animal $animal): Animal
     {
-        return $animal->load('user:id,name,email,phone,phone_verified_at,avatar,city,country');
+        return $animal->load([
+            'user:id,name,email,phone,phone_verified_at,avatar,city,country',
+            'user.latestProfessionalVerification',
+        ]);
     }
 
     /**
