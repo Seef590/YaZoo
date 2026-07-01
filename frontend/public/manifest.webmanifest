@@ -1,0 +1,22 @@
+{
+  "name": "YaZoo",
+  "short_name": "YaZoo",
+  "description": "Plateforme marocaine de mise en relation responsable autour de l'adoption animale et des services animaliers.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fffaff",
+  "theme_color": "#7c3aed",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/yazoo-logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["social", "lifestyle", "utilities"],
+  "lang": "fr",
+  "dir": "ltr"
+}

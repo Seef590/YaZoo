@@ -26,10 +26,10 @@ YaZoo n'est pas un vendeur direct d'animaux. Le dossier INDH doit presenter YaZo
 
 ## 3. Risques critiques restants
 
-- Conformite CNDP / Loi 09-08 encore incomplete: consentements, export, demandes de suppression et registre documentaire a renforcer.
-- Conformite ONSSA et verification professionnelle partielle: base technique Phase 3 en place, mais verification administrative reelle, stockage prive documentaire renforce et historique admin restent a finaliser.
-- Back-office institutionnel encore a completer: suspensions, historique des actions, exports CSV et gouvernance admin.
-- Documentation INDH finale, accessibilite, SEO et PWA encore a finaliser.
+- Conformite CNDP / Loi 09-08: base technique en place, mais informations administratives, formalites CNDP, durees de conservation et procedures humaines restent a valider.
+- Conformite ONSSA et verification professionnelle: base technique en place, mais verification administrative reelle et stockage prive documentaire renforce restent necessaires avant production publique.
+- Back-office institutionnel: base fonctionnelle en place, mais procedures humaines, retention des logs et roles operationnels doivent etre formalises.
+- PWA, SEO, accessibilite et dossier INDH: base locale en place, mais audits humains, domaine final, prerender/SEO avance et validation institutionnelle restent a faire.
 - Des fichiers locaux sensibles ou volumineux existent dans l'environnement de travail et doivent etre exclus de tout partage: `.env`, `.git`, `node_modules`, `vendor`, `infra/backups`, `backend/storage/logs`, dumps SQL, logs et artefacts de build.
 
 ## 4. Phases de travail
@@ -54,13 +54,13 @@ Objectif: verification professionnelle, champs de conformite animale, statuts de
 
 ### Phase 4 - Admin gouvernemental
 
-Statut: en cours.
+Statut: terminee.
 
 Objectif: moderation actions, suspensions, exports CSV, historique admin et middleware admin consolide.
 
 ### Phase 5 - PWA, accessibilite, SEO, dossier INDH final
 
-Statut: non demarree.
+Statut: terminee.
 
 Objectif: PWA, SEO, accessibilite, documentation INDH finale et checklists de production.
 
@@ -171,6 +171,31 @@ Objectif: PWA, SEO, accessibilite, documentation INDH finale et checklists de pr
 - `docs/ADMIN_GOVERNANCE_NOTES.md` cree.
 - `AUDIT_I18N_UI_MOBILE_YAZOO.md` regenere par l'audit i18n.
 
+### Phase 5
+
+- Phase PWA, SEO, accessibilite et documentation INDH finale terminee localement.
+- Lecture de la roadmap, presentation commission, securite partage, notes CNDP, ONSSA et gouvernance admin effectuee avant modification.
+- Inspection de `frontend/index.html`, `frontend/public`, `frontend/src/App.jsx`, `frontend/src/layouts/Layout.jsx`, pages publiques, `Footer.jsx` et `frontend/src/lib/i18n.js` effectuee.
+- `frontend/public/manifest.webmanifest` cree.
+- `frontend/public/sw.js` cree.
+- `frontend/public/robots.txt` cree.
+- `frontend/public/sitemap.xml` cree.
+- `frontend/src/pages/AccessibilityPage.jsx` cree.
+- `frontend/src/pages/ImpactPage.jsx` cree.
+- `frontend/index.html` modifie avec manifest, theme color, meta description, OpenGraph et Twitter card.
+- `frontend/src/main.jsx` modifie pour enregistrer le service worker en build production.
+- `frontend/src/App.jsx` modifie avec les routes `/accessibility` et `/impact`.
+- `frontend/src/components/ui/Footer.jsx` modifie avec les liens Accessibilite et Impact.
+- `frontend/src/components/ui/PublicPageShell.jsx`, `frontend/src/layouts/Layout.jsx`, `frontend/src/pages/ContactPage.jsx` et `frontend/src/index.css` modifies pour le skip link et `main-content`.
+- `frontend/src/lib/i18n.js` modifie avec les cles FR/AR/EN Phase 5.
+- `docs/SEO_NOTES.md` cree.
+- `docs/ACCESSIBILITY_CHECKLIST.md` cree.
+- `docs/INDH_DOSSIER_TECHNIQUE.md` cree.
+- `docs/INDH_PLAN_ACTION.md` cree.
+- `docs/INDH_RISKS_AND_COMPLIANCE.md` cree.
+- `docs/PRODUCTION_CHECKLIST.md` cree.
+- `AUDIT_I18N_UI_MOBILE_YAZOO.md` regenere par l'audit i18n.
+
 ## 6. Migrations creees
 
 ### Phase 1
@@ -198,6 +223,10 @@ Migrations creees et appliquees localement sur MySQL Docker apres rebuild local 
 - `2026_07_01_000000_create_moderation_actions_table` - batch 6, Ran.
 - `2026_07_01_000100_add_moderation_fields_to_users_table` - batch 6, Ran.
 - `2026_07_01_000200_add_moderation_fields_to_content_tables` - batch 6, Ran.
+
+### Phase 5
+
+Aucune migration creee ou appliquee. La phase concerne le frontend, les assets publics et la documentation.
 
 ## 7. Tests executes
 
@@ -247,15 +276,25 @@ Migrations creees et appliquees localement sur MySQL Docker apres rebuild local 
 - `docker exec yazoo-app-1 php artisan migrate --force`: OK, rien a migrer car les migrations Phase 4 etaient deja appliquees au demarrage du conteneur reconstruit.
 - `docker exec yazoo-app-1 php artisan migrate:status`: OK, migrations Phase 4 batch 6 Ran.
 
+### Phase 5
+
+- Aucune migration lancee; non necessaire pour PWA/SEO/accessibilite/documentation.
+- `php artisan test` dans `backend`: OK, 111 tests, 612 assertions.
+- `npm run lint` dans `frontend`: premier passage KO sur commentaire global inutile dans `sw.js`, corrige.
+- `npm run lint` dans `frontend`: OK apres correction.
+- `npm test -- --run` dans `frontend`: OK, 11 fichiers, 26 tests.
+- `npm run build` dans `frontend`: OK.
+- `node scripts/audit-i18n.mjs`: OK, 1024 cles detectees, 0 texte statique suspect.
+- Controle HTTP Vite preview local `127.0.0.1:4174`: OK 200 sur `/`, `/about`, `/privacy`, `/cgu`, `/rules`, `/partner`, `/pros`, `/demo-mobile`, `/accessibility`, `/impact`, `/contact`, `/settings/privacy`, `/settings/professional-verification`, `/admin/users`, `/admin/moderation-actions`, `/manifest.webmanifest`, `/robots.txt`, `/sitemap.xml`.
+
 ## 8. Points non termines
 
-- Completer la Phase 5 apres validation explicite.
-- Phase 4 terminee; ne pas passer a la Phase 5 sans demande explicite.
+- Phase 5 terminee localement; aucune phase supplementaire n'a ete lancee.
 - Remplacer les placeholders `[A completer]` par les informations administratives reelles avant production ou depot officiel.
 - Renforcer le stockage prive des documents professionnels/animaux avant production publique.
 - Finaliser les procedures humaines de traitement privacy/admin avant production reelle.
-- Prevoir en Phase 5 les controles PWA, SEO, accessibilite et dossier INDH final.
-- Completer PWA, SEO, accessibilite et dossier INDH final en phase 5.
+- Remplacer le domaine placeholder du sitemap par le domaine officiel avant production.
+- Completer les audits humains PWA, SEO, accessibilite et securite avant production reelle.
 - Remplacer les contacts CNDP `[A completer]` par les informations reelles.
 
 ## 9. Decisions prises
@@ -279,6 +318,9 @@ Migrations creees et appliquees localement sur MySQL Docker apres rebuild local 
 - Phase 4: le middleware admin centralise est applique aux routes admin; les anciens checks inline peuvent rester en defense supplementaire.
 - Phase 4: les utilisateurs suspendus/bannis sont bloques sur les principales routes d'ecriture sans bloquer login/logout/profil.
 - Phase 4: les exports CSV excluent mots de passe, tokens et secrets; les IP/user-agents de moderation sont haches.
+- Phase 5: le service worker reste prudent et ne cache pas les routes API ni les donnees privees.
+- Phase 5: YaZoo est presente comme base technique preparee pour une demarche de conformite, pas comme projet totalement conforme CNDP/ONSSA.
+- Phase 5: le sitemap contient un domaine placeholder a remplacer par le domaine officiel avant production.
 
 ## 10. Confirmation de securite locale
 

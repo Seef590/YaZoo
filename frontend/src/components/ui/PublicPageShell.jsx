@@ -9,6 +9,9 @@ function PublicPageShell({ titleKey, eyebrowKey, introKey, sections = [], ctaKey
 
   return (
     <div className="min-h-screen overflow-x-clip bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.18),_transparent_24%),linear-gradient(180deg,_#fffaff_0%,_#f7f1ff_100%)] px-4 py-4 text-start transition-colors dark:bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.24),_transparent_28%),linear-gradient(180deg,_#08050d_0%,_#160827_100%)] sm:px-6">
+      <a href="#main-content" className="yz-skip-link">
+        {t('accessibility.skipToContent')}
+      </a>
       <div className="mx-auto flex min-h-[calc(100vh-2rem)] max-w-5xl flex-col">
         <header className="flex flex-wrap items-center justify-between gap-3 rounded-[26px] border border-white/70 bg-white/82 px-4 py-3 shadow-[0_18px_42px_rgba(124,58,237,0.08)] backdrop-blur-xl dark:border-violet-300/14 dark:bg-white/8">
           <Link to="/" className="flex items-center gap-3">
@@ -23,7 +26,7 @@ function PublicPageShell({ titleKey, eyebrowKey, introKey, sections = [], ctaKey
           </Link>
         </header>
 
-        <main className="flex-1 py-6">
+        <main id="main-content" className="flex-1 py-6">
           <section className="rounded-[30px] border border-white/80 bg-white/90 p-5 shadow-[0_24px_60px_rgba(124,58,237,0.1)] dark:border-violet-300/14 dark:bg-white/8 sm:p-7">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-violet-700 dark:text-violet-200">
               {t(eyebrowKey)}

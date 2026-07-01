@@ -56,7 +56,10 @@ function ContactPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.18),_transparent_24%),radial-gradient(circle_at_bottom_right,_rgba(221,214,254,0.42),_transparent_24%),linear-gradient(180deg,_#fffaff_0%,_#f7f1ff_100%)] px-3 py-6 transition-colors dark:bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.28),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(76,29,149,0.32),_transparent_24%),linear-gradient(180deg,_#08050d_0%,_#12091f_54%,_#1b1030_100%)] sm:px-4 sm:py-8">
+    <main id="main-content" className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.18),_transparent_24%),radial-gradient(circle_at_bottom_right,_rgba(221,214,254,0.42),_transparent_24%),linear-gradient(180deg,_#fffaff_0%,_#f7f1ff_100%)] px-3 py-6 transition-colors dark:bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.28),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(76,29,149,0.32),_transparent_24%),linear-gradient(180deg,_#08050d_0%,_#12091f_54%,_#1b1030_100%)] sm:px-4 sm:py-8">
+      <a href="#main-content" className="yz-skip-link">
+        {t('accessibility.skipToContent')}
+      </a>
       <div className="mx-auto max-w-5xl">
         <section className="rounded-[30px] border border-white/80 bg-white/94 p-5 shadow-[0_28px_70px_rgba(124,58,237,0.1)] transition-colors dark:border-violet-300/16 dark:bg-[linear-gradient(135deg,_rgba(8,5,13,0.98),_rgba(28,13,49,0.92))] dark:shadow-[0_30px_80px_rgba(0,0,0,0.42)] sm:rounded-[34px] sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">

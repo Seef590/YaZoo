@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /settings/
+Disallow: /messages
+Disallow: /notifications
+Disallow: /reservations
+Disallow: /orders/
+
+Sitemap: /sitemap.xml

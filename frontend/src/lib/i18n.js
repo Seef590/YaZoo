@@ -6008,6 +6008,144 @@ messages.en = deepMerge(messages.en, {
   },
 })
 
+messages.fr = deepMerge(messages.fr, {
+  accessibility: {
+    skipToContent: 'Aller au contenu',
+    eyebrow: 'Accessibilite',
+    title: 'Accessibilite numerique',
+    intro: "YaZoo vise une amelioration progressive de l'accessibilite numerique, sans pretendre a une certification WCAG officielle a ce stade.",
+    progressTitle: 'Amelioration progressive',
+    progressBody: "Les interfaces principales utilisent des libelles explicites, des contrastes renforces, des etats focus visibles et une navigation mobile responsive. Les controles complets restent a poursuivre avant production publique.",
+    navigationTitle: 'Navigation clavier',
+    navigationBody: "Un lien d'evitement permet d'aller directement au contenu principal. Les boutons et liens importants conservent un focus visible pour faciliter l'usage clavier.",
+    contrastTitle: 'Contraste et lisibilite',
+    contrastBody: "Les modes clair et sombre sont verifies pour garder les textes essentiels lisibles, notamment sur les pages legales, formulaires et espaces admin.",
+    rtlTitle: 'Arabe et RTL',
+    rtlBody: "L'interface conserve le support de l'arabe avec direction RTL automatique, y compris dans les pages publiques et les composants de moderation.",
+    feedbackTitle: 'Retours utilisateurs',
+    feedbackBody: "Les retours sur un probleme d'accessibilite peuvent etre transmis via la page contact afin de prioriser les corrections.",
+  },
+  impact: {
+    eyebrow: 'Projet a impact',
+    title: 'Impact social et economique de YaZoo',
+    intro: "YaZoo est presente comme une plateforme marocaine de mise en relation responsable, orientee adoption, professionnels locaux, moderation et inclusion numerique.",
+    adoptionTitle: 'Adoption responsable',
+    adoptionBody: "Le projet encourage des annonces plus transparentes, des rappels de securite et une verification minimale avant toute adoption ou transaction entre utilisateurs.",
+    localProsTitle: 'Visibilite locale',
+    localProsBody: "Les veterinaires, toiletteurs, pensions, educateurs, animaleries et associations peuvent gagner en visibilite aupres d'un public local.",
+    inclusionTitle: 'Inclusion numerique',
+    inclusionBody: "L'interface FR/AR/EN, mobile et responsive vise a rendre le service accessible a davantage d'utilisateurs au Maroc.",
+    safetyTitle: 'Moderation et securite',
+    safetyBody: "Signalements, moderation admin, suspension sans suppression et historique des actions aident a reduire les risques et a documenter les decisions.",
+    economicTitle: 'Activite locale',
+    economicBody: "YaZoo peut soutenir des micro-activites locales et un parcours entrepreneurial prudent, sans paiement en ligne obligatoire au demarrage.",
+    limitsTitle: 'Limites prudentes',
+    limitsBody: "Les impacts doivent etre mesures progressivement. La conformite finale CNDP/ONSSA depend des pieces administratives et avis competents.",
+  },
+  footer: {
+    accessibility: 'Accessibilite',
+    impact: 'Impact',
+  },
+  proPages: {
+    mobile: {
+      installBody: "YaZoo peut etre ajoute a l'ecran d'accueil selon le navigateur. La base PWA est installee avec un manifest et un cache tres limite des assets publics.",
+      contactBody: "Le mode mobile reste connecte: les actions privees, messages et donnees de compte demandent une connexion reseau. YaZoo ne promet pas un mode hors ligne complet.",
+    },
+  },
+})
+
+messages.ar = deepMerge(messages.ar, {
+  accessibility: {
+    skipToContent: 'الانتقال إلى المحتوى',
+    eyebrow: 'إمكانية الوصول',
+    title: 'إمكانية الوصول الرقمي',
+    intro: 'تسعى YaZoo إلى تحسين إمكانية الوصول الرقمي تدريجيا، من دون الادعاء بالحصول على شهادة WCAG رسمية في هذه المرحلة.',
+    progressTitle: 'تحسين تدريجي',
+    progressBody: 'تعتمد الواجهات الرئيسية على تسميات واضحة، وتباين مقروء، وحالات تركيز ظاهرة، وتصميما متجاوبا مع الهاتف. تبقى المراجعة الكاملة مطلوبة قبل النشر العام.',
+    navigationTitle: 'التنقل بلوحة المفاتيح',
+    navigationBody: 'يوجد رابط لتجاوز الترويسة والوصول مباشرة إلى المحتوى الرئيسي، مع إبقاء التركيز ظاهرا على الروابط والأزرار المهمة.',
+    contrastTitle: 'التباين والقراءة',
+    contrastBody: 'يتم الانتباه إلى وضوح النصوص في الوضعين الفاتح والداكن، خاصة في الصفحات القانونية والنماذج ولوحات الإدارة.',
+    rtlTitle: 'العربية والاتجاه من اليمين إلى اليسار',
+    rtlBody: 'يدعم YaZoo اللغة العربية واتجاه RTL تلقائيا في الصفحات العامة ومكونات الإشراف.',
+    feedbackTitle: 'ملاحظات المستخدمين',
+    feedbackBody: 'يمكن إرسال أي ملاحظة تخص إمكانية الوصول عبر صفحة الاتصال حتى يتم ترتيب الإصلاحات حسب الأولوية.',
+  },
+  impact: {
+    eyebrow: 'مشروع ذو أثر',
+    title: 'الأثر الاجتماعي والاقتصادي ل YaZoo',
+    intro: 'يقدم YaZoo كمنصة مغربية للربط المسؤول حول التبني الحيواني، المهنيين المحليين، الإشراف، والإدماج الرقمي.',
+    adoptionTitle: 'تبن مسؤول',
+    adoptionBody: 'يشجع المشروع الإعلانات الأكثر شفافية، وتذكيرات السلامة، والتحقق الأساسي قبل أي تبن أو تعامل بين المستخدمين.',
+    localProsTitle: 'إبراز المهنيين المحليين',
+    localProsBody: 'يمكن للأطباء البيطريين، المربين، مراكز العناية، المتاجر، الجمعيات والملاجئ تحسين حضورهم لدى جمهور محلي.',
+    inclusionTitle: 'إدماج رقمي',
+    inclusionBody: 'واجهة FR/AR/EN المتجاوبة مع الهاتف تهدف إلى تسهيل استخدام الخدمة لعدد أكبر من المستخدمين في المغرب.',
+    safetyTitle: 'الإشراف والسلامة',
+    safetyBody: 'تساعد البلاغات، الإشراف الإداري، التعليق دون حذف، وسجل القرارات على تقليل المخاطر وتوثيق المعالجات.',
+    economicTitle: 'نشاط محلي',
+    economicBody: 'يمكن أن يدعم YaZoo أنشطة محلية صغيرة ومسارا مقاولاتيا حذرا دون فرض أداء إلكتروني في البداية.',
+    limitsTitle: 'حدود واضحة',
+    limitsBody: 'يجب قياس الأثر تدريجيا. تبقى المطابقة النهائية مع CNDP و ONSSA مرتبطة بالوثائق الإدارية وآراء الجهات المختصة.',
+  },
+  footer: {
+    accessibility: 'إمكانية الوصول',
+    impact: 'الأثر',
+  },
+  proPages: {
+    mobile: {
+      installBody: 'يمكن إضافة YaZoo إلى الشاشة الرئيسية حسب المتصفح. تم إعداد قاعدة PWA عبر ملف manifest وتخزين محدود جدا للملفات العامة.',
+      contactBody: 'يبقى استعمال الهاتف مرتبطا بالاتصال بالشبكة: الرسائل والبيانات الخاصة وإجراءات الحساب لا تعمل دون إنترنت كامل.',
+    },
+  },
+})
+
+messages.en = deepMerge(messages.en, {
+  accessibility: {
+    skipToContent: 'Skip to content',
+    eyebrow: 'Accessibility',
+    title: 'Digital accessibility',
+    intro: 'YaZoo aims to improve digital accessibility progressively, without claiming an official WCAG certification at this stage.',
+    progressTitle: 'Progressive improvement',
+    progressBody: 'Core interfaces use explicit labels, stronger contrast, visible focus states, and responsive mobile layouts. A full audit remains required before public production.',
+    navigationTitle: 'Keyboard navigation',
+    navigationBody: 'A skip link lets users jump directly to the main content. Important buttons and links keep visible focus for keyboard use.',
+    contrastTitle: 'Contrast and readability',
+    contrastBody: 'Light and dark modes are checked so essential text remains readable on legal pages, forms, and admin spaces.',
+    rtlTitle: 'Arabic and RTL',
+    rtlBody: 'The interface keeps Arabic support with automatic RTL direction, including public pages and moderation components.',
+    feedbackTitle: 'User feedback',
+    feedbackBody: 'Accessibility issues can be sent through the contact page so fixes can be prioritized.',
+  },
+  impact: {
+    eyebrow: 'Impact project',
+    title: 'YaZoo social and economic impact',
+    intro: 'YaZoo is presented as a Moroccan responsible connection platform focused on adoption, local professionals, moderation, and digital inclusion.',
+    adoptionTitle: 'Responsible adoption',
+    adoptionBody: 'The project encourages more transparent listings, safety reminders, and basic checks before any adoption or transaction between users.',
+    localProsTitle: 'Local visibility',
+    localProsBody: 'Veterinarians, groomers, boarding services, trainers, pet shops, and associations can gain visibility with local audiences.',
+    inclusionTitle: 'Digital inclusion',
+    inclusionBody: 'The FR/AR/EN mobile responsive interface aims to make the service easier to use for more people in Morocco.',
+    safetyTitle: 'Moderation and safety',
+    safetyBody: 'Reports, admin moderation, suspension without deletion, and action history help reduce risk and document decisions.',
+    economicTitle: 'Local activity',
+    economicBody: 'YaZoo can support small local activities and a careful entrepreneurial path without requiring online payment at launch.',
+    limitsTitle: 'Clear limits',
+    limitsBody: 'Impact must be measured progressively. Final CNDP/ONSSA compliance depends on administrative documents and competent authority guidance.',
+  },
+  footer: {
+    accessibility: 'Accessibility',
+    impact: 'Impact',
+  },
+  proPages: {
+    mobile: {
+      installBody: 'YaZoo can be added to the home screen depending on the browser. The PWA base includes a manifest and very limited caching of public assets.',
+      contactBody: 'Mobile use remains connected: private actions, messages, and account data require network access. YaZoo does not promise a full offline mode.',
+    },
+  },
+})
+
 function deepMerge(base, override = {}) {
   const result = { ...base }
 

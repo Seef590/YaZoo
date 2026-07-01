@@ -12,9 +12,11 @@ function Footer({ className = '' }) {
     { to: '/privacy', label: t('footer.privacy') },
     { to: '/rules', label: t('footer.rules') },
     { to: '/about', label: t('footer.about') },
+    { to: '/impact', label: t('footer.impact') },
     { to: '/partner', label: t('footer.partner') },
     { to: '/pros', label: t('footer.pros') },
     { to: '/demo-mobile', label: t('footer.mobileDemo') },
+    { to: '/accessibility', label: t('footer.accessibility') },
   ]
 
   return (

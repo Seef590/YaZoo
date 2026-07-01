@@ -12,6 +12,7 @@ const AdminOrdersDashboardPage = lazy(() => import('./pages/AdminOrdersDashboard
 const AdminProfessionalVerificationsPage = lazy(() => import('./pages/AdminProfessionalVerificationsPage'))
 const AdminStatsPage = lazy(() => import('./pages/AdminStatsPage'))
 const AdminUsersPage = lazy(() => import('./pages/AdminUsersPage'))
+const AccessibilityPage = lazy(() => import('./pages/AccessibilityPage'))
 const AnimalDetailPage = lazy(() => import('./pages/AnimalDetailPage'))
 const AnimalsMarketplacePage = lazy(() => import('./pages/AnimalsMarketplacePage'))
 const AboutPage = lazy(() => import('./pages/AboutPage'))
@@ -21,6 +22,7 @@ const ContactPage = lazy(() => import('./pages/ContactPage'))
 const FeedbackPage = lazy(() => import('./pages/FeedbackPage'))
 const FeedPage = lazy(() => import('./pages/FeedPage'))
 const InvoicePage = lazy(() => import('./pages/InvoicePage'))
+const ImpactPage = lazy(() => import('./pages/ImpactPage'))
 const LandingPage = lazy(() => import('./pages/LandingPage'))
 const Layout = lazy(() => import('./layouts/Layout'))
 const LoginPage = lazy(() => import('./pages/LoginPage'))
@@ -63,6 +65,8 @@ function App() {
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/rules" element={<PublishingRulesPage />} />
         <Route path="/about" element={<AboutPage />} />
+        <Route path="/accessibility" element={<AccessibilityPage />} />
+        <Route path="/impact" element={<ImpactPage />} />
         <Route path="/partner" element={<PartnerPage />} />
         <Route path="/pros" element={<ProsPage />} />
         <Route path="/demo-mobile" element={<MobileDemoPage />} />
