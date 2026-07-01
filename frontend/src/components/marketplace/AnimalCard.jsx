@@ -96,6 +96,7 @@ function AnimalCard({ animal, onDelete, onEdit }) {
 
 function AnimalActions({ animal, onDelete, onEdit }) {
   const { t } = useI18n()
+  const phoneContactHref = buildPhoneContactHref(animal.contactPhone || animal.author?.phone)
 
   if (animal.isOwner) {
     return (
@@ -112,9 +113,10 @@ function AnimalActions({ animal, onDelete, onEdit }) {
       <LinkButton to={`/marketplace/animals/${animal.id}`} variant="secondary" className="w-full sm:w-auto">{t('common.details')}</LinkButton>
       {animal.author?.id ? (
         <LinkButton to={buildAnimalContactPath(animal, t)} variant="ghost" className="w-full sm:w-auto">{t('common.contact')}</LinkButton>
-      ) : buildPhoneContactHref(animal.contactPhone || animal.author?.phone) ? (
+      ) : null}
+      {!animal.author?.id && phoneContactHref ? (
         <a
-          href={buildPhoneContactHref(animal.contactPhone || animal.author?.phone)}
+          href={phoneContactHref}
           className="inline-flex w-full items-center justify-center rounded-full bg-violet-50 px-4 py-2 text-sm font-medium text-violet-800 transition hover:bg-violet-100 sm:w-auto"
         >
           {t('common.contact')}

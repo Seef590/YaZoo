@@ -262,10 +262,10 @@ function Layout() {
       return
     }
 
-    void refreshUnreadMessagesCount()
+    refreshUnreadMessagesCount()
 
     if (isMessagesOpen) {
-      void loadMessagePreview()
+      loadMessagePreview()
     }
   }, [isMessagesOpen, latestNotification, loadMessagePreview, refreshUnreadMessagesCount])
 
@@ -1037,7 +1037,7 @@ function NotificationMenu({
                       key={notification.id}
                       to={notification.actionUrl ?? '/notifications'}
                       onClick={() => {
-                        void onMarkRead(notification)
+                        onMarkRead(notification)
                       }}
                       className={`flex min-w-0 gap-3 rounded-[22px] px-3 py-3 transition hover:bg-violet-50 dark:hover:bg-white/10 ${
                         notification.isRead ? '' : 'bg-violet-50/70 dark:bg-violet-500/12'

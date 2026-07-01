@@ -40,7 +40,7 @@ function ProductCard({ product, onDelete, onEdit }) {
                 {formatProductCategory(product.category, t)}
               </span>
             </div>
-            <h3 className="mt-3 text-lg font-semibold text-stone-950">{product.name}</h3>
+            <h3 className="mt-3 text-lg font-semibold text-stone-950 dark:text-violet-50">{product.name}</h3>
             <p className="text-sm text-stone-500">{formatCondition(product.conditionStatus, t)}</p>
           </div>
 
@@ -84,6 +84,7 @@ function ProductCard({ product, onDelete, onEdit }) {
 
 function ProductActions({ product, onDelete, onEdit }) {
   const { t } = useI18n()
+  const phoneContactHref = buildPhoneContactHref(product.contactPhone || product.author?.phone)
 
   if (product.isOwner) {
     return (
@@ -100,9 +101,10 @@ function ProductActions({ product, onDelete, onEdit }) {
       <LinkButton to={`/marketplace/products/${product.id}`} variant="secondary" className="w-full sm:w-auto">{t('common.details')}</LinkButton>
       {product.author?.id ? (
         <LinkButton to={buildProductContactPath(product, t)} variant="ghost" className="w-full sm:w-auto">{t('common.contact')}</LinkButton>
-      ) : buildPhoneContactHref(product.contactPhone || product.author?.phone) ? (
+      ) : null}
+      {!product.author?.id && phoneContactHref ? (
         <a
-          href={buildPhoneContactHref(product.contactPhone || product.author?.phone)}
+          href={phoneContactHref}
           className="inline-flex w-full items-center justify-center rounded-full bg-violet-50 px-4 py-2 text-sm font-medium text-violet-800 transition hover:bg-violet-100 sm:w-auto"
         >
           {t('common.contact')}

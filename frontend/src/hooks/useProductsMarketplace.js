@@ -89,7 +89,7 @@ export function useProductsMarketplace() {
     })
 
     setIsLoading(true)
-    void loadProducts({ ...filters, q: queryFromUrl })
+    loadProducts({ ...filters, q: queryFromUrl })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryFromUrl])
 

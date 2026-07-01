@@ -512,7 +512,7 @@ function ConfirmDialog({
             {cancelLabel}
           </Button>
           <Button type="button" onClick={onConfirm} disabled={isProcessing} className="w-full bg-rose-600 hover:bg-rose-500 sm:w-auto">
-            {isProcessing ? confirmLabel : confirmLabel}
+            {confirmLabel}
           </Button>
         </div>
       </section>

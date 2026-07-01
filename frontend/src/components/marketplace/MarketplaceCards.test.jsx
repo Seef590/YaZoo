@@ -91,6 +91,26 @@ describe('marketplace cards', () => {
     )
   })
 
+  it('affiche un lien telephone quand une annonce animal externe n a pas d auteur', () => {
+    renderWithRouter(
+      <AnimalCard
+        animal={{
+          ...animal,
+          author: { name: 'Contact direct' },
+          contactPhone: '+212 606 610 014',
+          isOwner: false,
+        }}
+        onEdit={vi.fn()}
+        onDelete={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByRole('link', { name: 'Contacter' })).toHaveAttribute(
+      'href',
+      'https://wa.me/212606610014',
+    )
+  })
+
   it('affiche les actions proprietaire pour un produit', async () => {
     const user = userEvent.setup()
     const onEdit = vi.fn()
@@ -118,6 +138,26 @@ describe('marketplace cards', () => {
     expect(screen.getByRole('link', { name: 'Contacter' })).toHaveAttribute(
       'href',
       expect.stringContaining('user=84'),
+    )
+  })
+
+  it('affiche un lien telephone quand un produit externe n a pas d auteur', () => {
+    renderWithRouter(
+      <ProductCard
+        product={{
+          ...product,
+          author: { name: 'Contact direct' },
+          contactPhone: '+212 606 610 014',
+          isOwner: false,
+        }}
+        onEdit={vi.fn()}
+        onDelete={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByRole('link', { name: 'Contacter' })).toHaveAttribute(
+      'href',
+      'https://wa.me/212606610014',
     )
   })
 })

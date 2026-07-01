@@ -91,7 +91,7 @@ export function useAnimalsMarketplace() {
     })
 
     setIsLoading(true)
-    void loadAnimals({ ...filters, q: queryFromUrl })
+    loadAnimals({ ...filters, q: queryFromUrl })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [queryFromUrl])
 

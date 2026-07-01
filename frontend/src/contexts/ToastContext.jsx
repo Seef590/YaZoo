@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import PropTypes from 'prop-types'
 
 import Toast from '../components/ui/Toast'
@@ -7,6 +7,7 @@ import { ToastContext } from './toast-context'
 
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([])
+  const toastSequenceRef = useRef(0)
 
   const removeToast = useCallback((toastId) => {
     setToasts((currentToasts) =>
@@ -15,10 +16,10 @@ export function ToastProvider({ children }) {
   }, [])
 
   const showToast = useCallback((toast) => {
+    toastSequenceRef.current += 1
+
     const normalizedToast = {
-      id:
-        toast.id ??
-        `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      id: toast.id ?? `toast-${Date.now()}-${toastSequenceRef.current}`,
       tone: toast.tone ?? 'info',
       title: toast.title ?? 'Information',
       description: toast.description ?? '',

@@ -19,7 +19,13 @@ function parseBoolean(value, fallback = false) {
 }
 
 function trimTrailingSlash(value) {
-  return value.replace(/\/+$/, '')
+  let endIndex = value.length
+
+  while (endIndex > 0 && value.charAt(endIndex - 1) === '/') {
+    endIndex -= 1
+  }
+
+  return value.slice(0, endIndex)
 }
 
 function normalizeApiBaseUrl(value) {

@@ -46,7 +46,7 @@ function ReservationsPage() {
   }, [t])
 
   useEffect(() => {
-    void loadReservations()
+    loadReservations()
   }, [loadReservations])
 
   useEffect(() => {

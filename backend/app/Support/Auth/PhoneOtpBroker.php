@@ -78,6 +78,10 @@ class PhoneOtpBroker
 
     protected function cacheKey(string $phone, string $intent): string
     {
-        return sprintf('auth:otp:%s:%s', $intent, sha1($phone));
+        return sprintf(
+            'auth:otp:%s:%s',
+            $intent,
+            hash_hmac('sha256', $phone, (string) config('app.key'))
+        );
     }
 }
