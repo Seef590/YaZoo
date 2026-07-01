@@ -46,8 +46,8 @@ function InvoicePage() {
 
   if (isLoading) {
     return (
-      <section className="rounded-[28px] border border-dashed border-violet-200 bg-white/84 px-5 py-16 text-center text-sm text-stone-500">
-        Chargement de la facture...
+      <section className="rounded-[28px] border border-dashed border-violet-200 bg-white/84 px-5 py-16 text-center text-sm text-stone-500 dark:border-violet-300/18 dark:bg-white/8 dark:text-violet-100/70">
+        {t('ordersUi.invoice.loading')}
       </section>
     )
   }
@@ -56,63 +56,63 @@ function InvoicePage() {
     return (
       <section className="space-y-4">
         <div className="rounded-[28px] border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-700">
-          {errorMessage || 'Facture introuvable.'}
+          {errorMessage || t('ordersUi.invoice.missing')}
         </div>
         <LinkButton to="/orders/history" variant="secondary">
-          Retour a l'historique
+          {t('ordersUi.invoice.backToHistory')}
         </LinkButton>
       </section>
     )
   }
 
   return (
-    <section className="space-y-6">
+    <section className="w-full max-w-full min-w-0 space-y-6 pb-[calc(7rem+env(safe-area-inset-bottom))] lg:pb-0">
       <div className="grid gap-3 sm:flex sm:flex-wrap print:hidden">
         <LinkButton to="/orders/history" variant="ghost" className="w-full sm:w-auto">
-          Retour a l'historique
+          {t('ordersUi.invoice.backToHistory')}
         </LinkButton>
         <Button type="button" onClick={() => globalThis.print()} className="w-full sm:w-auto">
-          Imprimer la facture
+          {t('ordersUi.invoice.print')}
         </Button>
       </div>
 
-      <section className="overflow-hidden rounded-[30px] border border-white/80 bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.16),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(221,214,254,0.52),_transparent_28%),linear-gradient(135deg,_rgba(255,255,255,0.98)_0%,_rgba(247,241,255,0.9)_48%,_rgba(237,233,254,0.84)_100%)] p-5 shadow-[0_24px_60px_rgba(124,58,237,0.1)] print:bg-white print:shadow-none sm:rounded-[32px] sm:p-6">
+      <section className="w-full max-w-full overflow-hidden rounded-[28px] border border-white/80 bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.16),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(221,214,254,0.52),_transparent_28%),linear-gradient(135deg,_rgba(255,255,255,0.98)_0%,_rgba(247,241,255,0.9)_48%,_rgba(237,233,254,0.84)_100%)] p-4 shadow-[0_24px_60px_rgba(124,58,237,0.1)] dark:border-violet-300/14 dark:bg-white/8 print:bg-white print:shadow-none sm:rounded-[32px] sm:p-6">
         <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr] xl:items-center">
-          <div>
-            <p className="inline-flex rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-violet-700">
+          <div className="min-w-0">
+            <p className="inline-flex max-w-full rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-violet-700 dark:border-violet-300/20 dark:bg-white/10 dark:text-violet-100 sm:tracking-[0.18em]">
               {t('invoice.title')} YaZoo
             </p>
-            <h1 className="mt-4 text-2xl font-semibold leading-tight text-stone-950 sm:text-3xl">
+            <h1 className="mt-4 break-words text-2xl font-semibold leading-tight text-stone-950 dark:text-violet-50 sm:text-3xl">
               {t('invoice.title')} {invoice.invoiceNumber}
             </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-600">
-              Un recapitulatif clair et professionnel de la commande, de la livraison et des montants.
+            <p className="mt-3 max-w-2xl break-words text-sm leading-7 text-stone-600 dark:text-violet-100/72">
+              {t('ordersUi.invoice.description')}
             </p>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
-            <HeroStatCard label="Date" value={formatInvoiceDate(invoice.invoiceIssuedAt)} />
-            <HeroStatCard label="Paiement" value={formatPaymentMethod(invoice.paymentMethod)} />
+            <HeroStatCard label={t('ordersUi.common.date')} value={formatInvoiceDate(invoice.invoiceIssuedAt)} />
+            <HeroStatCard label={t('ordersUi.common.payment')} value={formatPaymentMethod(invoice.paymentMethod, t)} />
             <HeroStatCard label={t('common.totalVat')} value={formatPrice(invoice.grandTotal)} />
           </div>
         </div>
       </section>
 
-      <article className="rounded-[30px] border border-white/80 bg-white/96 p-4 shadow-[0_20px_48px_rgba(124,58,237,0.08)] print:border-stone-200 print:bg-white print:shadow-none sm:rounded-[32px] sm:p-6">
+      <article className="w-full max-w-full rounded-[28px] border border-white/80 bg-white/96 p-4 shadow-[0_20px_48px_rgba(124,58,237,0.08)] dark:border-violet-300/14 dark:bg-white/8 print:border-stone-200 print:bg-white print:shadow-none sm:rounded-[32px] sm:p-6">
         <div className="flex flex-wrap items-start justify-between gap-4 border-b border-violet-100 pb-6 print:border-stone-200">
           <div>
             <p className="text-xs uppercase tracking-[0.24em] text-violet-700">
               YaZoo
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-stone-950 sm:text-3xl">{t('invoice.title')}</h2>
-            <p className="mt-2 text-sm text-stone-500">
-              Numero: {invoice.invoiceNumber}
+            <p className="mt-2 break-words text-sm text-stone-500 dark:text-violet-100/62">
+              {t('ordersUi.common.invoiceNumber')}: {invoice.invoiceNumber}
             </p>
           </div>
 
           <div className="rounded-[24px] bg-[linear-gradient(135deg,_rgba(124,58,237,0.1),_rgba(216,180,254,0.22),_rgba(255,255,255,0.94))] px-5 py-4 text-right print:bg-stone-100">
             <p className="text-xs uppercase tracking-[0.16em] text-stone-500">
-              Date de facture
+              {t('ordersUi.common.invoiceDate')}
             </p>
             <p className="mt-1 text-lg font-semibold text-stone-950">
               {formatInvoiceDate(invoice.invoiceIssuedAt)}
@@ -122,51 +122,51 @@ function InvoicePage() {
 
         <div className="mt-6 grid gap-4 lg:grid-cols-2">
           <Panel title={t('invoice.buyer')}>
-            <Detail label="Nom" value={invoice.buyer.name} />
-            <Detail label="Email" value={invoice.buyer.email} />
-            <Detail label="Telephone" value={invoice.buyer.phone || 'Non renseigne'} />
+            <Detail label={t('ordersUi.common.name')} value={invoice.buyer.name} />
+            <Detail label={t('ordersUi.common.email')} value={invoice.buyer.email} />
+            <Detail label={t('ordersUi.common.phone')} value={invoice.buyer.phone || t('ordersUi.common.notProvided')} />
             <Detail
-              label="Localisation"
-              value={[invoice.buyer.city, invoice.buyer.country].filter(Boolean).join(', ') || 'Non renseignee'}
+              label={t('ordersUi.common.location')}
+              value={[invoice.buyer.city, invoice.buyer.country].filter(Boolean).join(', ') || t('ordersUi.common.notProvidedFemale')}
             />
           </Panel>
 
           <Panel title={t('invoice.seller')}>
-            <Detail label="Nom" value={invoice.seller.name} />
-            <Detail label="Email" value={invoice.seller.email} />
-            <Detail label="Telephone" value={invoice.seller.phone || 'Non renseigne'} />
+            <Detail label={t('ordersUi.common.name')} value={invoice.seller.name} />
+            <Detail label={t('ordersUi.common.email')} value={invoice.seller.email} />
+            <Detail label={t('ordersUi.common.phone')} value={invoice.seller.phone || t('ordersUi.common.notProvided')} />
             <Detail
-              label="Localisation"
-              value={[invoice.seller.city, invoice.seller.country].filter(Boolean).join(', ') || 'Non renseignee'}
+              label={t('ordersUi.common.location')}
+              value={[invoice.seller.city, invoice.seller.country].filter(Boolean).join(', ') || t('ordersUi.common.notProvidedFemale')}
             />
           </Panel>
         </div>
 
         <div className="mt-6 grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
           <Panel title={t('invoice.order')}>
-            <Detail label="Annonce" value={invoice.listing.title} />
-            <Detail label="Type" value={invoice.listing.kind === 'animal' ? 'Animal' : 'Produit'} />
-            <Detail label="Quantite" value={invoice.quantity} />
-            <Detail label="Paiement" value={formatPaymentMethod(invoice.paymentMethod)} />
-            <Detail label="Livraison" value={formatDeliveryMethod(invoice.deliveryMethod)} />
-            <Detail label="Statut livraison" value={formatDeliveryStatus(invoice.deliveryStatus)} />
+            <Detail label={t('ordersUi.common.listing')} value={invoice.listing.title} />
+            <Detail label={t('ordersUi.common.type')} value={formatReservationKind(invoice.listing.kind, t)} />
+            <Detail label={t('ordersUi.common.quantity')} value={invoice.quantity} />
+            <Detail label={t('ordersUi.common.payment')} value={formatPaymentMethod(invoice.paymentMethod, t)} />
+            <Detail label={t('invoice.delivery')} value={formatDeliveryMethod(invoice.deliveryMethod, t)} />
+            <Detail label={t('ordersUi.common.deliveryStatus')} value={formatDeliveryStatus(invoice.deliveryStatus, t)} />
           </Panel>
 
           <Panel title={t('invoice.delivery')}>
-            <Detail label="Contact" value={invoice.delivery.contactName || 'Non renseigne'} />
-            <Detail label="Telephone" value={invoice.delivery.phone || 'Non renseigne'} />
-            <Detail label="Ville" value={invoice.delivery.city || 'Non renseignee'} />
-            <Detail label="Adresse" value={invoice.delivery.address || 'Retrait sur place'} />
-            <Detail label="Notes" value={invoice.delivery.notes || 'Aucune note'} />
+            <Detail label={t('ordersUi.common.contactVerb')} value={invoice.delivery.contactName || t('ordersUi.common.notProvided')} />
+            <Detail label={t('ordersUi.common.phone')} value={invoice.delivery.phone || t('ordersUi.common.notProvided')} />
+            <Detail label={t('ordersUi.common.city')} value={invoice.delivery.city || t('ordersUi.common.notProvidedFemale')} />
+            <Detail label={t('ordersUi.common.address')} value={invoice.delivery.address || t('ordersUi.common.localPickup')} />
+            <Detail label={t('ordersUi.common.notes')} value={invoice.delivery.notes || t('ordersUi.common.noNotes')} />
           </Panel>
         </div>
 
         <div className="mt-6 rounded-[28px] border border-violet-100 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98),_rgba(246,239,255,0.82))] p-5 print:border-stone-200 print:bg-white">
           <h3 className="text-lg font-semibold text-stone-950">{t('invoice.amounts')}</h3>
           <div className="mt-4 grid gap-3 md:grid-cols-3">
-            <AmountCard label="Sous-total" value={invoice.subtotal} />
-            <AmountCard label="Livraison" value={invoice.deliveryFee} />
-            <AmountCard label="Total TTC" value={invoice.grandTotal} accent />
+            <AmountCard label={t('ordersUi.common.subtotal')} value={invoice.subtotal} />
+            <AmountCard label={t('invoice.delivery')} value={invoice.deliveryFee} />
+            <AmountCard label={t('ordersUi.common.totalVat')} value={invoice.grandTotal} accent />
           </div>
         </div>
       </article>
@@ -176,17 +176,17 @@ function InvoicePage() {
 
 function HeroStatCard({ label, value }) {
   return (
-    <div className="rounded-[24px] border border-violet-100 bg-white/88 px-4 py-4 shadow-sm print:border-stone-200 print:bg-white print:shadow-none">
-      <p className="text-xs uppercase tracking-[0.18em] text-stone-500">{label}</p>
-      <p className="mt-2 text-sm font-semibold text-stone-950">{value}</p>
+    <div className="min-w-0 rounded-[24px] border border-violet-100 bg-white/88 px-4 py-4 shadow-sm dark:border-violet-300/14 dark:bg-white/10 print:border-stone-200 print:bg-white print:shadow-none">
+      <p className="break-words text-xs uppercase tracking-[0.12em] text-stone-500 dark:text-violet-100/60 sm:tracking-[0.18em]">{label}</p>
+      <p className="mt-2 break-words text-sm font-semibold text-stone-950 dark:text-violet-50">{value}</p>
     </div>
   )
 }
 
 function Panel({ title, children }) {
   return (
-    <section className="rounded-[28px] border border-violet-100 bg-white/88 p-5 print:border-stone-200 print:bg-white">
-      <h2 className="text-lg font-semibold text-stone-950">{title}</h2>
+    <section className="min-w-0 rounded-[28px] border border-violet-100 bg-white/88 p-5 dark:border-violet-300/14 dark:bg-white/10 print:border-stone-200 print:bg-white">
+      <h2 className="break-words text-lg font-semibold text-stone-950 dark:text-violet-50">{title}</h2>
       <div className="mt-4 space-y-3">{children}</div>
     </section>
   )
@@ -194,9 +194,9 @@ function Panel({ title, children }) {
 
 function Detail({ label, value }) {
   return (
-    <div className="rounded-[20px] bg-[linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.82))] px-4 py-3 print:bg-stone-100">
-      <p className="text-xs uppercase tracking-[0.16em] text-stone-500">{label}</p>
-      <p className="mt-1 text-sm font-medium text-stone-900">{value}</p>
+    <div className="min-w-0 rounded-[20px] bg-[linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.82))] px-4 py-3 dark:bg-white/10 print:bg-stone-100">
+      <p className="break-words text-xs uppercase tracking-[0.12em] text-stone-500 dark:text-violet-100/60 sm:tracking-[0.16em]">{label}</p>
+      <p className="mt-1 break-words text-sm font-medium text-stone-900 dark:text-violet-50">{value}</p>
     </div>
   )
 }
@@ -210,10 +210,10 @@ function AmountCard({ label, value, accent = false }) {
           : 'bg-white text-stone-900 ring-1 ring-inset ring-violet-100 print:border print:border-stone-200 print:ring-0'
       }`}
     >
-      <p className={`text-xs uppercase tracking-[0.16em] ${accent ? 'text-violet-50' : 'text-stone-500'}`}>
+      <p className={`break-words text-xs uppercase tracking-[0.12em] sm:tracking-[0.16em] ${accent ? 'text-violet-50' : 'text-stone-500 dark:text-violet-100/60'}`}>
         {label}
       </p>
-      <p className="mt-2 text-2xl font-semibold">{formatPrice(value)}</p>
+      <p className="mt-2 break-words text-2xl font-semibold">{formatPrice(value)}</p>
     </div>
   )
 }
@@ -248,25 +248,27 @@ function formatInvoiceDate(value) {
   }).format(new Date(value))
 }
 
-function formatPaymentMethod(method) {
-  return method === 'bank_transfer' ? 'Virement bancaire' : 'Paiement a la remise'
+function formatPaymentMethod(method, t) {
+  const key = `ordersUi.statuses.paymentMethod.${method === 'bank_transfer' ? 'bank_transfer' : 'cash_on_pickup'}`
+  return t(key)
 }
 
-function formatDeliveryMethod(method) {
-  return method === 'delivery' ? 'Livraison' : 'Retrait'
+function formatDeliveryMethod(method, t) {
+  return t(`ordersUi.statuses.deliveryMethod.${method === 'delivery' ? 'delivery' : 'pickup'}`)
 }
 
-function formatDeliveryStatus(status) {
-  const labels = {
-    pending: 'En attente',
-    preparing: 'En preparation',
-    ready_for_pickup: 'Pret au retrait',
-    shipped: 'Expediee',
-    delivered: 'Livree',
-    picked_up: 'Recuperee',
-  }
+function formatDeliveryStatus(status, t) {
+  const key = `ordersUi.statuses.delivery.${status}`
+  const label = t(key)
 
-  return labels[status] ?? 'En attente'
+  return label === key ? t('ordersUi.statuses.delivery.pending') : label
+}
+
+function formatReservationKind(kind, t) {
+  const key = `ordersUi.statuses.kind.${kind}`
+  const label = t(key)
+
+  return label === key ? t('ordersUi.statuses.kind.fallback') : label
 }
 
 function formatPrice(value) {

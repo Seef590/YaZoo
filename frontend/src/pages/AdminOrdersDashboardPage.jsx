@@ -39,7 +39,7 @@ function AdminOrdersDashboardPage() {
       } catch (error) {
         if (!cancelled) {
           setErrorMessage(
-            getErrorMessage(error, "Impossible de charger le dashboard commandes."),
+            getErrorMessage(error, t('ordersUi.admin.loadError')),
           )
         }
       } finally {
@@ -54,7 +54,7 @@ function AdminOrdersDashboardPage() {
     return () => {
       cancelled = true
     }
-  }, [user?.isAdmin])
+  }, [t, user?.isAdmin])
 
   if (!user?.isAdmin) {
     return <Navigate to="/feed" replace />
@@ -62,18 +62,18 @@ function AdminOrdersDashboardPage() {
 
   const stats = dashboard.stats ?? {}
   const overviewStats = [
-    { label: 'Commandes', value: stats.totalOrders ?? 0 },
-    { label: 'En attente', value: stats.pendingReservations ?? 0 },
-    { label: 'Approuvees', value: stats.approvedOrders ?? 0 },
-    { label: 'Finalisees', value: stats.completedOrders ?? 0 },
-    { label: 'CA total', value: formatPrice(stats.revenueTotal ?? 0) },
-    { label: 'CA du mois', value: formatPrice(stats.revenueThisMonth ?? 0) },
-    { label: 'En transit', value: stats.inTransitDeliveries ?? 0 },
-    { label: 'Pretes / retrait', value: stats.readyForPickup ?? 0 },
-    { label: 'A preparer', value: stats.deliveriesToPrepare ?? 0 },
-    { label: 'Animaux', value: stats.animalOrders ?? 0 },
-    { label: 'Produits', value: stats.productOrders ?? 0 },
-    { label: 'Vendeurs actifs', value: stats.sellers ?? 0 },
+    { label: t('ordersUi.common.orders'), value: stats.totalOrders ?? 0 },
+    { label: t('ordersUi.common.pending'), value: stats.pendingReservations ?? 0 },
+    { label: t('ordersUi.common.approved'), value: stats.approvedOrders ?? 0 },
+    { label: t('ordersUi.common.completed'), value: stats.completedOrders ?? 0 },
+    { label: t('ordersUi.common.revenueTotal'), value: formatPrice(stats.revenueTotal ?? 0) },
+    { label: t('ordersUi.common.revenueThisMonth'), value: formatPrice(stats.revenueThisMonth ?? 0) },
+    { label: t('ordersUi.common.inTransit'), value: stats.inTransitDeliveries ?? 0 },
+    { label: t('ordersUi.common.readyForPickup'), value: stats.readyForPickup ?? 0 },
+    { label: t('ordersUi.common.toPrepare'), value: stats.deliveriesToPrepare ?? 0 },
+    { label: t('ordersUi.common.animals'), value: stats.animalOrders ?? 0 },
+    { label: t('ordersUi.common.products'), value: stats.productOrders ?? 0 },
+    { label: t('ordersUi.common.activeSellers'), value: stats.sellers ?? 0 },
   ]
 
   const refreshDashboard = async () => {
@@ -86,7 +86,7 @@ function AdminOrdersDashboardPage() {
       setErrorMessage('')
     } catch (error) {
       setErrorMessage(
-        getErrorMessage(error, "Impossible de charger le dashboard commandes."),
+        getErrorMessage(error, t('ordersUi.admin.loadError')),
       )
     } finally {
       setIsLoading(false)
@@ -94,27 +94,25 @@ function AdminOrdersDashboardPage() {
   }
 
   return (
-    <section className="space-y-6">
-      <section className="overflow-hidden rounded-[30px] border border-white/80 bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.18),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(221,214,254,0.5),_transparent_28%),linear-gradient(135deg,_rgba(255,255,255,0.98)_0%,_rgba(247,241,255,0.9)_48%,_rgba(237,233,254,0.84)_100%)] p-5 shadow-[0_24px_60px_rgba(124,58,237,0.1)] sm:rounded-[32px] sm:p-6">
-        <div className="grid gap-6 xl:grid-cols-[1.12fr_0.88fr] xl:items-center">
-          <div>
-            <p className="inline-flex rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-violet-700">
-              Pilotage commandes
+    <section className="w-full max-w-full min-w-0 space-y-6 pb-[calc(7rem+env(safe-area-inset-bottom))] lg:pb-0">
+      <section className="w-full max-w-full overflow-hidden rounded-[28px] border border-white/80 bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.18),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(221,214,254,0.5),_transparent_28%),linear-gradient(135deg,_rgba(255,255,255,0.98)_0%,_rgba(247,241,255,0.9)_48%,_rgba(237,233,254,0.84)_100%)] p-4 shadow-[0_24px_60px_rgba(124,58,237,0.1)] dark:border-violet-300/14 dark:bg-white/8 sm:rounded-[32px] sm:p-6">
+        <div className="grid min-w-0 gap-6 xl:grid-cols-[1.12fr_0.88fr] xl:items-center">
+          <div className="min-w-0">
+            <p className="inline-flex max-w-full rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-violet-700 dark:border-violet-300/20 dark:bg-white/10 dark:text-violet-100 sm:tracking-[0.18em]">
+              {t('ordersUi.admin.eyebrow')}
             </p>
-            <h2 className="mt-4 text-2xl font-semibold leading-tight text-stone-950 sm:text-3xl">
-              Gardez revenus, logistique et vendeurs sous controle depuis un tableau de bord clair.
+            <h2 className="mt-4 break-words text-2xl font-semibold leading-tight text-stone-950 dark:text-violet-50 sm:text-3xl">
+              {t('ordersUi.admin.title')}
             </h2>
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-600">
-              Les blocs de synthese, les listes de commandes et le classement
-              vendeurs gardent les priorites bien visibles, tout en s integrant
-              dans une presentation plus claire, plus sure et plus professionnelle.
+            <p className="mt-3 max-w-2xl break-words text-sm leading-7 text-stone-600 dark:text-violet-100/72">
+              {t('ordersUi.admin.description')}
             </p>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
-            <HeroStatCard label="Actives" value={dashboard.activeOrders?.length ?? 0} />
-            <HeroStatCard label="Finalisees" value={stats.completedOrders ?? 0} />
-            <HeroStatCard label="CA du mois" value={formatPrice(stats.revenueThisMonth ?? 0)} />
+            <HeroStatCard label={t('ordersUi.common.active')} value={dashboard.activeOrders?.length ?? 0} />
+            <HeroStatCard label={t('ordersUi.common.completed')} value={stats.completedOrders ?? 0} />
+            <HeroStatCard label={t('ordersUi.common.revenueThisMonth')} value={formatPrice(stats.revenueThisMonth ?? 0)} />
           </div>
         </div>
       </section>
@@ -125,17 +123,17 @@ function AdminOrdersDashboardPage() {
         </div>
       ) : null}
 
-      <section className="rounded-[30px] border border-white/80 bg-white/92 p-5 shadow-[0_20px_48px_rgba(124,58,237,0.08)]">
+      <section className="w-full max-w-full rounded-[28px] border border-white/80 bg-white/92 p-4 shadow-[0_20px_48px_rgba(124,58,237,0.08)] dark:border-violet-300/14 dark:bg-white/8 sm:p-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-violet-700">
-              Vue globale
+          <div className="min-w-0">
+            <p className="text-xs uppercase tracking-[0.12em] text-violet-700 dark:text-violet-200 sm:tracking-[0.18em]">
+              {t('ordersUi.admin.overviewEyebrow')}
             </p>
-            <h2 className="mt-2 text-xl font-semibold text-stone-950">
-              Dashboard commandes
+            <h2 className="mt-2 break-words text-xl font-semibold text-stone-950 dark:text-violet-50">
+              {t('ordersUi.admin.overviewTitle')}
             </h2>
-            <p className="mt-1 text-sm text-stone-500">
-              Une vue globale pour arbitrer plus vite et garder chaque flux sous controle.
+            <p className="mt-1 break-words text-sm text-stone-500 dark:text-violet-100/66">
+              {t('ordersUi.admin.overviewDescription')}
             </p>
           </div>
 
@@ -144,10 +142,10 @@ function AdminOrdersDashboardPage() {
               to="/admin/moderation"
               className="inline-flex w-full items-center justify-center rounded-full bg-violet-50 px-4 py-2 text-sm font-medium text-violet-800 transition hover:bg-violet-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-300 sm:w-auto"
             >
-              Voir la moderation
+              {t('ordersUi.admin.moderationLink')}
             </Link>
             <Button type="button" variant="ghost" onClick={refreshDashboard} className="w-full sm:w-auto">
-              Actualiser
+              {t('common.refresh')}
             </Button>
           </div>
         </div>
@@ -160,21 +158,21 @@ function AdminOrdersDashboardPage() {
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[1.45fr_0.95fr]">
-        <section className="rounded-[30px] border border-white/80 bg-white/92 p-5 shadow-[0_20px_48px_rgba(124,58,237,0.08)]">
+        <section className="min-w-0 rounded-[28px] border border-white/80 bg-white/92 p-4 shadow-[0_20px_48px_rgba(124,58,237,0.08)] dark:border-violet-300/14 dark:bg-white/8 sm:p-5">
           <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-xs uppercase tracking-[0.18em] text-violet-700">
-                Priorites
+            <div className="min-w-0">
+              <p className="text-xs uppercase tracking-[0.12em] text-violet-700 dark:text-violet-200 sm:tracking-[0.18em]">
+                {t('ordersUi.admin.prioritiesEyebrow')}
               </p>
-              <h3 className="mt-2 text-lg font-semibold text-stone-950">
-                Commandes a traiter
+              <h3 className="mt-2 break-words text-lg font-semibold text-stone-950 dark:text-violet-50">
+                {t('ordersUi.admin.activeOrdersTitle')}
               </h3>
-              <p className="mt-1 text-sm text-stone-500">
-                Priorite aux reservations actives et a la logistique.
+              <p className="mt-1 break-words text-sm text-stone-500 dark:text-violet-100/66">
+                {t('ordersUi.admin.activeOrdersDescription')}
               </p>
             </div>
-            <span className="rounded-full bg-violet-50 px-3 py-1 text-xs font-medium text-violet-700">
-              {dashboard.activeOrders?.length ?? 0} actives
+            <span className="rounded-full bg-violet-50 px-3 py-1 text-xs font-medium text-violet-700 dark:bg-white/10 dark:text-violet-50">
+              {dashboard.activeOrders?.length ?? 0} {t('ordersUi.common.active')}
             </span>
           </div>
 
@@ -195,13 +193,13 @@ function AdminOrdersDashboardPage() {
           ) : null}
         </section>
 
-        <section className="rounded-[30px] border border-white/80 bg-white/92 p-5 shadow-[0_20px_48px_rgba(124,58,237,0.08)]">
-          <p className="text-xs uppercase tracking-[0.18em] text-violet-700">
-            Performances
+        <section className="min-w-0 rounded-[28px] border border-white/80 bg-white/92 p-4 shadow-[0_20px_48px_rgba(124,58,237,0.08)] dark:border-violet-300/14 dark:bg-white/8 sm:p-5">
+          <p className="text-xs uppercase tracking-[0.12em] text-violet-700 dark:text-violet-200 sm:tracking-[0.18em]">
+            {t('ordersUi.admin.performanceEyebrow')}
           </p>
-          <h3 className="mt-2 text-lg font-semibold text-stone-950">{t('admin.topSellers')}</h3>
-          <p className="mt-1 text-sm text-stone-500">
-            Classement par chiffre d'affaires des commandes finalisees.
+          <h3 className="mt-2 text-lg font-semibold text-stone-950 dark:text-violet-50">{t('admin.topSellers')}</h3>
+          <p className="mt-1 break-words text-sm text-stone-500 dark:text-violet-100/66">
+            {t('ordersUi.admin.performanceDescription')}
           </p>
 
           {isLoading ? <StateBox>{t('admin.performancesLoading')}</StateBox> : null}
@@ -215,39 +213,39 @@ function AdminOrdersDashboardPage() {
               {dashboard.topSellers.map((entry, index) => (
                 <article
                   key={`seller-${entry.seller?.id ?? index}`}
-                  className="rounded-[24px] border border-violet-100 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98),_rgba(246,239,255,0.78))] px-4 py-4 shadow-sm"
+                  className="rounded-[24px] border border-violet-100 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98),_rgba(246,239,255,0.78))] px-4 py-4 shadow-sm dark:border-violet-300/14 dark:bg-white/8"
                 >
                   <div className="flex items-center gap-3">
                     <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[linear-gradient(135deg,#7c3aed,#a855f7,#c4b5fd)] text-sm font-semibold text-white shadow-[0_12px_24px_rgba(124,58,237,0.18)]">
                       {index + 1}
                     </div>
-                    <Avatar name={entry.seller?.name ?? 'Vendeur'} size="sm" />
+                    <Avatar name={entry.seller?.name ?? t('ordersUi.common.seller')} size="sm" />
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-stone-950">
-                        {entry.seller?.name ?? 'Vendeur inconnu'}
+                      <p className="truncate text-sm font-semibold text-stone-950 dark:text-violet-50">
+                        {entry.seller?.name ?? t('ordersUi.common.unknownSeller')}
                       </p>
-                      <p className="truncate text-xs text-stone-500">
-                        {entry.seller?.email ?? 'Email indisponible'}
+                      <p className="truncate text-xs text-stone-500 dark:text-violet-100/62">
+                        {entry.seller?.email ?? t('ordersUi.common.unavailableEmail')}
                       </p>
                     </div>
                   </div>
 
                   <div className="mt-4 grid gap-3 sm:grid-cols-2">
                     <MiniStat
-                      label="CA total"
+                      label={t('ordersUi.common.revenueTotal')}
                       value={formatPrice(entry.revenueTotal ?? 0)}
                     />
                     <MiniStat
-                      label="Commandes"
+                      label={t('ordersUi.common.orders')}
                       value={entry.completedOrders ?? 0}
                     />
                     <MiniStat
-                      label="Panier moyen"
+                      label={t('ordersUi.common.averageBasket')}
                       value={formatPrice(entry.averageOrderValue ?? 0)}
                     />
                     <MiniStat
-                      label="Ville"
-                      value={entry.seller?.city || 'Non renseignee'}
+                      label={t('ordersUi.common.city')}
+                      value={entry.seller?.city || t('ordersUi.common.notProvidedFemale')}
                     />
                   </div>
                 </article>
@@ -257,21 +255,21 @@ function AdminOrdersDashboardPage() {
         </section>
       </section>
 
-      <section className="rounded-[30px] border border-white/80 bg-white/92 p-5 shadow-[0_20px_48px_rgba(124,58,237,0.08)]">
+      <section className="w-full max-w-full rounded-[28px] border border-white/80 bg-white/92 p-4 shadow-[0_20px_48px_rgba(124,58,237,0.08)] dark:border-violet-300/14 dark:bg-white/8 sm:p-5">
         <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-violet-700">
-              Historique recent
+          <div className="min-w-0">
+            <p className="text-xs uppercase tracking-[0.12em] text-violet-700 dark:text-violet-200 sm:tracking-[0.18em]">
+              {t('ordersUi.admin.recentEyebrow')}
             </p>
-            <h3 className="mt-2 text-lg font-semibold text-stone-950">
-              Commandes finalisees recentes
+            <h3 className="mt-2 break-words text-lg font-semibold text-stone-950 dark:text-violet-50">
+              {t('ordersUi.admin.recentTitle')}
             </h3>
-            <p className="mt-1 text-sm text-stone-500">
-              Historique rapide pour verifier factures et execution.
+            <p className="mt-1 break-words text-sm text-stone-500 dark:text-violet-100/66">
+              {t('ordersUi.admin.recentDescription')}
             </p>
           </div>
-          <span className="rounded-full bg-violet-50 px-3 py-1 text-xs font-medium text-violet-700">
-            {stats.completedOrders ?? 0} finalisees
+          <span className="rounded-full bg-violet-50 px-3 py-1 text-xs font-medium text-violet-700 dark:bg-white/10 dark:text-violet-50">
+            {stats.completedOrders ?? 0} {t('ordersUi.common.completedShort')}
           </span>
         </div>
 
@@ -295,42 +293,44 @@ function AdminOrdersDashboardPage() {
 
 function HeroStatCard({ label, value }) {
   return (
-    <div className="rounded-[24px] border border-violet-100 bg-white/88 px-4 py-4 shadow-sm">
-      <p className="text-xs uppercase tracking-[0.18em] text-stone-500">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-stone-950">{value}</p>
+    <div className="min-w-0 rounded-[24px] border border-violet-100 bg-white/88 px-4 py-4 shadow-sm dark:border-violet-300/14 dark:bg-white/10">
+      <p className="truncate text-xs uppercase tracking-[0.12em] text-stone-500 dark:text-violet-100/60 sm:tracking-[0.18em]">{label}</p>
+      <p className="mt-2 break-words text-2xl font-semibold text-stone-950 dark:text-violet-50">{value}</p>
     </div>
   )
 }
 
 function StatCard({ label, value }) {
   return (
-    <div className="rounded-[24px] border border-violet-100 bg-[linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.82))] px-4 py-4 shadow-sm">
-      <p className="text-xs uppercase tracking-[0.18em] text-stone-500">{label}</p>
-      <p className="mt-2 text-3xl font-semibold text-stone-950">{value}</p>
+    <div className="min-w-0 rounded-[24px] border border-violet-100 bg-[linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.82))] px-4 py-4 shadow-sm dark:border-violet-300/14 dark:bg-white/8">
+      <p className="break-words text-xs uppercase tracking-[0.12em] text-stone-500 dark:text-violet-100/60 sm:tracking-[0.18em]">{label}</p>
+      <p className="mt-2 break-words text-3xl font-semibold text-stone-950 dark:text-violet-50">{value}</p>
     </div>
   )
 }
 
 function MiniStat({ label, value }) {
   return (
-    <div className="rounded-[20px] bg-[linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.82))] px-3 py-3">
-      <p className="text-xs uppercase tracking-[0.16em] text-stone-500">{label}</p>
-      <p className="mt-1 text-sm font-medium text-stone-900">{value}</p>
+    <div className="min-w-0 rounded-[20px] bg-[linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.82))] px-3 py-3 dark:bg-white/10">
+      <p className="break-words text-xs uppercase tracking-[0.12em] text-stone-500 dark:text-violet-100/60 sm:tracking-[0.16em]">{label}</p>
+      <p className="mt-1 break-words text-sm font-medium text-stone-900 dark:text-violet-50">{value}</p>
     </div>
   )
 }
 
 function StateBox({ children }) {
   return (
-    <div className="mt-5 rounded-[24px] border border-dashed border-violet-200 bg-white/84 px-5 py-10 text-center text-sm text-stone-500">
+    <div className="mt-5 rounded-[24px] border border-dashed border-violet-200 bg-white/84 px-5 py-10 text-center text-sm text-stone-500 dark:border-violet-300/18 dark:bg-white/8 dark:text-violet-100/70">
       {children}
     </div>
   )
 }
 
 function OrderCard({ order, showInvoice = false }) {
+  const { t } = useI18n()
+
   return (
-    <article className="overflow-hidden rounded-[28px] border border-white/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.99),_rgba(246,239,255,0.9))] shadow-[0_18px_42px_rgba(124,58,237,0.08)]">
+    <article className="w-full max-w-full overflow-hidden rounded-[28px] border border-white/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.99),_rgba(246,239,255,0.9))] shadow-[0_18px_42px_rgba(124,58,237,0.08)] dark:border-violet-300/14 dark:bg-white/8">
       {order.listing?.imageUrl ? (
         <div className="h-48 bg-stone-200">
           <img
@@ -343,41 +343,41 @@ function OrderCard({ order, showInvoice = false }) {
 
       <div className="space-y-4 p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
+          <div className="min-w-0 flex-1">
             <div className="flex flex-wrap gap-2">
-              <Badge tone="primary">{formatReservationKind(order.kind)}</Badge>
-              <Badge tone="soft">{formatReservationStatus(order.reservationStatus)}</Badge>
-              <Badge tone="light">{formatDeliveryStatus(order.deliveryStatus)}</Badge>
+              <Badge tone="primary">{formatReservationKind(order.kind, t)}</Badge>
+              <Badge tone="soft">{formatReservationStatus(order.reservationStatus, t)}</Badge>
+              <Badge tone="light">{formatDeliveryStatus(order.deliveryStatus, t)}</Badge>
             </div>
-            <h4 className="mt-3 text-lg font-semibold text-stone-950">
-              {order.listing?.title ?? 'Annonce'}
+            <h4 className="mt-3 break-words text-lg font-semibold text-stone-950 dark:text-violet-50">
+              {order.listing?.title ?? t('ordersUi.common.listing')}
             </h4>
-            <p className="mt-1 text-sm text-stone-500">
-              Creee le {formatDate(order.createdAt)}
-              {order.completedAt ? ` | Finalisee le ${formatDate(order.completedAt)}` : ''}
+            <p className="mt-1 break-words text-sm text-stone-500 dark:text-violet-100/62">
+              {t('ordersUi.common.createdOn', { date: formatDate(order.createdAt) })}
+              {order.completedAt ? ` | ${t('ordersUi.common.completedOn', { date: formatDate(order.completedAt) })}` : ''}
             </p>
           </div>
 
-          <div className="rounded-[22px] bg-[linear-gradient(135deg,_rgba(124,58,237,0.1),_rgba(216,180,254,0.22),_rgba(255,255,255,0.94))] px-4 py-3 text-right">
-            <p className="text-xs uppercase tracking-[0.16em] text-stone-500">
-              Total
+          <div className="w-full rounded-[22px] bg-[linear-gradient(135deg,_rgba(124,58,237,0.1),_rgba(216,180,254,0.22),_rgba(255,255,255,0.94))] px-4 py-3 text-left dark:bg-white/10 sm:w-auto sm:text-right">
+            <p className="text-xs uppercase tracking-[0.12em] text-stone-500 dark:text-violet-100/60 sm:tracking-[0.16em]">
+              {t('ordersUi.common.total')}
             </p>
-            <p className="mt-1 text-lg font-semibold text-stone-950">
+            <p className="mt-1 break-words text-lg font-semibold text-stone-950 dark:text-violet-50">
               {formatPrice(order.grandTotal ?? 0)}
             </p>
           </div>
         </div>
 
         <div className="grid gap-3 md:grid-cols-2">
-          <PersonCard label="Acheteur" person={order.buyer} />
-          <PersonCard label="Vendeur" person={order.seller} />
+          <PersonCard label={t('ordersUi.common.buyer')} unknownLabel={t('ordersUi.common.unknownBuyer')} person={order.buyer} />
+          <PersonCard label={t('ordersUi.common.seller')} unknownLabel={t('ordersUi.common.unknownSeller')} person={order.seller} />
         </div>
 
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          <MiniStat label="Paiement" value={formatPaymentStatus(order.paymentStatus)} />
-          <MiniStat label="Mode" value={formatDeliveryMethod(order.deliveryMethod)} />
-          <MiniStat label="Quantite" value={order.quantity ?? 0} />
-          <MiniStat label="Lieu" value={order.listing?.location || 'Non renseigne'} />
+          <MiniStat label={t('ordersUi.common.payment')} value={formatPaymentStatus(order.paymentStatus, t)} />
+          <MiniStat label={t('ordersUi.common.mode')} value={formatDeliveryMethod(order.deliveryMethod, t)} />
+          <MiniStat label={t('ordersUi.common.quantity')} value={order.quantity ?? 0} />
+          <MiniStat label={t('ordersUi.common.location')} value={order.listing?.location || t('ordersUi.common.notProvided')} />
         </div>
 
         <div className="grid gap-3 sm:flex sm:flex-wrap">
@@ -386,7 +386,7 @@ function OrderCard({ order, showInvoice = false }) {
               to={order.listing.routePath}
               className="inline-flex w-full items-center justify-center rounded-full bg-violet-50 px-4 py-2 text-sm font-medium text-violet-800 transition hover:bg-violet-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-300 sm:w-auto"
             >
-              Voir l'annonce
+              {t('ordersUi.common.viewListing')}
             </Link>
           ) : null}
 
@@ -395,7 +395,7 @@ function OrderCard({ order, showInvoice = false }) {
               to={`/reservations/${order.id}/invoice`}
               className="inline-flex w-full items-center justify-center rounded-full bg-[linear-gradient(135deg,#7c3aed,#a855f7,#c4b5fd)] px-4 py-2 text-sm font-medium text-white shadow-[0_12px_24px_rgba(124,58,237,0.18)] transition hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-500 sm:w-auto"
             >
-              Voir la facture
+              {t('ordersUi.common.viewInvoice')}
             </Link>
           ) : null}
         </div>
@@ -404,17 +404,19 @@ function OrderCard({ order, showInvoice = false }) {
   )
 }
 
-function PersonCard({ label, person }) {
+function PersonCard({ label, unknownLabel, person }) {
+  const { t } = useI18n()
+
   return (
-    <div className="flex items-center gap-3 rounded-[22px] bg-white/90 px-4 py-3 shadow-sm">
+    <div className="flex min-w-0 items-center gap-3 rounded-[22px] bg-white/90 px-4 py-3 shadow-sm dark:bg-white/10">
       <Avatar name={person?.name ?? label} size="sm" />
       <div className="min-w-0">
-        <p className="text-xs uppercase tracking-[0.16em] text-stone-500">{label}</p>
-        <p className="truncate text-sm font-medium text-stone-900">
-          {person?.name ?? `${label} inconnu`}
+        <p className="text-xs uppercase tracking-[0.12em] text-stone-500 dark:text-violet-100/60 sm:tracking-[0.16em]">{label}</p>
+        <p className="truncate text-sm font-medium text-stone-900 dark:text-violet-50">
+          {person?.name ?? unknownLabel}
         </p>
-        <p className="truncate text-xs text-stone-500">
-          {person?.email ?? 'Email indisponible'}
+        <p className="truncate text-xs text-stone-500 dark:text-violet-100/62">
+          {person?.email ?? t('ordersUi.common.unavailableEmail')}
         </p>
       </div>
     </div>
@@ -424,8 +426,8 @@ function PersonCard({ label, person }) {
 function Badge({ children, tone = 'soft' }) {
   const classes = {
     primary: 'bg-[linear-gradient(135deg,#7c3aed,#a855f7)] text-white',
-    soft: 'bg-violet-50 text-violet-800',
-    light: 'bg-white/90 text-stone-700 ring-1 ring-inset ring-violet-100',
+    soft: 'bg-violet-50 text-violet-800 dark:bg-white/10 dark:text-violet-50',
+    light: 'bg-white/90 text-stone-700 ring-1 ring-inset ring-violet-100 dark:bg-white/10 dark:text-violet-50 dark:ring-violet-300/14',
   }
 
   return (
@@ -443,52 +445,33 @@ function formatPrice(value) {
   }).format(Number(value || 0))
 }
 
-function formatReservationKind(kind) {
-  const labels = {
-    animal: 'Animal',
-    product: 'Produit',
-  }
-
-  return labels[kind] ?? 'Annonce'
+function formatReservationKind(kind, t) {
+  return t(`ordersUi.statuses.kind.${kind}`) === `ordersUi.statuses.kind.${kind}`
+    ? t('ordersUi.statuses.kind.fallback')
+    : t(`ordersUi.statuses.kind.${kind}`)
 }
 
-function formatReservationStatus(status) {
-  const labels = {
-    pending: 'En attente',
-    approved: 'Approuvee',
-    completed: 'Finalisee',
-    cancelled: 'Annulee',
-    rejected: 'Refusee',
-  }
-
-  return labels[status] ?? 'Commande'
+function formatReservationStatus(status, t) {
+  const key = `ordersUi.statuses.reservation.${status}`
+  const label = t(key)
+  return label === key ? t('ordersUi.statuses.reservation.fallback') : label
 }
 
-function formatDeliveryStatus(status) {
-  const labels = {
-    pending: 'En attente',
-    preparing: 'Preparation',
-    ready_for_pickup: 'Pret au retrait',
-    shipped: 'En transit',
-    delivered: 'Livree',
-    picked_up: 'Retiree',
-  }
-
-  return labels[status] ?? 'Livraison'
+function formatDeliveryStatus(status, t) {
+  const key = `ordersUi.statuses.delivery.${status}`
+  const label = t(key)
+  return label === key ? t('ordersUi.statuses.delivery.fallback') : label
 }
 
-function formatPaymentStatus(status) {
-  const labels = {
-    pending: 'En attente',
-    paid: 'Paye',
-    cancelled: 'Annule',
-  }
-
-  return labels[status] ?? 'Paiement'
+function formatPaymentStatus(status, t) {
+  const key = `ordersUi.statuses.paymentShort.${status}`
+  const label = t(key)
+  return label === key ? t('ordersUi.statuses.payment.fallback') : label
 }
 
-function formatDeliveryMethod(method) {
-  return method === 'pickup' ? 'Retrait' : 'Livraison'
+function formatDeliveryMethod(method, t) {
+  const key = `ordersUi.statuses.deliveryMethod.${method === 'pickup' ? 'pickup' : 'delivery'}`
+  return t(key)
 }
 
 export default AdminOrdersDashboardPage

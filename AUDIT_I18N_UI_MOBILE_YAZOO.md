@@ -1,6 +1,6 @@
 # AUDIT I18N UI MOBILE YAZOO
 
-Date: 2026-07-01T01:23:02.252Z
+Date: 2026-07-01T15:11:06.528Z
 
 ## Fichiers audites
 
@@ -33,8 +33,8 @@ Date: 2026-07-01T01:23:02.252Z
 
 ## Cles utilisees
 
-- 1024 cles t(...) detectees
-- 23 cles dynamiques detectees
+- 1146 cles t(...) detectees
+- 30 cles dynamiques detectees
 
 ## Domaines sans cle detectee
 
@@ -53,6 +53,9 @@ Date: 2026-07-01T01:23:02.252Z
 - moderationActions.actions.${action.action}
 - notifications.tabs.${filter}
 - notifications.tabs.${tab}
+- ordersUi.reservations.confirm.${action}
+- ordersUi.statuses.deliveryMethod.${method === 
+- ordersUi.statuses.kind.${kind}
 - privacy.settings.consentDescriptions.${type}
 - privacy.settings.consentLabels.${type}
 - privacy.settings.rights.${item}

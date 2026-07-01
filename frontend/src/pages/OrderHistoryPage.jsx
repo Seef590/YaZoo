@@ -74,26 +74,25 @@ function OrderHistoryPage() {
   }
 
   return (
-    <section className="space-y-6">
-      <section className="overflow-hidden rounded-[30px] border border-white/80 bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.18),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(221,214,254,0.5),_transparent_28%),linear-gradient(135deg,_rgba(255,255,255,0.98)_0%,_rgba(247,241,255,0.9)_48%,_rgba(237,233,254,0.84)_100%)] p-5 shadow-[0_24px_60px_rgba(124,58,237,0.1)] sm:rounded-[32px] sm:p-6">
+    <section className="w-full max-w-full min-w-0 space-y-6 pb-[calc(7rem+env(safe-area-inset-bottom))] lg:pb-0">
+      <section className="w-full max-w-full overflow-hidden rounded-[28px] border border-white/80 bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.18),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(221,214,254,0.5),_transparent_28%),linear-gradient(135deg,_rgba(255,255,255,0.98)_0%,_rgba(247,241,255,0.9)_48%,_rgba(237,233,254,0.84)_100%)] p-4 shadow-[0_24px_60px_rgba(124,58,237,0.1)] dark:border-violet-300/14 dark:bg-white/8 sm:rounded-[32px] sm:p-6">
         <div className="grid gap-6 xl:grid-cols-[1.12fr_0.88fr] xl:items-center">
-          <div>
-            <p className="inline-flex rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-violet-700">
-              Historique
+          <div className="min-w-0">
+            <p className="inline-flex rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-violet-700 dark:border-violet-300/20 dark:bg-white/10 dark:text-violet-100 sm:tracking-[0.18em]">
+              {t('ordersUi.history.eyebrow')}
             </p>
-            <h2 className="mt-4 text-2xl font-semibold leading-tight text-stone-950 sm:text-3xl">
-              Retrouvez vos commandes archivees et consultez chaque detail important.
+            <h2 className="mt-4 break-words text-2xl font-semibold leading-tight text-stone-950 dark:text-violet-50 sm:text-3xl">
+              {t('ordersUi.history.title')}
             </h2>
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-600">
-              Chaque achat et chaque vente garde ses informations essentielles,
-              avec les factures et les liens utiles faciles a retrouver.
+            <p className="mt-3 max-w-2xl break-words text-sm leading-7 text-stone-600 dark:text-violet-100/72">
+              {t('ordersUi.history.description')}
             </p>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
-            <HeroStatCard label="Achats" value={buyerHistory.length} />
-            <HeroStatCard label="Ventes" value={sellerHistory.length} />
-            <HeroStatCard label="Section active" value={activeTab === 'buyer' ? 'Achats' : 'Ventes'} />
+            <HeroStatCard label={t('ordersUi.history.purchases')} value={buyerHistory.length} />
+            <HeroStatCard label={t('ordersUi.history.sales')} value={sellerHistory.length} />
+            <HeroStatCard label={t('ordersUi.history.activeSection')} value={activeTab === 'buyer' ? t('ordersUi.history.purchases') : t('ordersUi.history.sales')} />
           </div>
         </div>
       </section>
@@ -104,17 +103,17 @@ function OrderHistoryPage() {
         </div>
       ) : null}
 
-      <section className="rounded-[30px] border border-white/80 bg-white/92 p-5 shadow-[0_20px_48px_rgba(124,58,237,0.08)]">
+      <section className="w-full max-w-full rounded-[28px] border border-white/80 bg-white/92 p-4 shadow-[0_20px_48px_rgba(124,58,237,0.08)] dark:border-violet-300/14 dark:bg-white/8 sm:p-5">
         <div className="flex flex-col items-start gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-violet-700">
-              Archives
+          <div className="min-w-0">
+            <p className="text-xs uppercase tracking-[0.12em] text-violet-700 dark:text-violet-200 sm:tracking-[0.18em]">
+              {t('ordersUi.history.archivesEyebrow')}
             </p>
-            <h2 className="mt-2 text-xl font-semibold text-stone-950">
-              Historique des commandes
+            <h2 className="mt-2 break-words text-xl font-semibold text-stone-950 dark:text-violet-50">
+              {t('ordersUi.history.archivesTitle')}
             </h2>
-            <p className="mt-1 text-sm text-stone-500">
-              Relisez vos anciennes commandes, factures et contacts sans perdre le fil.
+            <p className="mt-1 break-words text-sm text-stone-500 dark:text-violet-100/66">
+              {t('ordersUi.history.archivesDescription')}
             </p>
           </div>
 
@@ -128,7 +127,7 @@ function OrderHistoryPage() {
                   : 'bg-violet-50 text-violet-800 hover:bg-violet-100'
               }`}
             >
-              Mes achats ({buyerHistory.length})
+              {t('ordersUi.history.purchases')} ({buyerHistory.length})
             </button>
             <button
               type="button"
@@ -139,7 +138,7 @@ function OrderHistoryPage() {
                   : 'bg-violet-50 text-violet-800 hover:bg-violet-100'
               }`}
             >
-              Mes ventes ({sellerHistory.length})
+              {t('ordersUi.history.sales')} ({sellerHistory.length})
             </button>
           </div>
         </div>
@@ -150,7 +149,7 @@ function OrderHistoryPage() {
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder={t('history.searchPlaceholder')}
-            className="flex-1 rounded-[22px] border border-violet-100 bg-[linear-gradient(135deg,_rgba(248,245,255,0.98),_rgba(255,255,255,0.94))] px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-300 focus:bg-white"
+            className="min-w-0 flex-1 rounded-[22px] border border-violet-100 bg-[linear-gradient(135deg,_rgba(248,245,255,0.98),_rgba(255,255,255,0.94))] px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-300 focus:bg-white dark:border-violet-300/18 dark:bg-white/10 dark:text-violet-50"
           />
           <div className="grid gap-3 sm:flex sm:flex-wrap">
             <button
@@ -197,16 +196,16 @@ function OrderHistoryPage() {
 
 function HeroStatCard({ label, value }) {
   return (
-    <div className="rounded-[24px] border border-violet-100 bg-white/88 px-4 py-4 shadow-sm">
-      <p className="text-xs uppercase tracking-[0.18em] text-stone-500">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-stone-950">{value}</p>
+    <div className="min-w-0 rounded-[24px] border border-violet-100 bg-white/88 px-4 py-4 shadow-sm dark:border-violet-300/14 dark:bg-white/10">
+      <p className="break-words text-xs uppercase tracking-[0.12em] text-stone-500 dark:text-violet-100/60 sm:tracking-[0.18em]">{label}</p>
+      <p className="mt-2 break-words text-2xl font-semibold text-stone-950 dark:text-violet-50">{value}</p>
     </div>
   )
 }
 
 function StateBox({ children }) {
   return (
-    <div className="mt-5 rounded-[24px] border border-dashed border-violet-200 bg-white/84 px-5 py-12 text-center text-sm text-stone-500">
+    <div className="mt-5 rounded-[24px] border border-dashed border-violet-200 bg-white/84 px-5 py-12 text-center text-sm text-stone-500 dark:border-violet-300/18 dark:bg-white/8 dark:text-violet-100/70">
       {children}
     </div>
   )
@@ -217,7 +216,7 @@ function OrderHistoryCard({ order }) {
   const counterpart = order.isBuyer ? order.seller : order.buyer
 
   return (
-    <article className="overflow-hidden rounded-[28px] border border-white/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.99),_rgba(246,239,255,0.9))] shadow-[0_18px_42px_rgba(124,58,237,0.08)]">
+    <article className="w-full max-w-full overflow-hidden rounded-[28px] border border-white/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.99),_rgba(246,239,255,0.9))] shadow-[0_18px_42px_rgba(124,58,237,0.08)] dark:border-violet-300/14 dark:bg-white/8">
       {order.listing?.imageUrl ? (
         <div className="h-44 bg-stone-200">
           <img
@@ -230,58 +229,58 @@ function OrderHistoryCard({ order }) {
 
       <div className="space-y-4 p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
+          <div className="min-w-0 flex-1">
             <div className="flex flex-wrap gap-2">
               <span className="rounded-full bg-[linear-gradient(135deg,#7c3aed,#a855f7)] px-3 py-1 text-xs font-medium text-white">
-                {formatOrderStatus(order.reservationStatus)}
+                {formatOrderStatus(order.reservationStatus, t)}
               </span>
-              <span className="rounded-full bg-violet-50 px-3 py-1 text-xs font-medium text-violet-800">
-                {formatDeliveryStatus(order.deliveryStatus)}
+              <span className="rounded-full bg-violet-50 px-3 py-1 text-xs font-medium text-violet-800 dark:bg-white/10 dark:text-violet-50">
+                {formatDeliveryStatus(order.deliveryStatus, t)}
               </span>
             </div>
-            <h3 className="mt-3 text-lg font-semibold text-stone-950">
+            <h3 className="mt-3 break-words text-lg font-semibold text-stone-950 dark:text-violet-50">
               {order.listing.title}
             </h3>
-            <p className="mt-1 text-sm text-stone-500">{formatDate(order.createdAt)}</p>
+            <p className="mt-1 text-sm text-stone-500 dark:text-violet-100/62">{formatDate(order.createdAt)}</p>
           </div>
 
-          <div className="w-full rounded-[22px] bg-[linear-gradient(135deg,_rgba(124,58,237,0.1),_rgba(216,180,254,0.22),_rgba(255,255,255,0.94))] px-4 py-3 text-left sm:w-auto sm:text-right">
-            <p className="text-xs uppercase tracking-[0.16em] text-stone-500">{t('common.total')}</p>
-            <p className="mt-1 text-lg font-semibold text-stone-950">
+          <div className="w-full rounded-[22px] bg-[linear-gradient(135deg,_rgba(124,58,237,0.1),_rgba(216,180,254,0.22),_rgba(255,255,255,0.94))] px-4 py-3 text-left dark:bg-white/10 sm:w-auto sm:text-right">
+            <p className="text-xs uppercase tracking-[0.12em] text-stone-500 dark:text-violet-100/60 sm:tracking-[0.16em]">{t('common.total')}</p>
+            <p className="mt-1 break-words text-lg font-semibold text-stone-950 dark:text-violet-50">
               {formatPrice(order.grandTotal ?? order.totalPrice)}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 rounded-[22px] bg-white/90 px-4 py-3 shadow-sm">
-          <Avatar name={counterpart?.name ?? 'Contact'} size="sm" />
+        <div className="flex min-w-0 items-center gap-3 rounded-[22px] bg-white/90 px-4 py-3 shadow-sm dark:bg-white/10">
+          <Avatar name={counterpart?.name ?? t('ordersUi.common.contactVerb')} size="sm" />
           <div className="min-w-0">
-            <p className="truncate text-sm font-medium text-stone-900">
-              {counterpart?.name ?? 'Contact indisponible'}
+            <p className="truncate text-sm font-medium text-stone-900 dark:text-violet-50">
+              {counterpart?.name ?? t('ordersUi.common.unavailableContact')}
             </p>
-            <p className="truncate text-xs text-stone-500">
-              {counterpart?.email ?? 'Email indisponible'}
+            <p className="truncate text-xs text-stone-500 dark:text-violet-100/62">
+              {counterpart?.email ?? t('ordersUi.common.unavailableEmail')}
             </p>
           </div>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <Info label="Paiement" value={formatPaymentStatus(order.paymentStatus)} />
-          <Info label="Livraison" value={formatDeliveryMethod(order.deliveryMethod)} />
-          <Info label="Quantite" value={order.quantity} />
-          <Info label="Facture" value={order.invoiceNumber || 'Non disponible'} />
+          <Info label={t('ordersUi.common.payment')} value={formatPaymentStatus(order.paymentStatus, t)} />
+          <Info label={t('invoice.delivery')} value={formatDeliveryMethod(order.deliveryMethod, t)} />
+          <Info label={t('ordersUi.common.quantity')} value={order.quantity} />
+          <Info label={t('ordersUi.common.invoice')} value={order.invoiceNumber || t('ordersUi.common.notAvailable')} />
         </div>
 
         <div className="grid gap-3 sm:flex sm:flex-wrap">
           {order.listing?.routePath ? (
             <LinkButton to={order.listing.routePath} variant="secondary" className="w-full sm:w-auto">
-              Voir l'annonce
+              {t('ordersUi.common.viewListing')}
             </LinkButton>
           ) : null}
 
           {order.invoiceNumber ? (
             <LinkButton to={`/reservations/${order.id}/invoice`} variant="primary" className="w-full sm:w-auto">
-              Voir la facture
+              {t('ordersUi.common.viewInvoice')}
             </LinkButton>
           ) : null}
         </div>
@@ -295,9 +294,9 @@ function LinkButton({ children, to, variant = 'primary', className = '' }) {
     primary:
       'bg-[linear-gradient(135deg,#7c3aed,#a855f7,#c4b5fd)] text-white shadow-[0_12px_24px_rgba(124,58,237,0.18)] hover:brightness-105 focus-visible:outline-violet-500',
     secondary:
-      'bg-violet-50 text-violet-800 hover:bg-violet-100 focus-visible:outline-violet-300',
+      'bg-violet-50 text-violet-800 hover:bg-violet-100 focus-visible:outline-violet-300 dark:bg-white/10 dark:text-violet-50',
     ghost:
-      'bg-white text-stone-700 ring-1 ring-inset ring-violet-100 hover:bg-violet-50 focus-visible:outline-violet-200',
+      'bg-white text-stone-700 ring-1 ring-inset ring-violet-100 hover:bg-violet-50 focus-visible:outline-violet-200 dark:bg-white/10 dark:text-violet-50 dark:ring-violet-300/14',
   }
 
   return (
@@ -312,53 +311,41 @@ function LinkButton({ children, to, variant = 'primary', className = '' }) {
 
 function Info({ label, value }) {
   return (
-    <div className="rounded-[20px] bg-[linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.82))] px-4 py-3">
-      <p className="text-xs uppercase tracking-[0.16em] text-stone-500">{label}</p>
-      <p className="mt-1 font-medium text-stone-900">{value}</p>
+    <div className="min-w-0 rounded-[20px] bg-[linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.82))] px-4 py-3 dark:bg-white/10">
+      <p className="break-words text-xs uppercase tracking-[0.12em] text-stone-500 dark:text-violet-100/60 sm:tracking-[0.16em]">{label}</p>
+      <p className="mt-1 break-words font-medium text-stone-900 dark:text-violet-50">{value}</p>
     </div>
   )
 }
 
-function formatOrderStatus(status) {
-  const labels = {
-    completed: 'Finalisee',
-    cancelled: 'Annulee',
-    rejected: 'Refusee',
-  }
+function formatOrderStatus(status, t) {
+  const key = `ordersUi.statuses.reservation.${status}`
+  const label = t(key)
 
-  return labels[status] ?? 'Archivee'
+  return label === key ? t('ordersUi.statuses.reservation.archived') : label
 }
 
-function formatDeliveryStatus(status) {
-  const labels = {
-    pending: 'En attente',
-    preparing: 'En preparation',
-    ready_for_pickup: 'Pret au retrait',
-    shipped: 'Expediee',
-    delivered: 'Livree',
-    picked_up: 'Recuperee',
-  }
+function formatDeliveryStatus(status, t) {
+  const key = `ordersUi.statuses.delivery.${status}`
+  const label = t(key)
 
-  return labels[status] ?? 'En attente'
+  return label === key ? t('ordersUi.statuses.delivery.pending') : label
 }
 
-function formatDeliveryMethod(method) {
-  return method === 'delivery' ? 'Livraison' : 'Retrait'
+function formatDeliveryMethod(method, t) {
+  return t(`ordersUi.statuses.deliveryMethod.${method === 'delivery' ? 'delivery' : 'pickup'}`)
 }
 
-function formatPaymentStatus(status) {
-  const labels = {
-    paid: 'Paye',
-    cancelled: 'Annule',
-    pending: 'En attente',
-  }
+function formatPaymentStatus(status, t) {
+  const key = `ordersUi.statuses.paymentShort.${status}`
+  const label = t(key)
 
-  return labels[status] ?? 'En attente'
+  return label === key ? t('ordersUi.statuses.paymentShort.pending') : label
 }
 
 function formatPrice(value) {
   if (!value) {
-    return 'Adoption / Gratuit'
+    return '0 MAD'
   }
 
   return `${value} MAD`

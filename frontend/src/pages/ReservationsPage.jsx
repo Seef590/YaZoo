@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 
 import {
@@ -29,7 +29,7 @@ function ReservationsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [processingId, setProcessingId] = useState('')
 
-  const loadReservations = async () => {
+  const loadReservations = useCallback(async () => {
     try {
       const response = await getReservationsRequest()
 
@@ -38,16 +38,16 @@ function ReservationsPage() {
       setErrorMessage('')
     } catch (error) {
       setErrorMessage(
-        getErrorMessage(error, 'Impossible de charger vos reservations.'),
+        getErrorMessage(error, t('ordersUi.reservations.loadError')),
       )
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [t])
 
   useEffect(() => {
-    loadReservations()
-  }, [])
+    void loadReservations()
+  }, [loadReservations])
 
   useEffect(() => {
     setSearch(queryFromUrl)
@@ -73,7 +73,7 @@ function ReservationsPage() {
   }
 
   const handleAction = async (action, reservation, payload = null) => {
-    const confirmed = globalThis.confirm(buildConfirmMessage(action, reservation))
+    const confirmed = globalThis.confirm(buildConfirmMessage(action, reservation, t))
 
     if (!confirmed) {
       return
@@ -104,11 +104,11 @@ function ReservationsPage() {
         await updateReservationDeliveryStatusRequest(reservation.id, payload)
       }
 
-      setSuccessMessage(buildSuccessMessage(action, payload))
+      setSuccessMessage(buildSuccessMessage(action, payload, t))
       await loadReservations()
     } catch (error) {
       setErrorMessage(
-        getErrorMessage(error, "Impossible d'effectuer cette action."),
+        getErrorMessage(error, t('ordersUi.reservations.actionError')),
       )
     } finally {
       setProcessingId('')
@@ -116,26 +116,25 @@ function ReservationsPage() {
   }
 
   return (
-    <section className="space-y-6">
-      <section className="overflow-hidden rounded-[30px] border border-white/80 bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.16),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(221,214,254,0.48),_transparent_26%),linear-gradient(135deg,_rgba(255,255,255,0.98)_0%,_rgba(247,241,255,0.9)_48%,_rgba(237,233,254,0.84)_100%)] p-5 shadow-[0_24px_60px_rgba(124,58,237,0.1)] sm:rounded-[32px] sm:p-6">
+    <section className="w-full max-w-full min-w-0 space-y-6 pb-[calc(7rem+env(safe-area-inset-bottom))] lg:pb-0">
+      <section className="w-full max-w-full overflow-hidden rounded-[28px] border border-white/80 bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.16),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(221,214,254,0.48),_transparent_26%),linear-gradient(135deg,_rgba(255,255,255,0.98)_0%,_rgba(247,241,255,0.9)_48%,_rgba(237,233,254,0.84)_100%)] p-4 shadow-[0_24px_60px_rgba(124,58,237,0.1)] dark:border-violet-300/14 dark:bg-white/8 sm:rounded-[32px] sm:p-6">
         <div className="grid gap-6 xl:grid-cols-[1.12fr_0.88fr] xl:items-center">
-          <div>
-            <p className="inline-flex rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-violet-700">
-              Commandes
+          <div className="min-w-0">
+            <p className="inline-flex rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-violet-700 dark:border-violet-300/20 dark:bg-white/10 dark:text-violet-100 sm:tracking-[0.18em]">
+              {t('ordersUi.reservations.eyebrow')}
             </p>
-            <h1 className="mt-4 text-2xl font-semibold leading-tight text-stone-950 sm:text-3xl">
-              Gardez chaque reservation sous controle avec une experience plus sereine.
+            <h1 className="mt-4 break-words text-2xl font-semibold leading-tight text-stone-950 dark:text-violet-50 sm:text-3xl">
+              {t('ordersUi.reservations.title')}
             </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-600">
-              Suivez vos achats, vos ventes, la logistique et la facture finale
-              dans un espace plus clair, plus rassurant et plus confortable a relire.
+            <p className="mt-3 max-w-2xl break-words text-sm leading-7 text-stone-600 dark:text-violet-100/72">
+              {t('ordersUi.reservations.description')}
             </p>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
-            <HeroStatCard label="Mes achats" value={buyerReservations.length} />
-            <HeroStatCard label="Mes ventes" value={sellerReservations.length} />
-            <HeroStatCard label="Section active" value={activeTab === 'buyer' ? 'Achats' : 'Ventes'} />
+            <HeroStatCard label={t('ordersUi.history.purchases')} value={buyerReservations.length} />
+            <HeroStatCard label={t('ordersUi.history.sales')} value={sellerReservations.length} />
+            <HeroStatCard label={t('ordersUi.history.activeSection')} value={activeTab === 'buyer' ? t('ordersUi.history.purchases') : t('ordersUi.history.sales')} />
           </div>
         </div>
       </section>
@@ -152,23 +151,23 @@ function ReservationsPage() {
         </div>
       ) : null}
 
-      <section className="rounded-[30px] border border-white/80 bg-white/92 p-5 shadow-[0_20px_48px_rgba(124,58,237,0.08)]">
+      <section className="w-full max-w-full rounded-[28px] border border-white/80 bg-white/92 p-4 shadow-[0_20px_48px_rgba(124,58,237,0.08)] dark:border-violet-300/14 dark:bg-white/8 sm:p-5">
         <div className="flex flex-col items-start gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-violet-700">
-              Commandes
+          <div className="min-w-0">
+            <p className="text-xs uppercase tracking-[0.12em] text-violet-700 dark:text-violet-200 sm:tracking-[0.18em]">
+              {t('ordersUi.reservations.eyebrow')}
             </p>
-            <h2 className="mt-2 text-xl font-semibold text-stone-950">
-              Centre de commandes
+            <h2 className="mt-2 break-words text-xl font-semibold text-stone-950 dark:text-violet-50">
+              {t('ordersUi.reservations.centerTitle')}
             </h2>
-            <p className="mt-1 text-sm text-stone-500">
-              Pilotez chaque etape, du premier accord jusqu a la livraison et la facture.
+            <p className="mt-1 break-words text-sm text-stone-500 dark:text-violet-100/66">
+              {t('ordersUi.reservations.centerDescription')}
             </p>
           </div>
 
           <div className="grid w-full gap-3 sm:w-auto sm:grid-cols-none sm:flex sm:flex-wrap">
             <LinkButton to="/orders/history" variant="ghost" className="w-full sm:w-auto">
-              Historique
+              {t('ordersUi.reservations.history')}
             </LinkButton>
 
             <button
@@ -180,7 +179,7 @@ function ReservationsPage() {
                   : 'bg-violet-50 text-violet-800 hover:bg-violet-100'
               }`}
             >
-              Mes achats ({buyerReservations.length})
+              {t('ordersUi.history.purchases')} ({buyerReservations.length})
             </button>
 
             <button
@@ -192,7 +191,7 @@ function ReservationsPage() {
                   : 'bg-violet-50 text-violet-800 hover:bg-violet-100'
               }`}
             >
-              Mes ventes ({sellerReservations.length})
+              {t('ordersUi.history.sales')} ({sellerReservations.length})
             </button>
           </div>
         </div>
@@ -203,15 +202,15 @@ function ReservationsPage() {
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder={t('reservations.searchPlaceholder')}
-            className="flex-1 rounded-[22px] border border-violet-100 bg-[linear-gradient(135deg,_rgba(248,245,255,0.98),_rgba(255,255,255,0.94))] px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-300 focus:bg-white"
+            className="min-w-0 flex-1 rounded-[22px] border border-violet-100 bg-[linear-gradient(135deg,_rgba(248,245,255,0.98),_rgba(255,255,255,0.94))] px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-300 focus:bg-white dark:border-violet-300/18 dark:bg-white/10 dark:text-violet-50"
           />
           <div className="grid gap-3 sm:flex sm:flex-wrap">
             <Button type="submit" className="w-full sm:w-auto">
-              Rechercher
+              {t('common.search')}
             </Button>
             {queryFromUrl ? (
               <Button type="button" variant="ghost" onClick={handleResetSearch} className="w-full sm:w-auto">
-                Reinitialiser
+                {t('common.reset')}
               </Button>
             ) : null}
           </div>
@@ -219,19 +218,19 @@ function ReservationsPage() {
 
         {isLoading ? (
           <div className="mt-5 rounded-[24px] border border-dashed border-violet-200 bg-white/84 px-5 py-12 text-center text-sm text-stone-500">
-            Chargement des reservations...
+            {t('ordersUi.reservations.loading')}
           </div>
         ) : null}
 
         {!isLoading && reservations.length === 0 ? (
           <div className="mt-5 rounded-[24px] border border-dashed border-violet-200 bg-white/84 px-5 py-12 text-center text-sm text-stone-500">
-            Aucune reservation dans cette section pour le moment.
+            {t('ordersUi.reservations.empty')}
           </div>
         ) : null}
 
         {!isLoading && reservations.length > 0 && visibleReservations.length === 0 ? (
           <div className="mt-5 rounded-[24px] border border-dashed border-violet-200 bg-white/84 px-5 py-12 text-center text-sm text-stone-500">
-            Aucune reservation ne correspond a votre recherche.
+            {t('ordersUi.reservations.emptySearch')}
           </div>
         ) : null}
 
@@ -254,9 +253,9 @@ function ReservationsPage() {
 
 function HeroStatCard({ label, value }) {
   return (
-    <div className="rounded-[24px] border border-violet-100 bg-white/88 px-4 py-4 shadow-sm">
-      <p className="text-xs uppercase tracking-[0.18em] text-stone-500">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-stone-950">{value}</p>
+    <div className="min-w-0 rounded-[24px] border border-violet-100 bg-white/88 px-4 py-4 shadow-sm dark:border-violet-300/14 dark:bg-white/10">
+      <p className="break-words text-xs uppercase tracking-[0.12em] text-stone-500 dark:text-violet-100/60 sm:tracking-[0.18em]">{label}</p>
+      <p className="mt-2 break-words text-2xl font-semibold text-stone-950 dark:text-violet-50">{value}</p>
     </div>
   )
 }
@@ -266,14 +265,14 @@ function ReservationCard({ reservation, processingId, onAction }) {
   const counterpart = reservation.isBuyer ? reservation.seller : reservation.buyer
   const imageUrl = reservation.listing?.imageUrl
   const message = reservation.isBuyer
-    ? `Bonjour, je fais suite a ma commande pour "${reservation.listing.title}".`
-    : `Bonjour, je vous contacte au sujet de votre commande pour "${reservation.listing.title}".`
+    ? t('ordersUi.reservations.buyerMessage', { title: reservation.listing.title })
+    : t('ordersUi.reservations.sellerMessage', { title: reservation.listing.title })
   const contactPath = counterpart?.id
     ? `/messages?user=${encodeURIComponent(counterpart.id)}&message=${encodeURIComponent(message)}`
     : null
 
   return (
-    <article className="overflow-hidden rounded-[28px] border border-white/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.99),_rgba(246,239,255,0.9))] shadow-[0_18px_42px_rgba(124,58,237,0.08)]">
+    <article className="w-full max-w-full overflow-hidden rounded-[28px] border border-white/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.99),_rgba(246,239,255,0.9))] shadow-[0_18px_42px_rgba(124,58,237,0.08)] dark:border-violet-300/14 dark:bg-white/8">
       {imageUrl ? (
         <div className="h-48 bg-stone-200 sm:h-60 md:h-72 lg:h-80">
           <img
@@ -286,90 +285,90 @@ function ReservationCard({ reservation, processingId, onAction }) {
 
       <div className="space-y-4 p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
+          <div className="min-w-0 flex-1">
             <div className="flex flex-wrap gap-2">
-              <StatusChip>{formatReservationStatus(reservation.reservationStatus)}</StatusChip>
+              <StatusChip>{formatReservationStatus(reservation.reservationStatus, t)}</StatusChip>
               <StatusChip tone="light">
-                {formatDeliveryStatus(reservation.deliveryStatus)}
+                {formatDeliveryStatus(reservation.deliveryStatus, t)}
               </StatusChip>
-              <StatusChip tone="light">{formatReservationKind(reservation.kind)}</StatusChip>
+              <StatusChip tone="light">{formatReservationKind(reservation.kind, t)}</StatusChip>
             </div>
-            <h3 className="mt-3 text-lg font-semibold text-stone-950">
+            <h3 className="mt-3 break-words text-lg font-semibold text-stone-950 dark:text-violet-50">
               {reservation.listing.title}
             </h3>
-            <p className="mt-1 text-sm text-stone-500">
+            <p className="mt-1 text-sm text-stone-500 dark:text-violet-100/62">
               {formatDate(reservation.createdAt)}
             </p>
           </div>
 
-        <div className="w-full rounded-[22px] bg-[linear-gradient(135deg,_rgba(124,58,237,0.1),_rgba(216,180,254,0.22),_rgba(255,255,255,0.94))] px-4 py-3 text-left sm:w-auto sm:text-right">
-            <p className="text-xs uppercase tracking-[0.16em] text-stone-500">{t('common.totalVat')}</p>
-            <p className="mt-1 text-lg font-semibold text-stone-950">
+          <div className="w-full rounded-[22px] bg-[linear-gradient(135deg,_rgba(124,58,237,0.1),_rgba(216,180,254,0.22),_rgba(255,255,255,0.94))] px-4 py-3 text-left dark:bg-white/10 sm:w-auto sm:text-right">
+            <p className="text-xs uppercase tracking-[0.12em] text-stone-500 dark:text-violet-100/60 sm:tracking-[0.16em]">{t('common.totalVat')}</p>
+            <p className="mt-1 break-words text-lg font-semibold text-stone-950 dark:text-violet-50">
               {formatPrice(reservation.grandTotal)}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 rounded-[22px] bg-white/90 px-4 py-3 shadow-sm">
-          <Avatar name={counterpart?.name ?? 'Contact'} size="sm" />
+        <div className="flex min-w-0 items-center gap-3 rounded-[22px] bg-white/90 px-4 py-3 shadow-sm dark:bg-white/10">
+          <Avatar name={counterpart?.name ?? t('ordersUi.common.contactVerb')} size="sm" />
           <div className="min-w-0">
-            <p className="truncate text-sm font-medium text-stone-900">
-              {counterpart?.name ?? 'Contact indisponible'}
+            <p className="truncate text-sm font-medium text-stone-900 dark:text-violet-50">
+              {counterpart?.name ?? t('ordersUi.common.unavailableContact')}
             </p>
-            <p className="truncate text-xs text-stone-500">
-              {counterpart?.email ?? 'Email indisponible'}
+            <p className="truncate text-xs text-stone-500 dark:text-violet-100/62">
+              {counterpart?.email ?? t('ordersUi.common.unavailableEmail')}
             </p>
           </div>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <Info label="Paiement" value={formatPaymentMethod(reservation.paymentMethod)} />
-          <Info label="Statut paiement" value={formatPaymentStatus(reservation.paymentStatus)} />
-          <Info label="Livraison" value={formatDeliveryMethod(reservation.deliveryMethod)} />
-          <Info label="Quantite" value={reservation.quantity} />
-          <Info label="Sous-total" value={formatPrice(reservation.totalPrice)} />
-          <Info label="Frais livraison" value={formatPrice(reservation.deliveryFee)} />
+          <Info label={t('ordersUi.common.payment')} value={formatPaymentMethod(reservation.paymentMethod, t)} />
+          <Info label={t('ordersUi.common.paymentStatus')} value={formatPaymentStatus(reservation.paymentStatus, t)} />
+          <Info label={t('invoice.delivery')} value={formatDeliveryMethod(reservation.deliveryMethod, t)} />
+          <Info label={t('ordersUi.common.quantity')} value={reservation.quantity} />
+          <Info label={t('ordersUi.common.subtotal')} value={formatPrice(reservation.totalPrice)} />
+          <Info label={t('ordersUi.common.deliveryFee')} value={formatPrice(reservation.deliveryFee)} />
         </div>
 
-        <div className="rounded-[22px] bg-white/90 px-4 py-4 shadow-sm">
-          <p className="text-xs uppercase tracking-[0.16em] text-stone-500">
-            Adresse / retrait
+        <div className="rounded-[22px] bg-white/90 px-4 py-4 shadow-sm dark:bg-white/10">
+          <p className="text-xs uppercase tracking-[0.12em] text-stone-500 dark:text-violet-100/60 sm:tracking-[0.16em]">
+            {t('ordersUi.reservations.addressPickup')}
           </p>
-          <p className="mt-2 text-sm font-medium text-stone-900">
+          <p className="mt-2 break-words text-sm font-medium text-stone-900 dark:text-violet-50">
             {reservation.deliveryMethod === 'delivery'
               ? [reservation.delivery.contactName, reservation.delivery.phone, reservation.delivery.city]
                   .filter(Boolean)
                   .join(' - ')
-              : 'Retrait sur place'}
+              : t('ordersUi.common.localPickup')}
           </p>
-          <p className="mt-1 text-sm text-stone-600">
-            {reservation.delivery.address || reservation.listing.location || 'Aucune adresse fournie'}
+          <p className="mt-1 break-words text-sm text-stone-600 dark:text-violet-100/70">
+            {reservation.delivery.address || reservation.listing.location || t('ordersUi.reservations.noAddress')}
           </p>
           {reservation.delivery.notes ? (
-            <p className="mt-2 text-sm text-stone-500">{reservation.delivery.notes}</p>
+            <p className="mt-2 break-words text-sm text-stone-500 dark:text-violet-100/62">{reservation.delivery.notes}</p>
           ) : null}
         </div>
 
         {reservation.note ? (
-          <p className="text-sm leading-6 text-stone-600">{reservation.note}</p>
+          <p className="break-words text-sm leading-6 text-stone-600 dark:text-violet-100/70">{reservation.note}</p>
         ) : null}
 
         <div className="grid gap-3 sm:flex sm:flex-wrap">
           {reservation.listing.routePath ? (
             <LinkButton to={reservation.listing.routePath} variant="secondary" className="w-full sm:w-auto">
-              Voir l'annonce
+              {t('ordersUi.common.viewListing')}
             </LinkButton>
           ) : null}
 
           {contactPath ? (
             <LinkButton to={contactPath} variant="ghost" className="w-full sm:w-auto">
-              Contacter
+              {t('ordersUi.common.contactVerb')}
             </LinkButton>
           ) : null}
 
           {reservation.canViewInvoice ? (
             <LinkButton to={`/reservations/${reservation.id}/invoice`} variant="ghost" className="w-full sm:w-auto">
-              Facture
+              {t('ordersUi.common.invoice')}
             </LinkButton>
           ) : null}
 
@@ -380,7 +379,7 @@ function ReservationCard({ reservation, processingId, onAction }) {
               onClick={() => onAction('approve', reservation)}
               className="w-full sm:w-auto"
             >
-              Approuver
+              {t('ordersUi.reservations.actions.approve')}
             </ActionButton>
           ) : null}
 
@@ -392,7 +391,7 @@ function ReservationCard({ reservation, processingId, onAction }) {
               variant="ghost"
               className="w-full sm:w-auto"
             >
-              Refuser
+              {t('ordersUi.reservations.actions.reject')}
             </ActionButton>
           ) : null}
 
@@ -404,7 +403,7 @@ function ReservationCard({ reservation, processingId, onAction }) {
               variant="ghost"
               className="w-full sm:w-auto"
             >
-              Annuler
+              {t('ordersUi.reservations.actions.cancel')}
             </ActionButton>
           ) : null}
 
@@ -417,7 +416,7 @@ function ReservationCard({ reservation, processingId, onAction }) {
               }
               className="w-full sm:w-auto"
             >
-              Marquer expediee
+              {t('ordersUi.reservations.actions.markShipped')}
             </ActionButton>
           ) : null}
 
@@ -430,7 +429,7 @@ function ReservationCard({ reservation, processingId, onAction }) {
               }
               className="w-full sm:w-auto"
             >
-              Marquer livree
+              {t('ordersUi.reservations.actions.markDelivered')}
             </ActionButton>
           ) : null}
 
@@ -443,7 +442,7 @@ function ReservationCard({ reservation, processingId, onAction }) {
               }
               className="w-full sm:w-auto"
             >
-              Marquer recuperee
+              {t('ordersUi.reservations.actions.markPickedUp')}
             </ActionButton>
           ) : null}
 
@@ -454,7 +453,7 @@ function ReservationCard({ reservation, processingId, onAction }) {
               onClick={() => onAction('complete', reservation)}
               className="w-full sm:w-auto"
             >
-              Finaliser + facturer
+              {t('ordersUi.common.generatedInvoice')}
             </ActionButton>
           ) : null}
         </div>
@@ -471,6 +470,8 @@ function ActionButton({
   variant = 'primary',
   className = '',
 }) {
+  const { t } = useI18n()
+
   return (
     <Button
       type="button"
@@ -479,7 +480,7 @@ function ActionButton({
       onClick={onClick}
       className={className}
     >
-      {processingId === buttonKey ? 'Action...' : children}
+      {processingId === buttonKey ? t('ordersUi.common.actionLoading') : children}
     </Button>
   )
 }
@@ -489,9 +490,9 @@ function LinkButton({ children, to, variant = 'primary', className = '' }) {
     primary:
       'bg-[linear-gradient(135deg,#7c3aed,#a855f7,#c4b5fd)] text-white hover:brightness-105 focus-visible:outline-violet-500',
     secondary:
-      'bg-white text-violet-900 ring-1 ring-inset ring-violet-200 hover:bg-violet-50 focus-visible:outline-violet-300',
+      'bg-white text-violet-900 ring-1 ring-inset ring-violet-200 hover:bg-violet-50 focus-visible:outline-violet-300 dark:bg-white/10 dark:text-violet-50 dark:ring-violet-300/14',
     ghost:
-      'bg-violet-50 text-violet-800 hover:bg-violet-100 focus-visible:outline-violet-200',
+      'bg-violet-50 text-violet-800 hover:bg-violet-100 focus-visible:outline-violet-200 dark:bg-white/10 dark:text-violet-50',
   }
 
   return (
@@ -510,7 +511,7 @@ function StatusChip({ children, tone = 'dark' }) {
       className={`rounded-full px-3 py-1 text-xs font-medium ${
         tone === 'dark'
           ? 'bg-[linear-gradient(135deg,#7c3aed,#a855f7)] text-white'
-          : 'bg-violet-50 text-violet-800'
+          : 'bg-violet-50 text-violet-800 dark:bg-white/10 dark:text-violet-50'
       }`}
     >
       {children}
@@ -520,108 +521,74 @@ function StatusChip({ children, tone = 'dark' }) {
 
 function Info({ label, value }) {
   return (
-    <div className="rounded-[20px] bg-[linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.82))] px-4 py-3">
-      <p className="text-xs uppercase tracking-[0.16em] text-stone-500">{label}</p>
-      <p className="mt-1 font-medium text-stone-900">{value}</p>
+    <div className="min-w-0 rounded-[20px] bg-[linear-gradient(135deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.82))] px-4 py-3 dark:bg-white/10">
+      <p className="break-words text-xs uppercase tracking-[0.12em] text-stone-500 dark:text-violet-100/60 sm:tracking-[0.16em]">{label}</p>
+      <p className="mt-1 break-words font-medium text-stone-900 dark:text-violet-50">{value}</p>
     </div>
   )
 }
 
-function buildConfirmMessage(action, reservation) {
+function buildConfirmMessage(action, reservation, t) {
   const title = reservation.listing.title
 
-  if (action === 'approve') {
-    return `Approuver la reservation pour "${title}" ?`
-  }
-
-  if (action === 'reject') {
-    return `Refuser la reservation pour "${title}" ?`
-  }
-
-  if (action === 'cancel') {
-    return `Annuler la reservation pour "${title}" ?`
-  }
-
-  if (action === 'delivery') {
-    return `Mettre a jour le statut de livraison pour "${title}" ?`
-  }
-
-  return `Finaliser la commande pour "${title}" et generer la facture ?`
+  return t(`ordersUi.reservations.confirm.${action}`, { title }) === `ordersUi.reservations.confirm.${action}`
+    ? t('ordersUi.reservations.confirm.complete', { title })
+    : t(`ordersUi.reservations.confirm.${action}`, { title })
 }
 
-function buildSuccessMessage(action, payload) {
+function buildSuccessMessage(action, payload, t) {
   const deliveryStatus = payload?.delivery_status
 
   if (action === 'delivery') {
-    const labels = {
-      shipped: 'Commande marquee comme expediee.',
-      delivered: 'Commande marquee comme livree.',
-      picked_up: 'Commande marquee comme recuperee.',
-    }
+    const key = `ordersUi.reservations.success.${deliveryStatus}`
+    const label = t(key)
 
-    return labels[deliveryStatus] ?? 'Livraison mise a jour avec succes.'
+    return label === key ? t('ordersUi.reservations.success.delivery') : label
   }
 
-  const messages = {
-    approve: 'Reservation approuvee avec succes.',
-    reject: 'Reservation refusee avec succes.',
-    cancel: 'Reservation annulee avec succes.',
-    complete: 'Commande finalisee et facture generee.',
-  }
+  const key = `ordersUi.reservations.success.${action}`
+  const label = t(key)
 
-  return messages[action] ?? 'Action effectuee.'
+  return label === key ? t('ordersUi.reservations.success.default') : label
 }
 
-function formatReservationKind(kind) {
-  return kind === 'animal' ? 'Animal' : 'Produit'
+function formatReservationKind(kind, t) {
+  const key = `ordersUi.statuses.kind.${kind}`
+  const label = t(key)
+
+  return label === key ? t('ordersUi.statuses.kind.fallback') : label
 }
 
-function formatReservationStatus(status) {
-  const labels = {
-    pending: 'En attente',
-    approved: 'Approuvee',
-    rejected: 'Refusee',
-    cancelled: 'Annulee',
-    completed: 'Finalisee',
-  }
+function formatReservationStatus(status, t) {
+  const key = `ordersUi.statuses.reservation.${status}`
+  const label = t(key)
 
-  return labels[status] ?? 'En attente'
+  return label === key ? t('ordersUi.statuses.reservation.pending') : label
 }
 
-function formatPaymentStatus(status) {
-  const labels = {
-    pending: 'Paiement en attente',
-    paid: 'Paiement paye',
-    cancelled: 'Paiement annule',
-  }
+function formatPaymentStatus(status, t) {
+  const key = `ordersUi.statuses.payment.${status}`
+  const label = t(key)
 
-  return labels[status] ?? 'Paiement en attente'
+  return label === key ? t('ordersUi.statuses.payment.pending') : label
 }
 
-function formatPaymentMethod(method) {
-  const labels = {
-    cash_on_pickup: 'Paiement a la remise',
-    bank_transfer: 'Virement bancaire',
-  }
+function formatPaymentMethod(method, t) {
+  const key = `ordersUi.statuses.paymentMethod.${method}`
+  const label = t(key)
 
-  return labels[method] ?? 'Paiement a la remise'
+  return label === key ? t('ordersUi.statuses.paymentMethod.cash_on_pickup') : label
 }
 
-function formatDeliveryMethod(method) {
-  return method === 'delivery' ? 'Livraison' : 'Retrait'
+function formatDeliveryMethod(method, t) {
+  return t(`ordersUi.statuses.deliveryMethod.${method === 'delivery' ? 'delivery' : 'pickup'}`)
 }
 
-function formatDeliveryStatus(status) {
-  const labels = {
-    pending: 'En attente',
-    preparing: 'En preparation',
-    ready_for_pickup: 'Pret au retrait',
-    shipped: 'Expediee',
-    delivered: 'Livree',
-    picked_up: 'Recuperee',
-  }
+function formatDeliveryStatus(status, t) {
+  const key = `ordersUi.statuses.delivery.${status}`
+  const label = t(key)
 
-  return labels[status] ?? 'En attente'
+  return label === key ? t('ordersUi.statuses.delivery.pending') : label
 }
 
 function formatPrice(value) {

@@ -74,6 +74,7 @@ describe('ReservationsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.stubGlobal('confirm', vi.fn(() => true))
+    globalThis.localStorage?.setItem('yazoo-locale', 'fr')
 
     getReservationsRequest.mockResolvedValue({
       data: {

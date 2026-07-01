@@ -31,6 +31,19 @@ const domains = [
 ]
 
 const ignoredText = new Set(['YaZoo', 'WhatsApp', 'Email', 'MAD'])
+const ignoredSuspiciousPatterns = [
+  /^[A-Z0-9_]+$/,
+  /^[a-z0-9_.:/?&=-]+$/i,
+  /^#[0-9a-f]{3,8}$/i,
+  /^(GET|POST|PATCH|PUT|DELETE)$/i,
+  /^(button|submit|search|email|text|tel|password|number|file|checkbox|radio)$/i,
+  /^(primary|secondary|ghost|soft|light|dark|success|error|warning)$/i,
+  /^https?:\/\//i,
+  /^\//,
+  /^[\w-]+(\s+[\w-/:.[\]()%#]+)+$/,
+  /\b(?:bg|text|border|shadow|rounded|ring|focus|hover|dark|print|max|pt|px|py|mt|gap|grid|flex|items|justify|transition)-/,
+  /(?:linear-gradient|radial-gradient|rgba\(|encodeURIComponent|charAt|toUpperCase|Date\.now)/,
+]
 const ignoredFilePatterns = [
   /\.test\.[jt]sx?$/,
   /assets[\\/]/,
@@ -49,23 +62,26 @@ function walk(dir) {
   })
 }
 
-function getByPath(object, key) {
-  return key.split('.').reduce((current, segment) => current?.[segment], object)
-}
+function isHumanText(text) {
+  const normalized = text.trim()
 
-function extractMessages() {
-  const source = fs.readFileSync(i18nFile, 'utf8')
-  const result = {}
-
-  for (const locale of ['fr', 'ar', 'en']) {
-    result[locale] = {}
-
-    for (const key of usedKeys) {
-      result[locale][key] = source.includes(`${key.split('.').at(-1)}:`)
-    }
+  if (!normalized || normalized.length < 3 || ignoredText.has(normalized)) {
+    return false
   }
 
-  return result
+  if (!/[\p{L}]/u.test(normalized)) {
+    return false
+  }
+
+  return !ignoredSuspiciousPatterns.some((pattern) => pattern.test(normalized))
+}
+
+function pushSuspicious(collection, file, text) {
+  const normalized = text.trim().replace(/\s+/g, ' ')
+
+  if (isHumanText(normalized)) {
+    collection.push({ file, text: normalized })
+  }
 }
 
 const files = walk(frontendSrc).filter((file) =>
@@ -79,6 +95,7 @@ const suspiciousTexts = []
 for (const file of files) {
   const source = fs.readFileSync(file, 'utf8')
   const relative = path.relative(repoRoot, file)
+  const isI18nFile = path.normalize(file) === path.normalize(i18nFile)
 
   for (const match of source.matchAll(/\bt\(\s*['"`]([^'"`]+)['"`]/g)) {
     usedKeys.add(match[1])
@@ -88,24 +105,28 @@ for (const file of files) {
     dynamicKeys.push({ file: relative, key: match[1] })
   }
 
-  for (const match of source.matchAll(/>([^<>{}\n]*[A-Za-zÀ-ÿ][^<>{}\n]*)</g)) {
-    const text = match[1].trim()
-
-    if (!text || ignoredText.has(text) || text.length < 3) {
-      continue
-    }
-
-    suspiciousTexts.push({ file: relative, text })
+  for (const match of source.matchAll(/>([^<>{}\n]*[\p{L}][^<>{}\n]*)</gu)) {
+    pushSuspicious(suspiciousTexts, relative, match[1])
   }
 
-  for (const match of source.matchAll(/\b(?:placeholder|aria-label|alt|title)=["']([^"']*[A-Za-zÀ-ÿ][^"']*)["']/g)) {
-    const text = match[1].trim()
+  for (const match of source.matchAll(/\b(?:label|placeholder|aria-label|alt|title)=["']([^"']*[\p{L}][^"']*)["']/gu)) {
+    pushSuspicious(suspiciousTexts, relative, match[1])
+  }
 
-    if (!text || ignoredText.has(text)) {
-      continue
-    }
+  if (isI18nFile) {
+    continue
+  }
 
-    suspiciousTexts.push({ file: relative, text })
+  for (const match of source.matchAll(/\b(?:label|title|text|fallback|message|description|eyebrow|loading|empty|error|noReason|value)\s*:\s*['"`]([^'"`{}]*[\p{L}][^'"`{}]*)['"`]/gu)) {
+    pushSuspicious(suspiciousTexts, relative, match[1])
+  }
+
+  for (const match of source.matchAll(/(?:\?\?|return|\?)\s*['"`]([^'"`{}]*[\p{L}][^'"`{}]*)['"`]/gu)) {
+    pushSuspicious(suspiciousTexts, relative, match[1])
+  }
+
+  for (const match of source.matchAll(/\b(?:confirm|alert)\(\s*['"`]([^'"`{}]*[\p{L}][^'"`{}]*)['"`]/gu)) {
+    pushSuspicious(suspiciousTexts, relative, match[1])
   }
 }
 
@@ -168,4 +189,3 @@ fs.writeFileSync(reportFile, report)
 console.log(`Audit i18n termine: ${reportFile}`)
 console.log(`Cles detectees: ${keyList.length}`)
 console.log(`Textes statiques suspects: ${suspiciousTexts.length}`)
-
