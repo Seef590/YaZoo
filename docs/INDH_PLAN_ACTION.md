@@ -3,6 +3,7 @@
 ## Horizon 3 mois
 
 - Finaliser les informations administratives du projet.
+- Confirmer le statut juridique, l'adresse officielle et l'ICE si disponible.
 - Relecture juridique des CGU, privacy et regles de publication.
 - Preparer la demarche CNDP si applicable.
 - Definir la procedure de verification professionnelle.

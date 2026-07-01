@@ -30,8 +30,9 @@
 
 ## CNDP / Loi 09-08
 
-- [ ] Responsable du traitement complete.
-- [ ] Contact donnees personnelles complete.
+- [x] Responsable du traitement complete: Youssef BOUGHIOUL.
+- [x] Contact donnees personnelles complete: youssefboughioul@gmail.com.
+- [ ] Statut juridique, adresse officielle et ICE completes si disponibles.
 - [ ] Formalite CNDP evaluee.
 - [ ] Politique privacy validee.
 - [ ] Durees de conservation validees.

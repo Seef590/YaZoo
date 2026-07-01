@@ -104,6 +104,7 @@ function App() {
             path="/marketplace/animals/:animalId"
             element={<AnimalDetailPage />}
           />
+          <Route path="/marketplace/animals" element={<AnimalsMarketplacePage />} />
           <Route path="/marketplace" element={<AnimalsMarketplacePage />} />
           <Route path="/communities" element={<CommunitiesPage />} />
           <Route path="/communities/:communityId" element={<CommunityDetailPage />} />

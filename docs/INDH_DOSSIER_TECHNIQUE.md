@@ -4,6 +4,8 @@
 
 YaZoo est une plateforme marocaine de mise en relation responsable autour de l'adoption animale, des services animaliers et des professionnels locaux. YaZoo n'est pas vendeur direct d'animaux.
 
+Porteur de projet: Youssef BOUGHIOUL. Email officiel: youssefboughioul@gmail.com. Telephone officiel: +212606610014. Hebergeur actuel: Microsoft Azure App Service. Statut juridique, adresse officielle et ICE: a completer.
+
 ## 2. Probleme traite au Maroc
 
 Les annonces animales et services animaliers sont souvent disperses, peu moderes et difficiles a verifier. Les associations, particuliers et professionnels locaux manquent d'outils simples pour gagner en visibilite tout en gardant des regles de securite claires.
@@ -85,7 +87,7 @@ Au demarrage: pas de paiement en ligne obligatoire. Options futures: visibilite 
 
 ## 15. Limites et prochaines etapes
 
-- Completer les informations administratives reelles.
+- Completer les informations administratives restantes: statut juridique, adresse officielle, ICE si disponible.
 - Demarche CNDP selon avis competent.
 - Validation juridique/ONSSA si necessaire.
 - Stockage prive renforce des documents.

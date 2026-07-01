@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://example.local/</loc></url>
-  <url><loc>https://example.local/about</loc></url>
-  <url><loc>https://example.local/privacy</loc></url>
-  <url><loc>https://example.local/cgu</loc></url>
-  <url><loc>https://example.local/rules</loc></url>
-  <url><loc>https://example.local/partner</loc></url>
-  <url><loc>https://example.local/pros</loc></url>
-  <url><loc>https://example.local/demo-mobile</loc></url>
-  <url><loc>https://example.local/accessibility</loc></url>
-  <url><loc>https://example.local/impact</loc></url>
-  <url><loc>https://example.local/contact</loc></url>
-  <url><loc>https://example.local/marketplace</loc></url>
-  <url><loc>https://example.local/marketplace/products</loc></url>
-  <url><loc>https://example.local/marketplace/services</loc></url>
-  <url><loc>https://example.local/marketplace/veterinarians</loc></url>
+  <url><loc>https://yazoo.azurewebsites.net/</loc></url>
+  <url><loc>https://yazoo.azurewebsites.net/about</loc></url>
+  <url><loc>https://yazoo.azurewebsites.net/privacy</loc></url>
+  <url><loc>https://yazoo.azurewebsites.net/cgu</loc></url>
+  <url><loc>https://yazoo.azurewebsites.net/rules</loc></url>
+  <url><loc>https://yazoo.azurewebsites.net/partner</loc></url>
+  <url><loc>https://yazoo.azurewebsites.net/pros</loc></url>
+  <url><loc>https://yazoo.azurewebsites.net/demo-mobile</loc></url>
+  <url><loc>https://yazoo.azurewebsites.net/accessibility</loc></url>
+  <url><loc>https://yazoo.azurewebsites.net/impact</loc></url>
+  <url><loc>https://yazoo.azurewebsites.net/contact</loc></url>
+  <url><loc>https://yazoo.azurewebsites.net/marketplace</loc></url>
+  <url><loc>https://yazoo.azurewebsites.net/marketplace/animals</loc></url>
+  <url><loc>https://yazoo.azurewebsites.net/marketplace/products</loc></url>
+  <url><loc>https://yazoo.azurewebsites.net/marketplace/services</loc></url>
+  <url><loc>https://yazoo.azurewebsites.net/marketplace/veterinarians</loc></url>
 </urlset>

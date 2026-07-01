@@ -36,7 +36,7 @@ FROM nginx:1.27-alpine
 
 LABEL org.opencontainers.image.title="YaZoo Frontend" \
       org.opencontainers.image.description="YaZoo social platform and animal marketplace frontend." \
-      org.opencontainers.image.authors="Youssef BOUGHIOUL <bough.youssef@gmail.com>" \
+      org.opencontainers.image.authors="Youssef BOUGHIOUL <youssefboughioul@gmail.com>" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.vendor="Youssef BOUGHIOUL"
 

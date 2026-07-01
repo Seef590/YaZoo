@@ -15,7 +15,7 @@ Mesures: CGU, regles de publication, bannieres legales, signalements, moderation
 - Durees de conservation non formalisees.
 - Demandes utilisateur non traitees dans les delais.
 
-Mesures: consentements, export, demande suppression, notes CNDP, placeholders administratifs a completer.
+Mesures: consentements, export, demande suppression, notes CNDP, responsable et contact donnees personnelles identifies. Statut juridique, adresse officielle et ICE restent a completer.
 
 ## Risques ONSSA
 

@@ -290,12 +290,12 @@ Aucune migration creee ou appliquee. La phase concerne le frontend, les assets p
 ## 8. Points non termines
 
 - Phase 5 terminee localement; aucune phase supplementaire n'a ete lancee.
-- Remplacer les placeholders `[A completer]` par les informations administratives reelles avant production ou depot officiel.
+- Remplacer les placeholders administratifs restants par les informations reelles avant production ou depot officiel: statut juridique, adresse officielle, ICE si disponible.
 - Renforcer le stockage prive des documents professionnels/animaux avant production publique.
 - Finaliser les procedures humaines de traitement privacy/admin avant production reelle.
-- Remplacer le domaine placeholder du sitemap par le domaine officiel avant production.
+- Remplacer le domaine Azure du sitemap par un domaine officiel personnalise si YaZoo en adopte un.
 - Completer les audits humains PWA, SEO, accessibilite et securite avant production reelle.
-- Remplacer les contacts CNDP `[A completer]` par les informations reelles.
+- Verifier les contacts CNDP avant publication officielle; responsable et email sont renseignes.
 
 ## 9. Decisions prises
 
@@ -304,7 +304,7 @@ Aucune migration creee ou appliquee. La phase concerne le frontend, les assets p
 - Aucun `migrate:fresh`, `migrate:refresh`, `migrate:reset`.
 - Aucun fichier local sensible ou backup ne sera supprime pendant cette phase.
 - Les pages legales existantes seront enrichies via le systeme i18n et `PublicPageShell`, sans reconstruire l'architecture.
-- La page `/about` porte les mentions legales placeholders; aucune route `/legal-notice` separee n'a ete ajoutee en phase 1.
+- La page `/about` porte les mentions legales connues et conserve seulement les champs non confirmes: statut juridique, adresse officielle et ICE; aucune route `/legal-notice` separee n'a ete ajoutee en phase 1.
 - Le scan local a confirme la presence de sauvegardes et logs a exclure du partage: `infra/backups`, `backend/storage/logs`, fichiers `.sql.gz`, `.zip`, `.log`.
 - Phase 2: les IP et user-agents de consentement sont haches, pas stockes en clair.
 - Phase 2: l'export exclut les messages prives complets pour ne pas exposer les donnees d'autres utilisateurs.
@@ -320,7 +320,7 @@ Aucune migration creee ou appliquee. La phase concerne le frontend, les assets p
 - Phase 4: les exports CSV excluent mots de passe, tokens et secrets; les IP/user-agents de moderation sont haches.
 - Phase 5: le service worker reste prudent et ne cache pas les routes API ni les donnees privees.
 - Phase 5: YaZoo est presente comme base technique preparee pour une demarche de conformite, pas comme projet totalement conforme CNDP/ONSSA.
-- Phase 5: le sitemap contient un domaine placeholder a remplacer par le domaine officiel avant production.
+- Phase 5: le sitemap utilise le domaine Azure actuel `https://yazoo.azurewebsites.net`; il devra etre remplace par un domaine personnalise si disponible.
 
 ## 10. Confirmation de securite locale
 

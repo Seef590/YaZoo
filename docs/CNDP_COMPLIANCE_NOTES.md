@@ -26,8 +26,9 @@ Ce document decrit la base technique ajoutee pour soutenir une demarche de prote
 
 ## Actions administratives a completer
 
-- Identifier le responsable du traitement: `[A completer]`.
-- Identifier le contact donnees personnelles: `[A completer]`.
+- Responsable du traitement identifie: Youssef BOUGHIOUL.
+- Contact donnees personnelles identifie: youssefboughioul@gmail.com.
+- Hebergeur actuel: Microsoft Azure App Service.
 - Definir l'adresse administrative, ICE, statut juridique et representant legal.
 - Determiner si une declaration, autorisation ou formalite CNDP est requise selon le traitement reel.
 - Valider les bases legales, durees de conservation et procedures de reponse aux demandes.
@@ -40,7 +41,7 @@ Ce document decrit la base technique ajoutee pour soutenir une demarche de prote
 - La suppression reelle du compte n'est pas automatique; elle reste manuelle pour proteger l'integrite des reservations, messages, signalements et obligations de securite.
 - Les exports ne couvrent pas les messages prives complets.
 - L'interface admin complete des demandes privacy est limitee a l'API; le back-office detaille est prevu en phase 4.
-- Les placeholders `[A completer]` doivent etre remplaces avant toute production reelle.
+- Les placeholders administratifs restants doivent etre remplaces avant toute production reelle: adresse officielle, statut juridique, ICE si disponible et representant legal si distinct.
 
 ## Decision projet
 

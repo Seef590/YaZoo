@@ -57,4 +57,4 @@ Formulations a eviter:
 - Ajouter exports CSV et journal de moderation.
 - Rediger une procedure de conservation et suppression des documents professionnels.
 - Faire valider les textes juridiques par un conseil local competent.
-- Completer les placeholders administratifs reels dans les pages legales et documents INDH.
+- Completer les informations administratives restantes dans les pages legales et documents INDH: statut juridique, adresse officielle, ICE si disponible et documents professionnels reels.

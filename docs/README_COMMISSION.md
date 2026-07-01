@@ -6,6 +6,8 @@ YaZoo est une plateforme marocaine de mise en relation responsable autour de l'a
 
 YaZoo n'est pas un vendeur direct d'animaux. Les utilisateurs restent responsables des annonces, des informations publiees, des echanges, des prix eventuels, des documents et du respect de la reglementation applicable.
 
+Porteur de projet: Youssef BOUGHIOUL. Email officiel: youssefboughioul@gmail.com. Telephone officiel: +212606610014. Hebergeur actuel: Microsoft Azure App Service. Statut juridique, adresse officielle et ICE restent a completer.
+
 ## Fonctionnalites principales
 
 - Comptes utilisateurs avec authentification email/OTP, OTP SMS et Google.
@@ -26,7 +28,7 @@ YaZoo n'est pas un vendeur direct d'animaux. Les utilisateurs restent responsabl
 
 ## Limites actuelles
 
-Ce depot ne constitue pas a lui seul une preuve de conformite totale CNDP, ONSSA ou administrative. Les pieces reelles doivent etre completees: identite du responsable du traitement, contact donnees personnelles, documents juridiques, autorisations professionnelles, politique de conservation validee, procedures internes et registres.
+Ce depot ne constitue pas a lui seul une preuve de conformite totale CNDP, ONSSA ou administrative. Le responsable du traitement et le contact donnees personnelles sont identifies, mais les pieces reelles doivent encore etre completees: statut juridique, adresse officielle, ICE si disponible, documents juridiques, autorisations professionnelles, politique de conservation validee, procedures internes et registres.
 
 ## Partage du projet
 

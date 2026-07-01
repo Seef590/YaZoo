@@ -24,3 +24,14 @@ backend/smoke-*
 frontend/mobile-shots
 infra/backups
 *.log
+*.sql
+*.sql.gz
+*.dump
+*.bak
+*.backup
+*.zip
+*.tar
+*.gz
+*.7z
+*.pem
+*.key

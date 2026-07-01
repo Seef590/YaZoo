@@ -9,7 +9,7 @@ import { useI18n } from '../hooks/useI18n'
 const companyContact = {
   phone: '+212606610014',
   whatsapp: '212606610014',
-  email: 'bough.youssef@gmail.com',
+  email: 'youssefboughioul@gmail.com',
 }
 
 function ContactPage() {
