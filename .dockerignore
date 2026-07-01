@@ -11,6 +11,8 @@ backend/.composer
 backend/tools/coverage
 **/.scannerwork
 **/.sonar
+sonar-hotspots.json
+sonar-issues.json
 **/.vscode
 **/.idea
 **/storage/logs/*.log

@@ -12,6 +12,10 @@
 .scannerwork/
 .sonar/
 
+# Local SonarQube exports
+sonar-hotspots.json
+sonar-issues.json
+
 # Backup and disaster recovery artifacts
 /infra/backups/mysql/*
 !/infra/backups/mysql/.gitkeep
