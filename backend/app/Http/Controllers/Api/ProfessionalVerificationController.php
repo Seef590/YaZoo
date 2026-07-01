@@ -10,9 +10,14 @@ use App\Models\ProfessionalVerification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use App\Services\Admin\ModerationLogger;
 
 class ProfessionalVerificationController extends Controller
 {
+    public function __construct(
+        private readonly ModerationLogger $logger,
+    ) {}
+
     public function store(StoreProfessionalVerificationRequest $request): JsonResponse
     {
         $verification = ProfessionalVerification::query()->create([
@@ -63,6 +68,10 @@ class ProfessionalVerificationController extends Controller
             'admin_note' => $request->validated('admin_note') ?? $professionalVerification->admin_note,
             'verified_by' => $request->user()->id,
             'verified_at' => $status === 'pending' ? null : now(),
+        ]);
+
+        $this->logger->log($request, 'update_professional_verification', $professionalVerification, $request->validated('admin_note'), [
+            'status' => $status,
         ]);
 
         return response()->json([

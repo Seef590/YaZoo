@@ -73,6 +73,8 @@ class Animal extends Model
         'onssa_authorization_number',
         'legal_status',
         'moderation_note',
+        'moderated_by',
+        'moderated_at',
     ];
 
     /**
@@ -88,6 +90,7 @@ class Animal extends Model
             'price' => 'decimal:2',
             'is_for_adoption' => 'boolean',
             'accepts_animal_rules' => 'boolean',
+            'moderated_at' => 'datetime',
         ];
     }
 

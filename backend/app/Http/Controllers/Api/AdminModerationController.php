@@ -13,6 +13,7 @@ use App\Models\Product;
 use App\Models\User;
 use App\Support\MarketplaceMedia;
 use App\Support\MediaStorage;
+use App\Services\Admin\ModerationLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -20,6 +21,10 @@ use Illuminate\Support\Str;
 
 class AdminModerationController extends Controller
 {
+    public function __construct(
+        private readonly ModerationLogger $logger,
+    ) {}
+
     /**
      * Display the global moderation dashboard for admins.
      */
@@ -62,6 +67,8 @@ class AdminModerationController extends Controller
                     'mediaUrl' => MediaStorage::resolveUrl($resolvedMediaPath),
                     'mediaKind' => $resolvedMediaKind,
                     'tags' => $post->tags ?? [],
+                    'moderationStatus' => $post->moderation_status ?? 'active',
+                    'moderationNote' => $post->moderation_note,
                     'likes' => $post->likes_count ?? 0,
                     'commentsCount' => $post->comments_count ?? 0,
                     'createdAt' => $post->created_at?->toISOString(),
@@ -85,6 +92,8 @@ class AdminModerationController extends Controller
                     'location' => $animal->location,
                     'price' => $animal->price !== null ? (float) $animal->price : null,
                     'isForAdoption' => (bool) $animal->is_for_adoption,
+                    'moderationStatus' => $animal->legal_status ?? 'pending_review',
+                    'moderationNote' => $animal->moderation_note,
                     'imageUrl' => MarketplaceMedia::resolveUrl($animal->photo_url),
                     'createdAt' => $animal->created_at?->toISOString(),
                     'author' => $this->formatAuthor($animal->user),
@@ -108,6 +117,8 @@ class AdminModerationController extends Controller
                     'location' => $product->location,
                     'price' => (float) $product->price,
                     'stock' => $product->stock,
+                    'moderationStatus' => $product->moderation_status ?? 'active',
+                    'moderationNote' => $product->moderation_note,
                     'imageUrl' => MarketplaceMedia::resolveUrl($product->image_url),
                     'createdAt' => $product->created_at?->toISOString(),
                     'author' => $this->formatAuthor($product->user),
@@ -166,6 +177,9 @@ class AdminModerationController extends Controller
     public function destroyPost(Request $request, Post $post): JsonResponse
     {
         $this->ensureAdmin($request);
+        $this->logger->log($request, 'hide', $post, 'Suppression admin existante via tableau de moderation.', [
+            'operation' => 'delete_post',
+        ]);
 
         MarketplaceMedia::deleteStoredFiles([$post->image_path]);
         Comment::query()->where('post_id', $post->id)->delete();
@@ -186,6 +200,9 @@ class AdminModerationController extends Controller
     public function destroyAnimal(Request $request, Animal $animal): JsonResponse
     {
         $this->ensureAdmin($request);
+        $this->logger->log($request, 'suspend_animal', $animal, 'Suppression admin existante via tableau de moderation.', [
+            'operation' => 'delete_animal',
+        ]);
 
         MarketplaceMedia::deleteStoredFiles([
             $animal->photo_url,
@@ -206,6 +223,9 @@ class AdminModerationController extends Controller
     public function destroyProduct(Request $request, Product $product): JsonResponse
     {
         $this->ensureAdmin($request);
+        $this->logger->log($request, 'hide', $product, 'Suppression admin existante via tableau de moderation.', [
+            'operation' => 'delete_product',
+        ]);
 
         MarketplaceMedia::deleteStoredFiles([
             $product->image_url,
@@ -226,6 +246,9 @@ class AdminModerationController extends Controller
     public function destroyCommunity(Request $request, Community $community): JsonResponse
     {
         $this->ensureAdmin($request);
+        $this->logger->log($request, 'hide', $community, 'Suppression admin existante via tableau de moderation.', [
+            'operation' => 'delete_community',
+        ]);
 
         $community->delete();
 

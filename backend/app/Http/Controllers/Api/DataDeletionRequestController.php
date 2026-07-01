@@ -10,9 +10,14 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Validation\Rule;
+use App\Services\Admin\ModerationLogger;
 
 class DataDeletionRequestController extends Controller
 {
+    public function __construct(
+        private readonly ModerationLogger $logger,
+    ) {}
+
     public function store(StoreDataDeletionRequestRequest $request): JsonResponse
     {
         $existingRequest = DataDeletionRequest::query()
@@ -78,6 +83,10 @@ class DataDeletionRequestController extends Controller
             'admin_note' => $validated['admin_note'] ?? $dataDeletionRequest->admin_note,
             'reviewed_by' => $request->user()->id,
             'reviewed_at' => now(),
+        ]);
+
+        $this->logger->log($request, 'update_delete_request', $dataDeletionRequest, $validated['admin_note'] ?? null, [
+            'status' => $validated['status'],
         ]);
 
         return response()->json([

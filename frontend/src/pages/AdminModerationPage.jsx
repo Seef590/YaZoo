@@ -2,6 +2,11 @@ import { useEffect, useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 
 import {
+  exportAdminReportsCsvRequest,
+  downloadCsvResponse,
+} from '../api/adminExports'
+import { updateAdminContentModerationStatusRequest } from '../api/adminContentModeration'
+import {
   deleteAdminAnimalRequest,
   deleteAdminCommunityRequest,
   deleteAdminPostRequest,
@@ -41,6 +46,7 @@ function AdminModerationPage() {
   const [successMessage, setSuccessMessage] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [deletingKey, setDeletingKey] = useState('')
+  const [moderatingKey, setModeratingKey] = useState('')
 
   useEffect(() => {
     if (!user?.isAdmin) {
@@ -177,6 +183,39 @@ function AdminModerationPage() {
     }
   }
 
+  const handleContentModeration = async (type, item, action) => {
+    const frontendType = toContentType(type)
+    if (!frontendType) return
+
+    const note = globalThis.prompt(t('admin.moderation.moderationNotePrompt')) ?? ''
+    setModeratingKey(`${type}-${item.id}-${action}`)
+    setErrorMessage('')
+    setSuccessMessage('')
+
+    try {
+      await updateAdminContentModerationStatusRequest(frontendType, item.id, {
+        action,
+        moderation_note: note,
+      })
+      setSuccessMessage(t('admin.moderation.contentStatusUpdated'))
+      await loadDashboard()
+    } catch (error) {
+      setErrorMessage(getErrorMessage(error, t('admin.moderation.contentStatusError')))
+    } finally {
+      setModeratingKey('')
+    }
+  }
+
+  const handleReportsExport = async () => {
+    try {
+      const response = await exportAdminReportsCsvRequest()
+      downloadCsvResponse(response, 'yazoo-reports.csv')
+      setErrorMessage('')
+    } catch (error) {
+      setErrorMessage(getErrorMessage(error, t('exports.error')))
+    }
+  }
+
   return (
     <section className="space-y-6">
       <section className="overflow-hidden rounded-[30px] border border-white/80 bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.18),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(221,214,254,0.5),_transparent_28%),linear-gradient(135deg,_rgba(255,255,255,0.98)_0%,_rgba(247,241,255,0.9)_48%,_rgba(237,233,254,0.84)_100%)] p-5 shadow-[0_24px_60px_rgba(124,58,237,0.1)] sm:rounded-[32px] sm:p-6">
@@ -237,6 +276,9 @@ function AdminModerationPage() {
             <Button type="button" variant="ghost" onClick={loadDashboard} className="w-full sm:w-auto">
               {t('common.refresh')}
             </Button>
+            <Button type="button" variant="secondary" onClick={handleReportsExport} className="w-full sm:w-auto">
+              {t('exports.reports')}
+            </Button>
           </div>
         </div>
 
@@ -285,7 +327,9 @@ function AdminModerationPage() {
                 item={item}
                 type={activeTab}
                 isDeleting={deletingKey === `${activeTab}-${item.id}`}
+                moderatingKey={moderatingKey}
                 onDelete={handleDelete}
+                onModerate={handleContentModeration}
                 t={t}
               />
             ))}
@@ -322,7 +366,7 @@ function StateBox({ children }) {
   )
 }
 
-function ModerationCard({ item, type, onDelete, isDeleting, t }) {
+function ModerationCard({ item, type, onDelete, onModerate, isDeleting, moderatingKey, t }) {
   const imageUrl = item.imageUrl ?? null
   const mediaUrl = item.mediaUrl ?? null
   const mediaKind = item.mediaKind ?? null
@@ -353,6 +397,11 @@ function ModerationCard({ item, type, onDelete, isDeleting, t }) {
             <TypeBadge type={type} t={t} />
             <h3 className="mt-3 text-lg font-semibold text-stone-950 dark:text-violet-50">{item.title}</h3>
             <p className="mt-1 text-sm text-stone-500 dark:text-violet-100/62">{formatDate(item.createdAt)}</p>
+            {item.moderationStatus ? (
+              <p className="mt-2 inline-flex rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800 dark:bg-amber-400/10 dark:text-amber-100">
+                {t('admin.moderation.meta.moderationStatus')}: {item.moderationStatus}
+              </p>
+            ) : null}
           </div>
 
           <Button
@@ -424,6 +473,22 @@ function ModerationCard({ item, type, onDelete, isDeleting, t }) {
             </div>
           ))}
         </div>
+
+        {toContentType(type) ? (
+          <div className="flex flex-wrap gap-2">
+            {['hide', 'suspend', 'restore'].map((action) => (
+              <Button
+                key={action}
+                type="button"
+                variant="ghost"
+                disabled={moderatingKey === `${type}-${item.id}-${action}`}
+                onClick={() => onModerate(type, item, action)}
+              >
+                {t(`admin.moderation.actions.${action}`)}
+              </Button>
+            ))}
+          </div>
+        ) : null}
       </div>
     </article>
   )
@@ -554,6 +619,16 @@ function buildDeleteLabel(type, item, t) {
   }
 
   return t('admin.moderation.deleteLabels.community', { title: item.title })
+}
+
+function toContentType(type) {
+  const map = {
+    posts: 'post',
+    animals: 'animal',
+    products: 'product',
+  }
+
+  return map[type] ?? ''
 }
 
 function formatAnimalCategory(category, t) {

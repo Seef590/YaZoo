@@ -32,6 +32,11 @@ class ServiceListingResource extends JsonResource
             'media' => $this->media ?? [],
             'viewsCount' => $this->views_count,
             'reservationsCount' => $this->reservations_count,
+            'moderationStatus' => $this->moderation_status ?? 'active',
+            'moderationNote' => $this->when(
+                ($request->user()?->is_admin ?? false) || ($request->user()?->is($this->user) ?? false),
+                $this->moderation_note,
+            ),
             'createdAt' => $this->created_at?->toISOString(),
             'provider' => [
                 'id' => $this->user?->id,

@@ -50,6 +50,7 @@ class AnimalResource extends JsonResource
                 ($request->user()?->is_admin ?? false) || ($request->user()?->is($this->user) ?? false),
                 $this->moderation_note,
             ),
+            'moderatedAt' => $this->moderated_at?->toISOString(),
             'createdAt' => $this->created_at?->toISOString(),
             'author' => [
                 'id' => $this->user?->id,

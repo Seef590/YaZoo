@@ -70,11 +70,17 @@ return [
         'contact_not_found' => 'No user matches this contact.',
     ],
     'admin' => [
+        'forbidden' => 'Administrators only.',
         'post_deleted' => 'Post deleted by admin moderation.',
         'animal_deleted' => 'Animal listing deleted by admin moderation.',
         'animal_legal_status_updated' => 'Animal listing review status updated.',
         'product_deleted' => 'Product deleted by admin moderation.',
         'community_deleted' => 'Community deleted by admin moderation.',
+        'user_moderation_updated' => 'User moderation status updated.',
+        'self_moderation_forbidden' => 'An administrator cannot apply this action to their own account.',
+        'user_suspended' => 'Your account is suspended for publishing or contact actions.',
+        'user_banned' => 'Your account is banned.',
+        'content_moderation_updated' => 'Content moderation status updated.',
     ],
     'professional_verifications' => [
         'submitted' => 'Professional verification request sent. It will be reviewed manually.',

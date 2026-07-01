@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import PropTypes from 'prop-types'
 
+import { downloadCsvResponse, exportAdminStatsCsvRequest } from '../api/adminExports'
 import { getAdminStatsRequest } from '../api/admin'
 import Button from '../components/ui/Button'
 import { useAuth } from '../hooks/useAuth'
@@ -55,6 +56,16 @@ function AdminStatsPage() {
     return <Navigate to="/feed" replace />
   }
 
+  const handleExportStats = async () => {
+    try {
+      const response = await exportAdminStatsCsvRequest()
+      downloadCsvResponse(response, 'yazoo-admin-stats.csv')
+      setErrorMessage('')
+    } catch (error) {
+      setErrorMessage(getErrorMessage(error, t('exports.error')))
+    }
+  }
+
   return (
     <section className="space-y-6">
       <section className="rounded-[30px] border border-white/80 bg-white/92 p-5 shadow-[0_24px_60px_rgba(124,58,237,0.1)] dark:border-violet-300/14 dark:bg-white/8 sm:p-6">
@@ -70,6 +81,7 @@ function AdminStatsPage() {
         <div className="mt-5 flex flex-wrap gap-3">
           <LinkButton to="/admin/moderation">{t('common.adminContent')}</LinkButton>
           <LinkButton to="/admin/orders">{t('common.adminOrders')}</LinkButton>
+          <Button type="button" variant="secondary" onClick={handleExportStats}>{t('exports.stats')}</Button>
           <Button type="button" variant="ghost" onClick={loadStats}>{t('common.refresh')}</Button>
         </div>
       </section>

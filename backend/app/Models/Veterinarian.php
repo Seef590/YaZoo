@@ -28,6 +28,10 @@ class Veterinarian extends Model
         'longitude',
         'location_url',
         'is_active',
+        'moderation_status',
+        'moderation_note',
+        'moderated_by',
+        'moderated_at',
     ];
 
     protected function casts(): array
@@ -38,6 +42,7 @@ class Veterinarian extends Model
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',
             'is_active' => 'boolean',
+            'moderated_at' => 'datetime',
         ];
     }
 

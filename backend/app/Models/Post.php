@@ -38,6 +38,10 @@ class Post extends Model
         'location',
         'tags',
         'visibility',
+        'moderation_status',
+        'moderation_note',
+        'moderated_by',
+        'moderated_at',
     ];
 
     /**
@@ -49,6 +53,7 @@ class Post extends Model
     {
         return [
             'tags' => 'array',
+            'moderated_at' => 'datetime',
         ];
     }
 

@@ -43,6 +43,10 @@ class Product extends Model
         'stock',
         'listing_status',
         'condition_status',
+        'moderation_status',
+        'moderation_note',
+        'moderated_by',
+        'moderated_at',
     ];
 
     /**
@@ -56,6 +60,7 @@ class Product extends Model
             'gallery_urls' => 'array',
             'price' => 'decimal:2',
             'stock' => 'integer',
+            'moderated_at' => 'datetime',
         ];
     }
 

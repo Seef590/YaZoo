@@ -70,11 +70,17 @@ return [
         'contact_not_found' => 'Aucun utilisateur ne correspond a ce contact.',
     ],
     'admin' => [
+        'forbidden' => 'Acces reserve aux admins.',
         'post_deleted' => 'Post supprime par moderation admin.',
         'animal_deleted' => 'Annonce animal supprimee par moderation admin.',
         'animal_legal_status_updated' => 'Statut de revision de l annonce animal mis a jour.',
         'product_deleted' => 'Produit supprime par moderation admin.',
         'community_deleted' => 'Communaute supprimee par moderation admin.',
+        'user_moderation_updated' => 'Statut utilisateur mis a jour.',
+        'self_moderation_forbidden' => 'Un administrateur ne peut pas appliquer cette action a son propre compte.',
+        'user_suspended' => 'Votre compte est suspendu pour les actions de publication ou de contact.',
+        'user_banned' => 'Votre compte est banni.',
+        'content_moderation_updated' => 'Statut de moderation du contenu mis a jour.',
     ],
     'professional_verifications' => [
         'submitted' => 'Demande de verification professionnelle envoyee. Elle sera traitee manuellement.',

@@ -7,9 +7,11 @@ import CookieConsentBanner from './components/privacy/CookieConsentBanner'
 
 const AdminModerationPage = lazy(() => import('./pages/AdminModerationPage'))
 const AdminAnimalReviewPage = lazy(() => import('./pages/AdminAnimalReviewPage'))
+const AdminModerationActionsPage = lazy(() => import('./pages/AdminModerationActionsPage'))
 const AdminOrdersDashboardPage = lazy(() => import('./pages/AdminOrdersDashboardPage'))
 const AdminProfessionalVerificationsPage = lazy(() => import('./pages/AdminProfessionalVerificationsPage'))
 const AdminStatsPage = lazy(() => import('./pages/AdminStatsPage'))
+const AdminUsersPage = lazy(() => import('./pages/AdminUsersPage'))
 const AnimalDetailPage = lazy(() => import('./pages/AnimalDetailPage'))
 const AnimalsMarketplacePage = lazy(() => import('./pages/AnimalsMarketplacePage'))
 const AboutPage = lazy(() => import('./pages/AboutPage'))
@@ -69,8 +71,10 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/profile/:userId" element={<ProfilePage />} />
           <Route path="/admin/moderation" element={<AdminModerationPage />} />
+          <Route path="/admin/moderation-actions" element={<AdminModerationActionsPage />} />
           <Route path="/admin/animals/review" element={<AdminAnimalReviewPage />} />
           <Route path="/admin/professional-verifications" element={<AdminProfessionalVerificationsPage />} />
+          <Route path="/admin/users" element={<AdminUsersPage />} />
           <Route path="/admin/orders" element={<AdminOrdersDashboardPage />} />
           <Route path="/admin/stats" element={<AdminStatsPage />} />
           <Route path="/reservations" element={<ReservationsPage />} />

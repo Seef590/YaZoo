@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 
+import { downloadCsvResponse, exportAdminProfessionalVerificationsCsvRequest } from '../api/adminExports'
 import {
   getAdminProfessionalVerificationsRequest,
   updateAdminProfessionalVerificationStatusRequest,
@@ -45,6 +46,16 @@ function AdminProfessionalVerificationsPage() {
     return <Navigate to="/feed" replace />
   }
 
+  const handleExport = async () => {
+    try {
+      const response = await exportAdminProfessionalVerificationsCsvRequest()
+      downloadCsvResponse(response, 'yazoo-professional-verifications.csv')
+      setErrorMessage('')
+    } catch (error) {
+      setErrorMessage(getErrorMessage(error, t('exports.error')))
+    }
+  }
+
   const handleStatus = async (item, status) => {
     setUpdatingId(item.id)
     setErrorMessage('')
@@ -71,6 +82,9 @@ function AdminProfessionalVerificationsPage() {
         <p className="text-xs uppercase tracking-[0.2em] text-violet-700 dark:text-violet-200">{t('admin.professionalVerifications.eyebrow')}</p>
         <h1 className="mt-2 text-2xl font-semibold text-stone-950 dark:text-violet-50">{t('admin.professionalVerifications.title')}</h1>
         <p className="mt-3 text-sm leading-7 text-stone-600 dark:text-violet-100/76">{t('admin.professionalVerifications.subtitle')}</p>
+        <div className="mt-4">
+          <Button type="button" variant="ghost" onClick={handleExport}>{t('exports.professionalVerifications')}</Button>
+        </div>
       </header>
 
       {errorMessage ? <Message tone="error">{errorMessage}</Message> : null}

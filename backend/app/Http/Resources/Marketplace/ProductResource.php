@@ -34,6 +34,11 @@ class ProductResource extends JsonResource
             'stock' => $this->stock,
             'listingStatus' => $this->listing_status,
             'conditionStatus' => $this->condition_status,
+            'moderationStatus' => $this->moderation_status ?? 'active',
+            'moderationNote' => $this->when(
+                ($request->user()?->is_admin ?? false) || ($request->user()?->is($this->user) ?? false),
+                $this->moderation_note,
+            ),
             'createdAt' => $this->created_at?->toISOString(),
             'author' => [
                 'id' => $this->user?->id,

@@ -12,12 +12,17 @@ use App\Models\Product;
 use App\Models\Report;
 use App\Models\ServiceListing;
 use App\Models\Veterinarian;
+use App\Services\Admin\ModerationLogger;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ReportController extends Controller
 {
+    public function __construct(
+        private readonly ModerationLogger $logger,
+    ) {}
+
     /**
      * @var array<string, class-string<Model>>
      */
@@ -79,6 +84,10 @@ class ReportController extends Controller
             'status' => $request->validated('status'),
             'reviewed_by' => $request->user()->id,
             'reviewed_at' => now(),
+        ]);
+
+        $this->logger->log($request, 'update_report_status', $report, null, [
+            'status' => $request->validated('status'),
         ]);
 
         return ReportResource::make($report->load(['reporter:id,name,email', 'reviewer:id,name']));

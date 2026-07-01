@@ -70,11 +70,17 @@ return [
         'contact_not_found' => 'لا يوجد مستخدم يطابق هذا الاتصال.',
     ],
     'admin' => [
+        'forbidden' => 'هذا المسار مخصص للإدارة فقط.',
         'post_deleted' => 'تم حذف المنشور من طرف إدارة المحتوى.',
         'animal_deleted' => 'تم حذف إعلان الحيوان من طرف الإدارة.',
         'animal_legal_status_updated' => 'تم تحديث حالة مراجعة إعلان الحيوان.',
         'product_deleted' => 'تم حذف المنتج من طرف الإدارة.',
         'community_deleted' => 'تم حذف المجتمع من طرف الإدارة.',
+        'user_moderation_updated' => 'تم تحديث حالة المستخدم.',
+        'self_moderation_forbidden' => 'لا يمكن للمدير تطبيق هذا الإجراء على حسابه الشخصي.',
+        'user_suspended' => 'حسابك موقوف عن إجراءات النشر أو التواصل.',
+        'user_banned' => 'حسابك محظور.',
+        'content_moderation_updated' => 'تم تحديث حالة إشراف المحتوى.',
     ],
     'professional_verifications' => [
         'submitted' => 'تم إرسال طلب التحقق المهني وسيتم مراجعته يدويا.',

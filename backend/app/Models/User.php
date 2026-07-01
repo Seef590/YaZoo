@@ -35,6 +35,11 @@ class User extends Authenticatable
         'google_id',
         'google_avatar',
         'is_admin',
+        'is_suspended',
+        'suspended_at',
+        'suspended_reason',
+        'banned_at',
+        'banned_reason',
         'password',
         'phone_verified_at',
         'preferred_locale',
@@ -61,6 +66,9 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'phone_verified_at' => 'datetime',
             'is_admin' => 'boolean',
+            'is_suspended' => 'boolean',
+            'suspended_at' => 'datetime',
+            'banned_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
@@ -231,6 +239,11 @@ class User extends Authenticatable
         return $this->hasOne(ProfessionalVerification::class)->latestOfMany();
     }
 
+    public function moderationActions(): HasMany
+    {
+        return $this->hasMany(ModerationAction::class, 'admin_id');
+    }
+
     /**
      * Get the reviews written by the user.
      */
@@ -269,5 +282,15 @@ class User extends Authenticatable
     public function hasVerifiedPhone(): bool
     {
         return $this->phone_verified_at !== null;
+    }
+
+    public function isSuspended(): bool
+    {
+        return (bool) $this->is_suspended;
+    }
+
+    public function isBanned(): bool
+    {
+        return $this->banned_at !== null;
     }
 }

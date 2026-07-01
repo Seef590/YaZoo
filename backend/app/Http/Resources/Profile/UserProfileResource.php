@@ -45,6 +45,8 @@ class UserProfileResource extends JsonResource
             'isPhoneVerified' => $this->hasVerifiedPhone(),
             'isProfessionalVerified' => $this->latestProfessionalVerification?->status === 'approved',
             'professionalVerificationStatus' => $this->latestProfessionalVerification?->status,
+            'isSuspended' => (bool) $this->is_suspended,
+            'isBanned' => $this->banned_at !== null,
             'isFollowing' => $viewer
                 ? $this->followers()->where('follower_user_id', $viewer->id)->exists()
                 : false,

@@ -32,6 +32,12 @@ class UserResource extends JsonResource
             'avatar' => MediaStorage::resolveUrl($this->avatar),
             'coverPhoto' => MediaStorage::resolveUrl($this->cover_photo),
             'isAdmin' => (bool) $this->is_admin,
+            'isSuspended' => (bool) $this->is_suspended,
+            'isBanned' => $this->banned_at !== null,
+            'suspendedAt' => $this->suspended_at?->toISOString(),
+            'bannedAt' => $this->banned_at?->toISOString(),
+            'suspendedReason' => $canViewPrivateDetails ? $this->suspended_reason : null,
+            'bannedReason' => $canViewPrivateDetails ? $this->banned_reason : null,
             'isPhoneVerified' => $this->hasVerifiedPhone(),
             'isFollowing' => $request->user()
                 ? $this->followers()->where('follower_user_id', $request->user()->id)->exists()

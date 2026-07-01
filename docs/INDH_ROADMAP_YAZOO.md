@@ -54,7 +54,7 @@ Objectif: verification professionnelle, champs de conformite animale, statuts de
 
 ### Phase 4 - Admin gouvernemental
 
-Statut: non demarree.
+Statut: en cours.
 
 Objectif: moderation actions, suspensions, exports CSV, historique admin et middleware admin consolide.
 
@@ -140,6 +140,37 @@ Objectif: PWA, SEO, accessibilite, documentation INDH finale et checklists de pr
 - `docs/ONSSA_COMPLIANCE_NOTES.md` cree.
 - `AUDIT_I18N_UI_MOBILE_YAZOO.md` regenere par l'audit i18n.
 
+### Phase 4
+
+- Phase admin institutionnel terminee localement.
+- Lecture de la roadmap, des notes ONSSA et CNDP effectuee avant modification.
+- Inspection des routes admin, pages admin, modeles et coherence Docker/code local effectuee.
+- `backend/app/Http/Middleware/EnsureUserIsAdmin.php` cree.
+- `backend/app/Http/Middleware/EnsureUserIsNotSuspended.php` cree.
+- `backend/app/Models/ModerationAction.php` cree.
+- `backend/app/Services/Admin/ModerationLogger.php` cree.
+- `backend/app/Http/Controllers/Api/AdminModerationActionController.php` cree.
+- `backend/app/Http/Controllers/Api/AdminUserModerationController.php` cree.
+- `backend/app/Http/Controllers/Api/AdminContentModerationController.php` cree.
+- `backend/app/Http/Controllers/Api/AdminExportController.php` cree.
+- `backend/app/Http/Requests/Admin/ModerateUserRequest.php` cree.
+- `backend/app/Http/Requests/Admin/UpdateContentModerationStatusRequest.php` cree.
+- `backend/app/Http/Resources/ModerationActionResource.php` cree.
+- `backend/tests/Feature/Admin/AdminUserModerationTest.php` cree.
+- `backend/tests/Feature/Admin/AdminModerationActionTest.php` cree.
+- `backend/tests/Feature/Admin/AdminExportTest.php` cree.
+- `backend/tests/Feature/Admin/AdminContentModerationTest.php` cree.
+- Modeles `User`, `Animal`, `Product`, `ServiceListing`, `Veterinarian`, `Post` modifies pour les statuts moderation/suspension.
+- Ressources `UserResource`, `UserProfileResource`, `AnimalResource`, `ProductResource`, `ServiceListingResource`, `PostResource` enrichies.
+- Controllers admin/report/privacy/pro verification/revue animaux modifies pour journaliser les actions sensibles.
+- `backend/bootstrap/app.php`, `backend/routes/api.php`, `backend/lang/fr/messages.php`, `backend/lang/ar/messages.php`, `backend/lang/en/messages.php` modifies.
+- `frontend/src/api/adminUsers.js`, `frontend/src/api/moderationActions.js`, `frontend/src/api/adminContentModeration.js`, `frontend/src/api/adminExports.js` crees.
+- `frontend/src/pages/AdminUsersPage.jsx` cree.
+- `frontend/src/pages/AdminModerationActionsPage.jsx` cree.
+- `frontend/src/App.jsx`, `frontend/src/layouts/Layout.jsx`, `frontend/src/pages/AdminModerationPage.jsx`, `frontend/src/pages/AdminStatsPage.jsx`, `frontend/src/pages/AdminProfessionalVerificationsPage.jsx`, `frontend/src/lib/i18n.js` modifies.
+- `docs/ADMIN_GOVERNANCE_NOTES.md` cree.
+- `AUDIT_I18N_UI_MOBILE_YAZOO.md` regenere par l'audit i18n.
+
 ## 6. Migrations creees
 
 ### Phase 1
@@ -159,6 +190,14 @@ Migrations creees et appliquees localement sur MySQL Docker:
 
 - `2026_06_30_200000_create_professional_verifications_table` - batch 5, Ran.
 - `2026_06_30_200100_add_compliance_fields_to_animals_table` - batch 5, Ran.
+
+### Phase 4
+
+Migrations creees et appliquees localement sur MySQL Docker apres rebuild local de l'image backend:
+
+- `2026_07_01_000000_create_moderation_actions_table` - batch 6, Ran.
+- `2026_07_01_000100_add_moderation_fields_to_users_table` - batch 6, Ran.
+- `2026_07_01_000200_add_moderation_fields_to_content_tables` - batch 6, Ran.
 
 ## 7. Tests executes
 
@@ -191,12 +230,31 @@ Migrations creees et appliquees localement sur MySQL Docker:
 - `npm run build` dans `frontend`: OK.
 - `node scripts/audit-i18n.mjs`: OK, 977 cles detectees, 0 texte statique suspect.
 
+### Phase 4
+
+- `php artisan migrate` depuis Windows: annule par Laravel car l'application est detectee en production et demande une confirmation interactive. `.env` non modifie.
+- `php artisan test --filter=AdminUserModerationTest`: OK, 4 tests, 9 assertions.
+- `php artisan test --filter=AdminContentModerationTest`: OK, 1 test, 4 assertions.
+- `php artisan test --filter=AdminModerationActionTest`: OK, 1 test, 3 assertions.
+- `php artisan test --filter=AdminExportTest`: OK, 2 tests, 5 assertions.
+- `php artisan test` dans `backend`: OK, 111 tests, 612 assertions.
+- `npm run lint` dans `frontend`: OK.
+- `npm test -- --run` dans `frontend`: OK, 11 fichiers, 26 tests.
+- `npm run build` dans `frontend`: OK.
+- `node scripts/audit-i18n.mjs`: OK, 1021 cles detectees, 0 texte statique suspect.
+- `docker compose build app queue`: OK, image backend locale reconstruite avec le code Phase 4.
+- `docker compose up -d app queue`: OK, services backend locaux recrees sans suppression de volumes.
+- `docker exec yazoo-app-1 php artisan migrate --force`: OK, rien a migrer car les migrations Phase 4 etaient deja appliquees au demarrage du conteneur reconstruit.
+- `docker exec yazoo-app-1 php artisan migrate:status`: OK, migrations Phase 4 batch 6 Ran.
+
 ## 8. Points non termines
 
-- Completer les phases 4 et 5 apres validation.
+- Completer la Phase 5 apres validation explicite.
+- Phase 4 terminee; ne pas passer a la Phase 5 sans demande explicite.
 - Remplacer les placeholders `[A completer]` par les informations administratives reelles avant production ou depot officiel.
 - Renforcer le stockage prive des documents professionnels/animaux avant production publique.
-- Finaliser back-office privacy complet, historique moderation et exports admin en phase 4.
+- Finaliser les procedures humaines de traitement privacy/admin avant production reelle.
+- Prevoir en Phase 5 les controles PWA, SEO, accessibilite et dossier INDH final.
 - Completer PWA, SEO, accessibilite et dossier INDH final en phase 5.
 - Remplacer les contacts CNDP `[A completer]` par les informations reelles.
 
@@ -212,11 +270,15 @@ Migrations creees et appliquees localement sur MySQL Docker:
 - Phase 2: les IP et user-agents de consentement sont haches, pas stockes en clair.
 - Phase 2: l'export exclut les messages prives complets pour ne pas exposer les donnees d'autres utilisateurs.
 - Phase 2: la suppression de compte n'est pas automatique; elle cree une demande manuelle.
-- Phase 2: une API admin minimale de suivi des demandes de suppression existe, l'interface admin complete reste prevue en phase 4.
+- Phase 2: une API admin minimale de suivi des demandes de suppression existe; la Phase 4 a ajoute la journalisation admin associee.
 - Phase 3: ne pas presenter YaZoo comme autorite ONSSA; utiliser des mentions prudentes comme informations de conformite, documents en cours de verification et professionnel verifie par l'administration YaZoo.
 - Phase 3: les champs documentaires animaux et professionnels restent des references texte; aucun upload prive documentaire n'a ete introduit pour eviter un stockage dangereux premature.
 - Phase 3: les nouvelles annonces animaux sont creees en `pending_review`; les anciennes annonces restent compatibles avec des valeurs par defaut.
 - Phase 3: le conteneur Docker local `yazoo-app-1` utilise une image sans montage complet du code local; les migrations Phase 3 ont ete copiees dans le conteneur pour appliquer la base sans reconstruire ni deployer.
+- Phase 4: la coherence Docker/code local a ete corrigee par `docker compose build app queue` puis recreation locale de `app` et `queue`; aucune copie de migration seule n'a ete utilisee.
+- Phase 4: le middleware admin centralise est applique aux routes admin; les anciens checks inline peuvent rester en defense supplementaire.
+- Phase 4: les utilisateurs suspendus/bannis sont bloques sur les principales routes d'ecriture sans bloquer login/logout/profil.
+- Phase 4: les exports CSV excluent mots de passe, tokens et secrets; les IP/user-agents de moderation sont haches.
 
 ## 10. Confirmation de securite locale
 

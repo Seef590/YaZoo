@@ -1,9 +1,13 @@
 <?php
 
 use App\Http\Controllers\Api\AdminAnimalReviewController;
+use App\Http\Controllers\Api\AdminContentModerationController;
+use App\Http\Controllers\Api\AdminExportController;
 use App\Http\Controllers\Api\AdminModerationController;
+use App\Http\Controllers\Api\AdminModerationActionController;
 use App\Http\Controllers\Api\AdminOrdersController;
 use App\Http\Controllers\Api\AdminStatsController;
+use App\Http\Controllers\Api\AdminUserModerationController;
 use App\Http\Controllers\Api\AnimalController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CommentController;
@@ -73,7 +77,7 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
 
     Route::middleware([UseSanctumTokenFromCookie::class, 'auth:sanctum'])->group(function (): void {
         Route::get('/posts', [PostController::class, 'index']);
-        Route::middleware('throttle:feed-write')->group(function (): void {
+        Route::middleware(['throttle:feed-write', 'not_suspended'])->group(function (): void {
             Route::post('/posts', [PostController::class, 'store']);
             Route::patch('/posts/{post}', [PostController::class, 'update']);
             Route::delete('/posts/{post}', [PostController::class, 'destroy']);
@@ -83,7 +87,7 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
         });
 
         Route::get('/stories', [StoryController::class, 'index']);
-        Route::middleware('throttle:stories-write')->group(function (): void {
+        Route::middleware(['throttle:stories-write', 'not_suspended'])->group(function (): void {
             Route::post('/stories', [StoryController::class, 'store']);
             Route::post('/stories/{story}/view', [StoryController::class, 'markAsViewed']);
             Route::delete('/stories/{story}', [StoryController::class, 'destroy']);
@@ -109,7 +113,7 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
         Route::get('/services/types', [ServiceListingController::class, 'types']);
         Route::get('/services/{service}', [ServiceListingController::class, 'show']);
 
-        Route::middleware('throttle:marketplace-write')->group(function (): void {
+        Route::middleware(['throttle:marketplace-write', 'not_suspended'])->group(function (): void {
             Route::post('/animals', [AnimalController::class, 'store']);
             Route::put('/animals/{animal}', [AnimalController::class, 'update']);
             Route::delete('/animals/{animal}', [AnimalController::class, 'destroy']);
@@ -163,7 +167,7 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
         Route::get('/messages/unread-count', [ConversationController::class, 'unreadCount']);
         Route::get('/conversations/{conversation}', [ConversationController::class, 'show']);
         Route::patch('/conversations/{conversation}/read', [ConversationController::class, 'read']);
-        Route::middleware('throttle:messages-write')->group(function (): void {
+        Route::middleware(['throttle:messages-write', 'not_suspended'])->group(function (): void {
             Route::post('/conversations', [ConversationController::class, 'store']);
             Route::post('/conversations/direct', [ConversationController::class, 'direct']);
             Route::post('/conversations/{conversation}/messages', [MessageController::class, 'store']);
@@ -176,7 +180,7 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
 
         Route::get('/search', [SearchController::class, 'index']);
         Route::get('/search/users', [SearchController::class, 'users']);
-        Route::post('/reports', [ReportController::class, 'store']);
+        Route::post('/reports', [ReportController::class, 'store'])->middleware('not_suspended');
         Route::get('/privacy/export', [PrivacyController::class, 'export']);
         Route::post('/privacy/consents', [PrivacyConsentController::class, 'store']);
         Route::get('/privacy/consents', [PrivacyConsentController::class, 'index']);
@@ -185,12 +189,20 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
         Route::post('/professional-verifications', [ProfessionalVerificationController::class, 'store']);
         Route::get('/professional-verifications/me', [ProfessionalVerificationController::class, 'me']);
 
-        Route::prefix('admin')->group(function (): void {
-            Route::get('/users', [UserController::class, 'index']);
+        Route::prefix('admin')->middleware('admin')->group(function (): void {
+            Route::get('/users', [AdminUserModerationController::class, 'index']);
             Route::post('/users', [UserController::class, 'store']);
+            Route::patch('/users/{user}/suspension', [AdminUserModerationController::class, 'updateSuspension']);
+            Route::patch('/users/{user}/ban', [AdminUserModerationController::class, 'updateBan']);
             Route::get('/stats', AdminStatsController::class);
             Route::get('/reports', [ReportController::class, 'index']);
             Route::patch('/reports/{report}/status', [ReportController::class, 'updateStatus']);
+            Route::get('/moderation-actions', [AdminModerationActionController::class, 'index']);
+            Route::patch('/content/{type}/{id}/moderation-status', [AdminContentModerationController::class, 'update']);
+            Route::get('/exports/stats.csv', [AdminExportController::class, 'stats']);
+            Route::get('/exports/reports.csv', [AdminExportController::class, 'reports']);
+            Route::get('/exports/moderation-actions.csv', [AdminExportController::class, 'moderationActions']);
+            Route::get('/exports/professional-verifications.csv', [AdminExportController::class, 'professionalVerifications']);
             Route::get('/privacy/delete-requests', [DataDeletionRequestController::class, 'adminIndex']);
             Route::patch('/privacy/delete-requests/{dataDeletionRequest}/status', [DataDeletionRequestController::class, 'updateStatus']);
             Route::get('/professional-verifications', [ProfessionalVerificationController::class, 'adminIndex']);

@@ -9,9 +9,14 @@ use App\Models\Animal;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use App\Services\Admin\ModerationLogger;
 
 class AdminAnimalReviewController extends Controller
 {
+    public function __construct(
+        private readonly ModerationLogger $logger,
+    ) {}
+
     public function index(Request $request): AnonymousResourceCollection
     {
         abort_unless((bool) $request->user()?->is_admin, 403);
@@ -36,6 +41,12 @@ class AdminAnimalReviewController extends Controller
         $animal->update([
             'legal_status' => $request->validated('legal_status'),
             'moderation_note' => $request->validated('moderation_note') ?? $animal->moderation_note,
+            'moderated_by' => $request->user()->id,
+            'moderated_at' => now(),
+        ]);
+
+        $this->logger->log($request, $this->actionForStatus($request->validated('legal_status')), $animal, $request->validated('moderation_note'), [
+            'legal_status' => $request->validated('legal_status'),
         ]);
 
         return response()->json([
@@ -47,5 +58,15 @@ class AdminAnimalReviewController extends Controller
                 ]),
             ),
         ]);
+    }
+
+    private function actionForStatus(string $status): string
+    {
+        return match ($status) {
+            'approved' => 'approve_animal',
+            'rejected' => 'reject_animal',
+            'suspended' => 'suspend_animal',
+            default => 'restore_animal',
+        };
     }
 }

@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\HealthController;
+use App\Http\Middleware\EnsureUserIsAdmin;
+use App\Http\Middleware\EnsureUserIsNotSuspended;
 use App\Http\Middleware\ForceHttps;
 use App\Http\Middleware\ForceJsonResponse;
 use App\Http\Middleware\SecurityHeaders;
@@ -46,6 +48,11 @@ return Application::configure(basePath: dirname(__DIR__))
             AuthenticatesRequests::class,
             UseSanctumTokenFromCookie::class,
         );
+
+        $middleware->alias([
+            'admin' => EnsureUserIsAdmin::class,
+            'not_suspended' => EnsureUserIsNotSuspended::class,
+        ]);
     })
     ->withSchedule(function (Schedule $schedule): void {
         if (! (bool) env('MEDIA_BACKUP_ENABLED', false)) {

@@ -51,6 +51,10 @@ class ServiceListing extends Model
         'media',
         'views_count',
         'reservations_count',
+        'moderation_status',
+        'moderation_note',
+        'moderated_by',
+        'moderated_at',
     ];
 
     protected function casts(): array
@@ -63,6 +67,7 @@ class ServiceListing extends Model
             'whatsapp_enabled' => 'boolean',
             'views_count' => 'integer',
             'reservations_count' => 'integer',
+            'moderated_at' => 'datetime',
         ];
     }
 
