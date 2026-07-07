@@ -7,6 +7,8 @@ import {
   approveReservationRequest,
   cancelReservationRequest,
   completeReservationRequest,
+  createReservationPaymentRequest,
+  getPaymentConfigRequest,
   getReservationsRequest,
   rejectReservationRequest,
   updateReservationDeliveryStatusRequest,
@@ -18,6 +20,8 @@ vi.mock('../api/reservations', () => ({
   approveReservationRequest: vi.fn(),
   cancelReservationRequest: vi.fn(),
   completeReservationRequest: vi.fn(),
+  createReservationPaymentRequest: vi.fn(),
+  getPaymentConfigRequest: vi.fn(),
   getReservationsRequest: vi.fn(),
   rejectReservationRequest: vi.fn(),
   updateReservationDeliveryStatusRequest: vi.fn(),
@@ -82,10 +86,14 @@ describe('ReservationsPage', () => {
         sellerReservations: [sellerReservation],
       },
     })
+    getPaymentConfigRequest.mockResolvedValue({
+      data: { providers: { cmi: { enabled: false } } },
+    })
     approveReservationRequest.mockResolvedValue({ data: {} })
     rejectReservationRequest.mockResolvedValue({ data: {} })
     cancelReservationRequest.mockResolvedValue({ data: {} })
     completeReservationRequest.mockResolvedValue({ data: {} })
+    createReservationPaymentRequest.mockResolvedValue({ data: {} })
     updateReservationDeliveryStatusRequest.mockResolvedValue({ data: {} })
   })
 
@@ -108,6 +116,11 @@ describe('ReservationsPage', () => {
     await screen.findByRole('heading', { name: 'Centre de commandes' })
 
     await user.click(await screen.findByRole('button', { name: /Mes ventes \(1\)/ }))
+
+    expect(screen.getByText('Suivi')).toBeInTheDocument()
+    expect(screen.getByText('Demande envoyee')).toBeInTheDocument()
+    expect(screen.getByText('Paiement a la remise: a regler lors de la livraison ou du retrait.')).toBeInTheDocument()
+
     await user.click(screen.getByRole('button', { name: 'Approuver' }))
 
     await waitFor(() => {

@@ -5,7 +5,7 @@ import { createReservationRequest } from '../../api/reservations'
 import { useI18n } from '../../hooks/useI18n'
 import ReportButton from '../reports/ReportButton'
 import Button from '../ui/Button'
-import { Info, LinkButton } from './MarketplaceCommon'
+import { FavoriteButton, Info, LinkButton, ManualPaymentBadges, RatingSummary, SellerTrustBadges, TrustBadge } from './MarketplaceCommon'
 
 function ServiceCard({ service, onReserved }) {
   const { t } = useI18n()
@@ -57,6 +57,21 @@ function ServiceCard({ service, onReserved }) {
         {service.description}
       </p>
 
+      <div className="mt-3">
+        <RatingSummary averageRating={service.averageRating} reviewsCount={service.reviewsCount} compact />
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        <TrustBadge tone="violet">{service.city || t('common.city')}</TrustBadge>
+        {service.whatsappEnabled ? <TrustBadge tone="emerald">{t('marketplaceBadges.whatsappAvailable')}</TrustBadge> : null}
+      </div>
+      <div className="mt-3">
+        <SellerTrustBadges author={service.provider} />
+      </div>
+      <div className="mt-3">
+        <ManualPaymentBadges />
+      </div>
+
       <div className="mt-4 grid grid-cols-2 gap-3">
         <Info label={t('common.city')} value={service.city || t('common.notProvided')} />
         <Info label={t('services.priceType')} value={t(`services.priceTypes.${service.priceType}`)} />
@@ -76,6 +91,7 @@ function ServiceCard({ service, onReserved }) {
             <Button type="button" onClick={handleReserve} disabled={isReserving} className="w-full sm:w-auto">
               {isReserving ? t('common.loading') : t('reservations.bookSession')}
             </Button>
+            <FavoriteButton type="services" itemId={service.id} initialFavorited={service.isFavorited} />
             {service.contactPhone && service.whatsappEnabled ? (
               <a
                 href={`https://wa.me/${String(service.contactPhone).replace(/\D/g, '')}`}

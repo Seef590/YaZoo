@@ -8,6 +8,7 @@ import {
 } from '../api/notifications'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
+import SkeletonBlock from '../components/ui/SkeletonBlock'
 import { useI18n } from '../hooks/useI18n'
 import { useNotifications } from '../hooks/useNotifications'
 import { asArray, extractDataArray, extractDataObject } from '../utils/apiData'
@@ -257,7 +258,7 @@ function NotificationsPage() {
           ))}
         </div>
 
-        {isLoading ? <StateBox>{t('notifications.loading')}</StateBox> : null}
+        {isLoading ? <SkeletonBlock count={3} label={t('notifications.loading')} variant="notifications" /> : null}
 
         {!isLoading && notifications.length === 0 ? (
           <StateBox>{t('notifications.empty')}</StateBox>

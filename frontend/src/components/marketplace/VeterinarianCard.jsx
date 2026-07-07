@@ -2,6 +2,7 @@ import PropTypes from 'prop-types'
 
 import { useI18n } from '../../hooks/useI18n'
 import ReportButton from '../reports/ReportButton'
+import { FavoriteButton, RatingSummary, SellerTrustBadges, TrustBadge } from './MarketplaceCommon'
 
 function VeterinarianCard({ veterinarian }) {
   const { t } = useI18n()
@@ -49,6 +50,10 @@ function VeterinarianCard({ veterinarian }) {
         {veterinarian.description || t('marketplace.noDescription')}
       </p>
 
+      <div className="mt-3">
+        <RatingSummary averageRating={veterinarian.averageRating} reviewsCount={veterinarian.reviewsCount} compact />
+      </div>
+
       {veterinarian.specialties?.length ? (
         <div className="mt-4 flex max-w-full flex-wrap gap-2">
           {veterinarian.specialties.map((specialty) => (
@@ -61,6 +66,16 @@ function VeterinarianCard({ veterinarian }) {
           ))}
         </div>
       ) : null}
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        <TrustBadge tone="violet">{veterinarian.city || t('veterinarians.noLocation')}</TrustBadge>
+        {veterinarian.phone ? <TrustBadge tone="emerald">{t('marketplaceBadges.phoneContact')}</TrustBadge> : null}
+        {veterinarian.whatsapp ? <TrustBadge tone="emerald">{t('marketplaceBadges.whatsappAvailable')}</TrustBadge> : null}
+      </div>
+
+      <div className="mt-3">
+        <SellerTrustBadges author={veterinarian.owner} />
+      </div>
 
       <div className="mt-4 grid gap-2 sm:grid-cols-2">
         {veterinarian.phone ? (
@@ -77,6 +92,11 @@ function VeterinarianCard({ veterinarian }) {
         ) : null}
       </div>
       <div className="mt-4">
+        {!veterinarian.isOwner ? (
+          <div className="mb-3">
+            <FavoriteButton type="veterinarians" itemId={veterinarian.id} initialFavorited={veterinarian.isFavorited} />
+          </div>
+        ) : null}
         <ReportButton
           reportableType="veterinarian"
           reportableId={veterinarian.id}

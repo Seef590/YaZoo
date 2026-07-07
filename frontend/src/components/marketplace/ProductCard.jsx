@@ -3,7 +3,7 @@ import Button from '../ui/Button'
 import { Link } from 'react-router-dom'
 import ReportButton from '../reports/ReportButton'
 import VerifiedPhoneBadge from '../ui/VerifiedPhoneBadge'
-import { Info, LinkButton } from './MarketplaceCommon'
+import { FavoriteButton, Info, LinkButton, ManualPaymentBadges, RatingSummary, SellerTrustBadges } from './MarketplaceCommon'
 import {
   buildProductContactPath,
   buildPhoneContactHref,
@@ -49,6 +49,8 @@ function ProductCard({ product, onDelete, onEdit }) {
           </span>
         </div>
 
+        <RatingSummary averageRating={product.averageRating} reviewsCount={product.reviewsCount} compact />
+
         <div className="flex items-center gap-3 rounded-[22px] bg-white/88 px-4 py-3 shadow-sm dark:bg-white/8">
           <AuthorAvatar author={product.author} t={t} />
           <div className="min-w-0">
@@ -59,6 +61,9 @@ function ProductCard({ product, onDelete, onEdit }) {
             <p className="text-xs text-stone-500 dark:text-violet-100/60">{[product.location, formatDate(product.createdAt)].filter(Boolean).join(' - ')}</p>
           </div>
         </div>
+
+        <SellerTrustBadges author={product.author} />
+        <ManualPaymentBadges />
 
         {gallery.length > 1 ? (
           <div className="flex gap-3 overflow-x-auto pb-1 snap-x snap-mandatory">
@@ -99,6 +104,7 @@ function ProductActions({ product, onDelete, onEdit }) {
   return (
     <div className="grid gap-3 sm:flex sm:flex-wrap">
       <LinkButton to={`/marketplace/products/${product.id}`} variant="secondary" className="w-full sm:w-auto">{t('common.details')}</LinkButton>
+      <FavoriteButton type="products" itemId={product.id} initialFavorited={product.isFavorited} />
       {product.author?.id ? (
         <LinkButton to={buildProductContactPath(product, t)} variant="ghost" className="w-full sm:w-auto">{t('common.contact')}</LinkButton>
       ) : null}

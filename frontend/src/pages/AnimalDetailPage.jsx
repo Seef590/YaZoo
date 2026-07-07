@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router-dom'
 import { getAnimalRequest } from '../api/animals'
 import { createAnimalReservationRequest } from '../api/reservations'
 import AnimalSafetyNotice from '../components/marketplace/AnimalSafetyNotice'
+import { FavoriteButton, RatingSummary, SellerTrustBadges } from '../components/marketplace/MarketplaceCommon'
 import ReportButton from '../components/reports/ReportButton'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
@@ -116,6 +117,7 @@ function AnimalDetailPage() {
   }
 
   const canReserve = !animal.isOwner && animal.listingStatus === 'available'
+  const reservationPanelId = 'animal-reservation-panel'
 
   const handleReservationChange = (field) => (event) => {
     setReservationForm((current) => ({
@@ -199,6 +201,12 @@ function AnimalDetailPage() {
             <p className="mt-3 max-w-2xl text-sm leading-7 text-stone-600">
               {animal.description || t('marketplace.animalDetailFallbackDescription')}
             </p>
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <RatingSummary averageRating={animal.averageRating} reviewsCount={animal.reviewsCount} />
+              {!animal.isOwner ? (
+                <FavoriteButton type="animals" itemId={animal.id} initialFavorited={animal.isFavorited} />
+              ) : null}
+            </div>
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
@@ -266,6 +274,7 @@ function AnimalDetailPage() {
               <Info label={t('common.published')} value={formatDate(animal.createdAt)} />
               <Info label={t('animals.sellerType')} value={formatAnimalSellerType(animal.sellerType, t)} />
               <Info label={t('animals.reviewStatus')} value={formatAnimalLegalStatus(animal.legalStatus, t)} />
+              <Info label={t('animals.documentaryStatus')} value={formatAnimalDocumentaryStatus(animal.documentaryStatus, t)} />
               <Info label={t('animals.origin')} value={animal.origin || t('common.notProvided')} />
               <Info label={t('animals.identificationNumber')} value={animal.identificationNumber || t('common.notProvided')} />
               <Info label={t('animals.onssaAuthorizationNumber')} value={animal.onssaAuthorizationNumber || t('common.notProvided')} />
@@ -299,10 +308,13 @@ function AnimalDetailPage() {
                   </p>
                 </div>
               </div>
+              <div className="mt-3">
+                <SellerTrustBadges author={animal.author} sellerType={animal.sellerType} />
+              </div>
             </div>
 
             {!animal.isOwner ? (
-              <div className="space-y-4 rounded-[24px] border border-violet-100 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98),_rgba(246,239,255,0.82))] p-4 pb-24 lg:pb-4">
+              <div id={reservationPanelId} className="space-y-4 rounded-[24px] border border-violet-100 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98),_rgba(246,239,255,0.82))] p-4 pb-24 lg:pb-4">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
                     <p className="text-sm font-semibold text-stone-950">
@@ -457,6 +469,21 @@ function AnimalDetailPage() {
           </div>
         </div>
       </article>
+      {!animal.isOwner ? (
+        <div className="fixed inset-x-3 bottom-[calc(5.75rem+env(safe-area-inset-bottom))] z-30 grid gap-2 rounded-[24px] border border-white/70 bg-white/96 p-2 shadow-[0_20px_54px_rgba(35,13,68,0.2)] backdrop-blur-2xl sm:hidden">
+          <a
+            href={canReserve ? `#${reservationPanelId}` : '#main-content'}
+            className="inline-flex items-center justify-center rounded-full bg-[linear-gradient(135deg,#7c3aed,#a855f7)] px-4 py-3 text-sm font-semibold text-white"
+          >
+            {canReserve ? t('marketplace.reserveListing') : t('common.details')}
+          </a>
+          {animal.author?.id ? (
+            <LinkButton to={buildAnimalContactPath(animal, t)} variant="secondary">
+              {t('marketplace.contactSeller')}
+            </LinkButton>
+          ) : null}
+        </div>
+      ) : null}
     </section>
   )
 }
@@ -544,6 +571,12 @@ function formatAnimalReservationTotal(animal, deliveryMethod) {
   const deliveryFee = deliveryMethod === 'delivery' ? 60 : 0
 
   return basePrice + deliveryFee
+}
+
+function formatAnimalDocumentaryStatus(status, t) {
+  const safeStatus = status || 'unverified'
+
+  return t(`animals.documentaryStatuses.${safeStatus}`)
 }
 
 export default AnimalDetailPage

@@ -131,6 +131,17 @@ export function useAnimalsMarketplace() {
     await loadAnimals(defaultAnimalFilters)
   }
 
+  const applyQuickFilter = async (field, value) => {
+    const nextFilters = {
+      ...filters,
+      [field]: filters[field] === value ? '' : value,
+    }
+
+    setFilters(nextFilters)
+    setIsLoading(true)
+    await loadAnimals(nextFilters)
+  }
+
   const handleSubmit = async (event) => {
     event.preventDefault()
     setErrorMessage('')
@@ -236,6 +247,7 @@ export function useAnimalsMarketplace() {
     handleFilterChange,
     handleFormChange,
     handleResetFilters,
+    applyQuickFilter,
     handleSearch,
     handleSubmit,
     resetForm,

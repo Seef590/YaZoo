@@ -5,7 +5,7 @@ import AnimalCard from '../components/marketplace/AnimalCard'
 import AnimalListingForm from '../components/marketplace/AnimalListingForm'
 import AnimalSafetyNotice from '../components/marketplace/AnimalSafetyNotice'
 import AnimalsFilters from '../components/marketplace/AnimalsFilters'
-import { MarketplaceHero } from '../components/marketplace/MarketplaceCommon'
+import { MarketplaceHero, QuickFilterChips } from '../components/marketplace/MarketplaceCommon'
 import CollapsiblePanel from '../components/ui/CollapsiblePanel'
 import { useAnimalsMarketplace } from '../hooks/useAnimalsMarketplace'
 import { useI18n } from '../hooks/useI18n'
@@ -31,6 +31,41 @@ function AnimalsMarketplacePage() {
       />
 
       <AnimalSafetyNotice />
+
+      <QuickFilterChips
+        chips={[
+          {
+            key: 'all',
+            label: t('common.all'),
+            active: marketplace.activeFiltersCount === 0,
+            onClick: marketplace.handleResetFilters,
+          },
+          {
+            key: 'dogs',
+            label: t('animals.labels.dog'),
+            active: marketplace.filters.category === 'dog',
+            onClick: () => marketplace.applyQuickFilter('category', 'dog'),
+          },
+          {
+            key: 'cats',
+            label: t('animals.labels.cat'),
+            active: marketplace.filters.category === 'cat',
+            onClick: () => marketplace.applyQuickFilter('category', 'cat'),
+          },
+          {
+            key: 'available',
+            label: t('animals.labels.available'),
+            active: marketplace.filters.listing_status === 'available',
+            onClick: () => marketplace.applyQuickFilter('listing_status', 'available'),
+          },
+          {
+            key: 'adoption',
+            label: t('animals.adoption'),
+            active: marketplace.filters.adoption === '1',
+            onClick: () => marketplace.applyQuickFilter('adoption', '1'),
+          },
+        ]}
+      />
 
       <AnimalsFilters
         filters={marketplace.filters}

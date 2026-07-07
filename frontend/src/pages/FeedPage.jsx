@@ -31,6 +31,7 @@ import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import FollowButton from '../components/ui/FollowButton'
 import ScrollTopButton from '../components/ui/ScrollTopButton'
+import SkeletonBlock from '../components/ui/SkeletonBlock'
 import { useAuth } from '../hooks/useAuth'
 import { useI18n } from '../hooks/useI18n'
 import { asArray, extractDataArray, extractDataObject } from '../utils/apiData'
@@ -567,9 +568,7 @@ function FeedPage() {
           <CreatePost onCreate={handleCreatePost} />
 
           {isLoading ? (
-            <div className="rounded-[28px] border border-dashed border-violet-200 bg-white/84 px-5 py-12 text-center text-sm text-stone-500">
-              {t('feed.loadingFeed')}
-            </div>
+            <SkeletonBlock count={3} label={t('feed.loadingFeed')} variant="feed" />
           ) : null}
 
           {!isLoading && safePosts.length === 0 ? (

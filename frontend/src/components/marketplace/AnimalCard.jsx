@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import ReportButton from '../reports/ReportButton'
 import ComplianceBadge from '../ui/ComplianceBadge'
 import VerifiedPhoneBadge from '../ui/VerifiedPhoneBadge'
-import { Info, LinkButton } from './MarketplaceCommon'
+import { FavoriteButton, Info, LinkButton, ManualPaymentBadges, RatingSummary, SellerTrustBadges } from './MarketplaceCommon'
 import {
   buildAnimalContactPath,
   buildPhoneContactHref,
@@ -53,6 +53,8 @@ function AnimalCard({ animal, onDelete, onEdit }) {
           </span>
         </div>
 
+        <RatingSummary averageRating={animal.averageRating} reviewsCount={animal.reviewsCount} compact />
+
         <div className="flex items-center gap-3 rounded-[22px] bg-white/88 px-4 py-3 shadow-sm dark:bg-white/8">
           <AuthorAvatar author={animal.author} t={t} />
           <div className="min-w-0">
@@ -69,6 +71,8 @@ function AnimalCard({ animal, onDelete, onEdit }) {
             <ComplianceBadge key={badgeType} type={badgeType} />
           ))}
         </div>
+        <SellerTrustBadges author={animal.author} sellerType={animal.sellerType} />
+        <ManualPaymentBadges />
 
         {gallery.length > 1 ? (
           <div className="flex gap-3 overflow-x-auto pb-1 snap-x snap-mandatory">
@@ -111,6 +115,7 @@ function AnimalActions({ animal, onDelete, onEdit }) {
   return (
     <div className="grid gap-3 sm:flex sm:flex-wrap">
       <LinkButton to={`/marketplace/animals/${animal.id}`} variant="secondary" className="w-full sm:w-auto">{t('common.details')}</LinkButton>
+      <FavoriteButton type="animals" itemId={animal.id} initialFavorited={animal.isFavorited} />
       {animal.author?.id ? (
         <LinkButton to={buildAnimalContactPath(animal, t)} variant="ghost" className="w-full sm:w-auto">{t('common.contact')}</LinkButton>
       ) : null}

@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import { createVeterinarianRequest, listVeterinariansRequest } from '../api/veterinarians'
 import VeterinarianCard from '../components/marketplace/VeterinarianCard'
-import { Field, MarketplaceHero } from '../components/marketplace/MarketplaceCommon'
+import { Field, MarketplaceHero, QuickFilterChips } from '../components/marketplace/MarketplaceCommon'
 import Button from '../components/ui/Button'
 import CollapsiblePanel from '../components/ui/CollapsiblePanel'
+import SkeletonBlock from '../components/ui/SkeletonBlock'
 import veterinarianHeroImage from '../assets/images/vétérinaire.png'
 import { useAuth } from '../hooks/useAuth'
 import { useI18n } from '../hooks/useI18n'
@@ -91,6 +92,16 @@ function VeterinariansMarketplacePage() {
     setAppliedFilters(nextFilters)
   }
 
+  const applyQuickFilter = (field, value) => {
+    const nextFilters = {
+      ...filters,
+      [field]: appliedFilters[field] === value ? '' : value,
+    }
+
+    setFilters(nextFilters)
+    setAppliedFilters(nextFilters)
+  }
+
   const refreshVeterinarians = async () => {
     const response = await listVeterinariansRequest(cleanFilters(appliedFilters))
     setVeterinarians(response.data.data ?? [])
@@ -167,6 +178,16 @@ function VeterinariansMarketplacePage() {
         stats={[
           { label: t('veterinarians.visibleVeterinarians'), value: veterinarians.length },
           { label: t('common.filtersActive'), value: activeFiltersCount },
+        ]}
+      />
+
+      <QuickFilterChips
+        chips={[
+          { key: 'all', label: t('common.all'), active: activeFiltersCount === 0, onClick: handleReset },
+          { key: 'casablanca', label: t('marketplace.quickFilters.casablanca'), active: appliedFilters.city === 'Casablanca', onClick: () => applyQuickFilter('city', 'Casablanca') },
+          { key: 'rabat', label: t('marketplace.quickFilters.rabat'), active: appliedFilters.city === 'Rabat', onClick: () => applyQuickFilter('city', 'Rabat') },
+          { key: 'cats', label: t('animals.labels.cat'), active: appliedFilters.specialty === t('animals.labels.cat'), onClick: () => applyQuickFilter('specialty', t('animals.labels.cat')) },
+          { key: 'dogs', label: t('animals.labels.dog'), active: appliedFilters.specialty === t('animals.labels.dog'), onClick: () => applyQuickFilter('specialty', t('animals.labels.dog')) },
         ]}
       />
 
@@ -287,9 +308,7 @@ function VeterinariansMarketplacePage() {
       ) : null}
 
       {isLoading ? (
-        <div className="rounded-[28px] border border-violet-100 bg-white/84 px-5 py-12 text-center text-sm text-stone-500 dark:border-violet-300/16 dark:bg-white/10 dark:text-violet-100">
-          {t('veterinarians.loading')}
-        </div>
+        <SkeletonBlock count={4} label={t('veterinarians.loading')} variant="veterinarians" />
       ) : null}
 
       {!isLoading && veterinarians.length === 0 ? (

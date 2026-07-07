@@ -126,6 +126,17 @@ export function useProductsMarketplace() {
     await loadProducts(defaultProductFilters)
   }
 
+  const applyQuickFilter = async (field, value) => {
+    const nextFilters = {
+      ...filters,
+      [field]: filters[field] === value ? '' : value,
+    }
+
+    setFilters(nextFilters)
+    setIsLoading(true)
+    await loadProducts(nextFilters)
+  }
+
   const handleSubmit = async (event) => {
     event.preventDefault()
     setErrorMessage('')
@@ -215,6 +226,7 @@ export function useProductsMarketplace() {
     handleFilterChange,
     handleFormChange,
     handleResetFilters,
+    applyQuickFilter,
     handleSearch,
     handleSubmit,
     resetForm,

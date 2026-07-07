@@ -5,12 +5,15 @@ import {
   approveReservationRequest,
   cancelReservationRequest,
   completeReservationRequest,
+  createReservationPaymentRequest,
+  getPaymentConfigRequest,
   getReservationsRequest,
   rejectReservationRequest,
   updateReservationDeliveryStatusRequest,
 } from '../api/reservations'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
+import SkeletonBlock from '../components/ui/SkeletonBlock'
 import { useI18n } from '../hooks/useI18n'
 import { asArray } from '../utils/apiData'
 import { formatDate } from '../utils/formatDate'
@@ -28,6 +31,7 @@ function ReservationsPage() {
   const [successMessage, setSuccessMessage] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [processingId, setProcessingId] = useState('')
+  const [paymentConfig, setPaymentConfig] = useState(null)
 
   const loadReservations = useCallback(async () => {
     try {
@@ -48,6 +52,26 @@ function ReservationsPage() {
   useEffect(() => {
     loadReservations()
   }, [loadReservations])
+
+  useEffect(() => {
+    let isMounted = true
+
+    getPaymentConfigRequest()
+      .then((response) => {
+        if (isMounted) {
+          setPaymentConfig(response.data)
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setPaymentConfig(null)
+        }
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   useEffect(() => {
     setSearch(queryFromUrl)
@@ -102,6 +126,18 @@ function ReservationsPage() {
 
       if (action === 'delivery') {
         await updateReservationDeliveryStatusRequest(reservation.id, payload)
+      }
+
+      if (action === 'pay_online') {
+        const response = await createReservationPaymentRequest(reservation.id, {
+          provider: 'cmi',
+        })
+        const checkoutUrl = response.data?.initiation?.checkoutUrl
+
+        if (checkoutUrl) {
+          globalThis.location.assign(checkoutUrl)
+          return
+        }
       }
 
       setSuccessMessage(buildSuccessMessage(action, payload, t))
@@ -217,8 +253,8 @@ function ReservationsPage() {
         </form>
 
         {isLoading ? (
-          <div className="mt-5 rounded-[24px] border border-dashed border-violet-200 bg-white/84 px-5 py-12 text-center text-sm text-stone-500">
-            {t('ordersUi.reservations.loading')}
+          <div className="mt-5">
+            <SkeletonBlock count={4} label={t('ordersUi.reservations.loading')} variant="reservations" />
           </div>
         ) : null}
 
@@ -242,6 +278,7 @@ function ReservationsPage() {
                 reservation={reservation}
                 processingId={processingId}
                 onAction={handleAction}
+                paymentConfig={paymentConfig}
               />
             ))}
           </div>
@@ -260,7 +297,7 @@ function HeroStatCard({ label, value }) {
   )
 }
 
-function ReservationCard({ reservation, processingId, onAction }) {
+function ReservationCard({ reservation, processingId, onAction, paymentConfig }) {
   const { t } = useI18n()
   const counterpart = reservation.isBuyer ? reservation.seller : reservation.buyer
   const imageUrl = reservation.listing?.imageUrl
@@ -324,11 +361,19 @@ function ReservationCard({ reservation, processingId, onAction }) {
         <div className="grid gap-3 sm:grid-cols-2">
           <Info label={t('ordersUi.common.payment')} value={formatPaymentMethod(reservation.paymentMethod, t)} />
           <Info label={t('ordersUi.common.paymentStatus')} value={formatPaymentStatus(reservation.paymentStatus, t)} />
+          {reservation.payment ? (
+            <Info
+              label={t('ordersUi.common.gatewayPayment')}
+              value={`${formatPaymentProvider(reservation.payment.provider, t)} - ${formatPaymentStatus(reservation.payment.status, t)}`}
+            />
+          ) : null}
           <Info label={t('invoice.delivery')} value={formatDeliveryMethod(reservation.deliveryMethod, t)} />
           <Info label={t('ordersUi.common.quantity')} value={reservation.quantity} />
           <Info label={t('ordersUi.common.subtotal')} value={formatPrice(reservation.totalPrice)} />
           <Info label={t('ordersUi.common.deliveryFee')} value={formatPrice(reservation.deliveryFee)} />
         </div>
+
+        <ReservationTimeline reservation={reservation} paymentConfig={paymentConfig} />
 
         <div className="rounded-[22px] bg-white/90 px-4 py-4 shadow-sm dark:bg-white/10">
           <p className="text-xs uppercase tracking-[0.12em] text-stone-500 dark:text-violet-100/60 sm:tracking-[0.16em]">
@@ -404,6 +449,17 @@ function ReservationCard({ reservation, processingId, onAction }) {
               className="w-full sm:w-auto"
             >
               {t('ordersUi.reservations.actions.cancel')}
+            </ActionButton>
+          ) : null}
+
+          {canShowOnlinePaymentButton(reservation, paymentConfig) ? (
+            <ActionButton
+              processingId={processingId}
+              buttonKey={`pay_online-${reservation.id}`}
+              onClick={() => onAction('pay_online', reservation)}
+              className="w-full sm:w-auto"
+            >
+              {t('ordersUi.reservations.actions.payOnline')}
             </ActionButton>
           ) : null}
 
@@ -528,6 +584,44 @@ function Info({ label, value }) {
   )
 }
 
+function ReservationTimeline({ reservation, paymentConfig }) {
+  const { t } = useI18n()
+  const steps = buildReservationTimeline(reservation, paymentConfig, t)
+
+  return (
+    <div className="rounded-[22px] bg-white/90 px-4 py-4 shadow-sm dark:bg-white/10">
+      <p className="text-xs uppercase tracking-[0.12em] text-stone-500 dark:text-violet-100/60 sm:tracking-[0.16em]">
+        {t('ordersUi.timeline.title')}
+      </p>
+      <div className="mt-4 grid gap-3">
+        {steps.map((step, index) => (
+          <div key={step.key} className="flex gap-3">
+            <span
+              className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                step.state === 'done'
+                  ? 'bg-emerald-500 text-white'
+                  : step.state === 'current'
+                    ? 'bg-violet-600 text-white'
+                    : 'bg-violet-50 text-violet-700 dark:bg-white/10 dark:text-violet-50'
+              }`}
+            >
+              {index + 1}
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-semibold text-stone-950 dark:text-violet-50">
+                {step.label}
+              </span>
+              <span className="mt-0.5 block text-xs leading-5 text-stone-500 dark:text-violet-100/64">
+                {step.help}
+              </span>
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function buildConfirmMessage(action, reservation, t) {
   const title = reservation.listing.title
 
@@ -580,6 +674,13 @@ function formatPaymentMethod(method, t) {
   return label === key ? t('ordersUi.statuses.paymentMethod.cash_on_pickup') : label
 }
 
+function formatPaymentProvider(provider, t) {
+  const key = `ordersUi.statuses.paymentProvider.${provider}`
+  const label = t(key)
+
+  return label === key ? provider : label
+}
+
 function formatDeliveryMethod(method, t) {
   return t(`ordersUi.statuses.deliveryMethod.${method === 'delivery' ? 'delivery' : 'pickup'}`)
 }
@@ -589,6 +690,67 @@ function formatDeliveryStatus(status, t) {
   const label = t(key)
 
   return label === key ? t('ordersUi.statuses.delivery.pending') : label
+}
+
+function buildReservationTimeline(reservation, paymentConfig, t) {
+  const reservationStatus = reservation.reservationStatus
+  const deliveryStatus = reservation.deliveryStatus
+  const paymentStatus = reservation.payment?.status ?? reservation.paymentStatus
+  const isAccepted = !['pending', 'rejected', 'cancelled'].includes(reservationStatus)
+  const isDelivered = ['delivered', 'picked_up'].includes(deliveryStatus)
+  const isCompleted = reservationStatus === 'completed'
+  const isCancelled = ['cancelled', 'rejected'].includes(reservationStatus)
+  const cmiEnabled = Boolean(paymentConfig?.providers?.cmi?.enabled)
+  const paymentHelp = paymentStatus === 'paid'
+    ? t('ordersUi.timeline.paymentPaid')
+    : reservation.paymentMethod === 'bank_transfer' || reservation.paymentMethod === 'manual_bank_transfer'
+      ? t('ordersUi.timeline.paymentBankTransfer')
+      : reservation.paymentMethod === 'cash_on_pickup'
+        ? t('ordersUi.timeline.paymentCashOnPickup')
+        : cmiEnabled
+          ? t('ordersUi.timeline.paymentOnlineAvailable')
+          : t('ordersUi.timeline.paymentOnlinePreparing')
+
+  return [
+    {
+      key: 'requested',
+      label: t('ordersUi.timeline.requested'),
+      help: t('ordersUi.timeline.requestedHelp'),
+      state: 'done',
+    },
+    {
+      key: 'accepted',
+      label: t('ordersUi.timeline.accepted'),
+      help: isCancelled ? t('ordersUi.timeline.cancelledHelp') : t('ordersUi.timeline.acceptedHelp'),
+      state: isAccepted || isCompleted ? 'done' : 'current',
+    },
+    {
+      key: 'payment',
+      label: t('ordersUi.timeline.payment'),
+      help: paymentHelp,
+      state: paymentStatus === 'paid' ? 'done' : isAccepted ? 'current' : 'upcoming',
+    },
+    {
+      key: 'delivery',
+      label: t('ordersUi.timeline.delivery'),
+      help: reservation.deliveryMethod === 'delivery'
+        ? t('ordersUi.timeline.deliveryHelp')
+        : t('ordersUi.timeline.pickupHelp'),
+      state: isDelivered || isCompleted ? 'done' : isAccepted ? 'current' : 'upcoming',
+    },
+    {
+      key: 'completed',
+      label: t('ordersUi.timeline.completed'),
+      help: t('ordersUi.timeline.completedHelp'),
+      state: isCompleted ? 'done' : 'upcoming',
+    },
+    {
+      key: 'review',
+      label: t('ordersUi.timeline.review'),
+      help: t('ordersUi.timeline.reviewHelp'),
+      state: reservation.buyerReview || reservation.sellerReview ? 'done' : isCompleted ? 'current' : 'upcoming',
+    },
+  ]
 }
 
 function formatPrice(value) {
@@ -622,6 +784,15 @@ function filterReservations(reservations, searchTerm) {
       reservation.note,
     ].some((value) => normalizeSearchText(value).includes(normalizedSearch))
   })
+}
+
+function canShowOnlinePaymentButton(reservation, paymentConfig) {
+  return Boolean(
+    paymentConfig?.providers?.cmi?.enabled
+      && reservation.isBuyer
+      && reservation.paymentStatus !== 'paid'
+      && !['cancelled', 'rejected', 'completed'].includes(reservation.reservationStatus),
+  )
 }
 
 function normalizeSearchText(value) {

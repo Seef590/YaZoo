@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
+import { useState } from 'react'
+import { removeFavoriteRequest, saveFavoriteRequest } from '../../api/favorites'
 import { useI18n } from '../../hooks/useI18n'
 
 export function MarketplaceTabs({ active }) {
@@ -92,6 +94,170 @@ export function LinkButton({ children, to, variant = 'primary', className = '' }
   )
 }
 
+export function TrustBadge({ children, tone = 'neutral' }) {
+  const tones = {
+    neutral: 'border-stone-200 bg-stone-50 text-stone-700 dark:border-stone-300/18 dark:bg-white/8 dark:text-stone-100',
+    violet: 'border-violet-200 bg-violet-50 text-violet-800 dark:border-violet-300/18 dark:bg-white/10 dark:text-violet-50',
+    emerald: 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-300/18 dark:bg-emerald-400/10 dark:text-emerald-100',
+    amber: 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-300/18 dark:bg-amber-400/10 dark:text-amber-100',
+  }
+
+  return (
+    <span className={`inline-flex max-w-full items-center rounded-full border px-3 py-1 text-xs font-semibold ${tones[tone] ?? tones.neutral}`}>
+      {children}
+    </span>
+  )
+}
+
+export function SellerTrustBadges({ author, sellerType }) {
+  const { t } = useI18n()
+  const badges = []
+
+  if (author?.isProfessionalVerified) {
+    badges.push({ key: 'professionalVerified', label: t('marketplaceBadges.professionalVerified'), tone: 'emerald' })
+  }
+
+  if (sellerType === 'professional') {
+    badges.push({ key: 'professional', label: t('marketplaceBadges.professional'), tone: 'violet' })
+  }
+
+  if (sellerType === 'association') {
+    badges.push({ key: 'association', label: t('marketplaceBadges.association'), tone: 'violet' })
+  }
+
+  if (author?.isPhoneVerified) {
+    badges.push({ key: 'phoneVerified', label: t('marketplaceBadges.phoneVerified'), tone: 'emerald' })
+  }
+
+  if (badges.length === 0) {
+    return null
+  }
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {badges.map((badge) => (
+        <TrustBadge key={badge.key} tone={badge.tone}>{badge.label}</TrustBadge>
+      ))}
+    </div>
+  )
+}
+
+export function RatingSummary({ averageRating, reviewsCount, compact = false }) {
+  const { t } = useI18n()
+  const count = Number(reviewsCount ?? 0)
+
+  if (count <= 0 || averageRating === null || averageRating === undefined) {
+    return compact ? null : (
+      <p className="text-xs font-medium text-stone-500 dark:text-violet-100/60">
+        {t('common.noReviewYet')}
+      </p>
+    )
+  }
+
+  return (
+    <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800 dark:border-amber-300/20 dark:bg-amber-400/10 dark:text-amber-100">
+      <span aria-hidden="true">*****</span>
+      <span>{Number(averageRating).toFixed(1)}</span>
+      <span>{t('common.reviewCount', { count })}</span>
+    </div>
+  )
+}
+
+export function FavoriteButton({ type, itemId, initialFavorited = false, disabled = false }) {
+  const { t } = useI18n()
+  const [isFavorited, setIsFavorited] = useState(Boolean(initialFavorited))
+  const [isSaving, setIsSaving] = useState(false)
+  const [error, setError] = useState('')
+  let buttonLabel = t('socialTrust.saveFavorite')
+  if (isFavorited) {
+    buttonLabel = t('socialTrust.saved')
+  }
+  if (isSaving) {
+    buttonLabel = t('common.loading')
+  }
+
+  const handleToggle = async () => {
+    if (disabled || isSaving) return
+
+    setIsSaving(true)
+    setError('')
+
+    try {
+      if (isFavorited) {
+        await removeFavoriteRequest({ type, id: itemId })
+        setIsFavorited(false)
+      } else {
+        await saveFavoriteRequest({ type, id: itemId })
+        setIsFavorited(true)
+      }
+    } catch (error) {
+      setError(error?.response?.status === 401
+        ? t('socialTrust.loginRequired')
+        : t('socialTrust.favoriteError'))
+    } finally {
+      setIsSaving(false)
+    }
+  }
+
+  return (
+    <div className="min-w-0">
+      <button
+        type="button"
+        onClick={handleToggle}
+        disabled={disabled || isSaving}
+        aria-pressed={isFavorited}
+        aria-label={isFavorited ? t('socialTrust.removeFavorite') : t('socialTrust.saveFavorite')}
+        className={`inline-flex w-full items-center justify-center rounded-full px-4 py-2 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 sm:w-auto ${
+          isFavorited
+            ? 'bg-amber-100 text-amber-900 ring-1 ring-inset ring-amber-200 hover:bg-amber-200 dark:bg-amber-400/14 dark:text-amber-100 dark:ring-amber-300/20'
+            : 'bg-white text-violet-900 ring-1 ring-inset ring-violet-200 hover:bg-violet-50 dark:bg-white/10 dark:text-violet-50 dark:ring-violet-300/18'
+        }`}
+      >
+        {buttonLabel}
+      </button>
+      {error ? <p className="mt-1 text-xs text-red-600 dark:text-red-200">{error}</p> : null}
+    </div>
+  )
+}
+
+export function ManualPaymentBadges({ includeOnlinePreparation = false }) {
+  const { t } = useI18n()
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      <TrustBadge tone="violet">{t('marketplaceBadges.cashOnPickup')}</TrustBadge>
+      <TrustBadge tone="violet">{t('marketplaceBadges.bankTransfer')}</TrustBadge>
+      {includeOnlinePreparation ? (
+        <TrustBadge tone="amber">{t('marketplaceBadges.onlinePaymentPreparing')}</TrustBadge>
+      ) : null}
+    </div>
+  )
+}
+
+export function QuickFilterChips({ chips }) {
+  return (
+    <div className="max-w-full overflow-x-auto pb-1 yz-no-scrollbar">
+      <div className="inline-flex min-w-max gap-2">
+        {chips.filter(Boolean).map((chip) => (
+          <button
+            key={chip.key}
+            type="button"
+            onClick={chip.onClick}
+            aria-pressed={Boolean(chip.active)}
+            className={`shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition ${
+              chip.active
+                ? 'bg-violet-600 text-white shadow-[0_10px_22px_rgba(124,58,237,0.18)]'
+                : 'bg-white/84 text-violet-800 ring-1 ring-inset ring-violet-100 hover:bg-violet-50 dark:bg-white/10 dark:text-violet-50 dark:ring-violet-300/14'
+            }`}
+          >
+            {chip.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export function Field({ label, ...props }) {
   return (
     <label className="block">
@@ -174,6 +340,37 @@ LinkButton.propTypes = {
   to: PropTypes.string,
   variant: PropTypes.string,
   className: PropTypes.string,
+}
+
+TrustBadge.propTypes = {
+  children: PropTypes.node,
+  tone: PropTypes.string,
+}
+
+SellerTrustBadges.propTypes = {
+  author: PropTypes.object,
+  sellerType: PropTypes.string,
+}
+
+ManualPaymentBadges.propTypes = {
+  includeOnlinePreparation: PropTypes.bool,
+}
+
+RatingSummary.propTypes = {
+  averageRating: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  reviewsCount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  compact: PropTypes.bool,
+}
+
+FavoriteButton.propTypes = {
+  type: PropTypes.string.isRequired,
+  itemId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  initialFavorited: PropTypes.bool,
+  disabled: PropTypes.bool,
+}
+
+QuickFilterChips.propTypes = {
+  chips: PropTypes.array,
 }
 
 Field.propTypes = {

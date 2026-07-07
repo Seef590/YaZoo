@@ -91,6 +91,74 @@ describe('marketplace cards', () => {
     )
   })
 
+  it('affiche les badges de confiance disponibles sur une carte animal', () => {
+    renderWithRouter(
+      <AnimalCard
+        animal={{
+          ...animal,
+          isOwner: false,
+          sellerType: 'professional',
+          documentaryStatus: 'documents_verified_by_yazoo',
+          author: {
+            ...animal.author,
+            isPhoneVerified: true,
+            isProfessionalVerified: true,
+          },
+        }}
+        onEdit={vi.fn()}
+        onDelete={vi.fn()}
+      />,
+    )
+
+    expect(screen.getAllByText('Documents verifies par YaZoo').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Professionnel').length).toBeGreaterThan(0)
+    expect(screen.getByText('Paiement a la remise')).toBeInTheDocument()
+    expect(screen.getByText('Virement bancaire')).toBeInTheDocument()
+  })
+
+  it('affiche uniquement les preuves sociales fournies par l API', () => {
+    renderWithRouter(
+      <AnimalCard
+        animal={{
+          ...animal,
+          isOwner: false,
+          averageRating: 4.5,
+          reviewsCount: 2,
+          isFavorited: true,
+        }}
+        onEdit={vi.fn()}
+        onDelete={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByText('4.5')).toBeInTheDocument()
+    expect(screen.getByText('2 avis')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Retirer des favoris' })).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('n affiche pas de fausse note ni badge professionnel sans donnee API', () => {
+    renderWithRouter(
+      <AnimalCard
+        animal={{
+          ...animal,
+          isOwner: false,
+          averageRating: null,
+          reviewsCount: 0,
+          author: {
+            ...animal.author,
+            isProfessionalVerified: false,
+          },
+        }}
+        onEdit={vi.fn()}
+        onDelete={vi.fn()}
+      />,
+    )
+
+    expect(screen.queryByText('0.0')).not.toBeInTheDocument()
+    expect(screen.queryByText('*****')).not.toBeInTheDocument()
+    expect(screen.queryByText('Documents verifies par YaZoo')).not.toBeInTheDocument()
+  })
+
   it('affiche un lien telephone quand une annonce animal externe n a pas d auteur', () => {
     renderWithRouter(
       <AnimalCard

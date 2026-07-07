@@ -11,6 +11,7 @@ import {
 import { searchUsersRequest } from '../api/search'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
+import SkeletonBlock from '../components/ui/SkeletonBlock'
 import { useAuth } from '../hooks/useAuth'
 import { useI18n } from '../hooks/useI18n'
 import { useNotifications } from '../hooks/useNotifications'
@@ -71,9 +72,9 @@ function MessagesPage() {
         }
       } catch (error) {
         if (!silent) {
-          setErrorMessage(
-            getErrorMessage(error, 'Impossible de charger les conversations.'),
-          )
+        setErrorMessage(
+            getErrorMessage(error, t('messages.loadError')),
+        )
         }
       } finally {
         if (!silent) {
@@ -81,7 +82,7 @@ function MessagesPage() {
         }
       }
     },
-    [],
+    [t],
   )
 
   const openConversation = useCallback(
@@ -116,13 +117,13 @@ function MessagesPage() {
         }
       } catch (error) {
         setErrorMessage(
-          getErrorMessage(error, 'Impossible de charger la conversation.'),
+          getErrorMessage(error, t('messages.loadConversationError')),
         )
       } finally {
         setIsConversationLoading(false)
       }
     },
-    [refreshUnreadCount, searchParams, setSearchParams],
+    [refreshUnreadCount, searchParams, setSearchParams, t],
   )
 
   useEffect(() => {
@@ -164,7 +165,7 @@ function MessagesPage() {
           const conversation = extractDataObject(response, null)
 
           if (!conversation?.id) {
-            throw new Error('Conversation introuvable.')
+            throw new Error(t('messages.notFound'))
           }
 
           setConversations((current) => upsertConversation(current, conversation))
@@ -184,7 +185,7 @@ function MessagesPage() {
           setSearchParams(nextSearchParams, { replace: true })
         } catch (error) {
           setErrorMessage(
-            getErrorMessage(error, 'Impossible de demarrer la conversation.'),
+            getErrorMessage(error, t('messages.startError')),
           )
         } finally {
           setIsConversationLoading(false)
@@ -210,6 +211,7 @@ function MessagesPage() {
     searchParams,
     selectedConversationId,
     setSearchParams,
+    t,
   ])
 
   useEffect(() => {
@@ -405,7 +407,7 @@ function MessagesPage() {
       const conversation = extractDataObject(response, null)
 
       if (!conversation) {
-        throw new Error('Conversation introuvable.')
+        throw new Error(t('messages.notFound'))
       }
 
       setConversations((current) => upsertConversation(current, conversation))
@@ -494,7 +496,7 @@ function MessagesPage() {
       setSuccessMessage(response.data.message)
       await refreshUnreadCount()
     } catch (error) {
-      setErrorMessage(getErrorMessage(error, "Impossible d'envoyer le message."))
+      setErrorMessage(getErrorMessage(error, t('messages.sendError')))
     } finally {
       setIsMessageSubmitting(false)
     }
@@ -526,7 +528,7 @@ function MessagesPage() {
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-1">
-            <HeroStatCard label="Conversations" value={conversations.length} />
+            <HeroStatCard label={t('messages.conversationsLabel')} value={conversations.length} />
             <HeroStatCard label={t('messages.unread')} value={unreadMessages} />
             <HeroStatCard
               label={t('messages.activeConversation')}
@@ -676,17 +678,15 @@ function MessagesPage() {
                   {t('messages.inbox')}
                 </p>
                 <h2 className="mt-2 text-xl font-semibold text-stone-950">
-                  Conversations
+                  {t('messages.conversationsLabel')}
                 </h2>
                 <p className="mt-1 text-sm text-stone-500">
-                  {conversations.length} conversation
-                  {conversations.length > 1 ? 's' : ''} disponible
-                  {conversations.length > 1 ? 's' : ''}
+                  {t('messages.conversationCount', { count: conversations.length, plural: conversations.length > 1 ? 's' : '' })}
                 </p>
               </div>
 
               <div className="rounded-full bg-violet-50 px-3 py-2 text-xs font-medium text-violet-700">
-                {unreadMessages} non lu{unreadMessages > 1 ? 's' : ''}
+                {t('messages.unreadCountShort', { count: unreadMessages, plural: unreadMessages > 1 ? 's' : '' })}
               </div>
             </div>
 
@@ -710,10 +710,10 @@ function MessagesPage() {
               </div>
             </form>
 
-            {isLoading ? <StateBox>{t('common.loading')}</StateBox> : null}
+            {isLoading ? <SkeletonBlock count={3} label={t('common.loading')} variant="messages" /> : null}
 
             {!isLoading && conversations.length === 0 ? (
-              <StateBox>{t('messages.noConversation')}</StateBox>
+              <StateBox>{t('messages.emptyConversationHint')}</StateBox>
             ) : null}
 
             {!isLoading && conversations.length > 0 && visibleConversations.length === 0 ? (
@@ -752,14 +752,14 @@ function MessagesPage() {
                             aria-label={t('profile.viewProfile')}
                           >
                             <Avatar
-                              name={conversation.participant?.name ?? 'YaZoo User'}
+                              name={conversation.participant?.name ?? t('common.user')}
                               src={conversation.participant?.avatar || ''}
                               size="sm"
                             />
                           </Link>
                         ) : (
                           <Avatar
-                            name={conversation.participant?.name ?? 'YaZoo User'}
+                          name={conversation.participant?.name ?? t('common.user')}
                             src={conversation.participant?.avatar || ''}
                             size="sm"
                           />
@@ -767,7 +767,7 @@ function MessagesPage() {
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center justify-between gap-3">
                             <p className="truncate text-sm font-semibold">
-                              {conversation.participant?.name ?? 'Utilisateur'}
+                              {conversation.participant?.name ?? t('common.user')}
                             </p>
                             {conversation.unreadCount ? (
                               <span
@@ -830,13 +830,13 @@ function MessagesPage() {
                       aria-label={t('profile.viewProfile')}
                     >
                       <Avatar
-                        name={selectedConversation.participant?.name ?? 'YaZoo User'}
+                        name={selectedConversation.participant?.name ?? t('common.user')}
                         src={selectedConversation.participant?.avatar || ''}
                       />
                     </Link>
                   ) : (
                     <Avatar
-                      name={selectedConversation.participant?.name ?? 'YaZoo User'}
+                        name={selectedConversation.participant?.name ?? t('common.user')}
                       src={selectedConversation.participant?.avatar || ''}
                     />
                   )}
@@ -845,7 +845,7 @@ function MessagesPage() {
                       {t('messages.openConversation')}
                     </p>
                     <h2 className="mt-1 text-xl font-semibold text-stone-950">
-                      {selectedConversation.participant?.name ?? 'Utilisateur'}
+                      {selectedConversation.participant?.name ?? t('common.user')}
                     </h2>
                     <p className="text-sm text-stone-500">
                       {t('messages.discussionWith', {
@@ -856,8 +856,7 @@ function MessagesPage() {
                 </div>
 
                 <div className="rounded-full bg-violet-50 px-4 py-2 text-sm text-violet-700">
-                  {selectedConversation.messages?.length ?? 0} message
-                  {(selectedConversation.messages?.length ?? 0) > 1 ? 's' : ''}
+                  {t('messages.messageCount', { count: selectedConversation.messages?.length ?? 0, plural: (selectedConversation.messages?.length ?? 0) > 1 ? 's' : '' })}
                 </div>
               </div>
 

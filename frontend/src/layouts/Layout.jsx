@@ -12,6 +12,7 @@ import { searchUsersRequest } from '../api/search'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import Footer from '../components/ui/Footer'
+import OnboardingPrompt from '../components/ui/OnboardingPrompt'
 import { useAuth } from '../hooks/useAuth'
 import { useI18n } from '../hooks/useI18n'
 import { useNotifications } from '../hooks/useNotifications'
@@ -320,6 +321,7 @@ function Layout() {
     { to: '/messages', label: t('common.messages') },
     { to: '/reservations', label: t('common.reservations') },
     { to: '/orders/history', label: t('common.history') },
+    { to: '/trust', label: t('common.trustSafety') },
     { to: '/settings', label: t('common.settings') },
   ]
 
@@ -454,6 +456,7 @@ function Layout() {
         messagesCount={unreadMessagesCount}
         notificationsCount={unreadCount}
       />
+      <OnboardingPrompt userId={user?.id} />
     </div>
   )
 }

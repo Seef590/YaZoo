@@ -4,7 +4,7 @@ import productHeroImage from '../assets/images/produit.png'
 import ProductCard from '../components/marketplace/ProductCard'
 import ProductListingForm from '../components/marketplace/ProductListingForm'
 import ProductsFilters from '../components/marketplace/ProductsFilters'
-import { MarketplaceHero } from '../components/marketplace/MarketplaceCommon'
+import { MarketplaceHero, QuickFilterChips } from '../components/marketplace/MarketplaceCommon'
 import CollapsiblePanel from '../components/ui/CollapsiblePanel'
 import { useProductsMarketplace } from '../hooks/useProductsMarketplace'
 import { useI18n } from '../hooks/useI18n'
@@ -26,6 +26,41 @@ function ProductsMarketplacePage() {
         stats={[
           { label: t('common.visibleProducts'), value: marketplace.products.length },
           { label: t('common.filtersActive'), value: marketplace.activeFiltersCount },
+        ]}
+      />
+
+      <QuickFilterChips
+        chips={[
+          {
+            key: 'all',
+            label: t('common.all'),
+            active: marketplace.activeFiltersCount === 0,
+            onClick: marketplace.handleResetFilters,
+          },
+          {
+            key: 'food',
+            label: t('products.labels.food'),
+            active: marketplace.filters.category === 'food',
+            onClick: () => marketplace.applyQuickFilter('category', 'food'),
+          },
+          {
+            key: 'accessory',
+            label: t('products.labels.accessory'),
+            active: marketplace.filters.category === 'accessory',
+            onClick: () => marketplace.applyQuickFilter('category', 'accessory'),
+          },
+          {
+            key: 'available',
+            label: t('products.labels.available'),
+            active: marketplace.filters.listing_status === 'available',
+            onClick: () => marketplace.applyQuickFilter('listing_status', 'available'),
+          },
+          {
+            key: 'new',
+            label: t('products.labels.new'),
+            active: marketplace.filters.condition_status === 'new',
+            onClick: () => marketplace.applyQuickFilter('condition_status', 'new'),
+          },
         ]}
       />
 

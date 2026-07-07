@@ -4,8 +4,9 @@ import PropTypes from 'prop-types'
 
 import { createServiceRequest, getServicesRequest } from '../api/services'
 import ServiceCard from '../components/marketplace/ServiceCard'
-import { MarketplaceHero } from '../components/marketplace/MarketplaceCommon'
+import { MarketplaceHero, QuickFilterChips } from '../components/marketplace/MarketplaceCommon'
 import CollapsiblePanel from '../components/ui/CollapsiblePanel'
+import SkeletonBlock from '../components/ui/SkeletonBlock'
 import trainerHeroImage from '../assets/images/dresseur.png'
 import { useAuth } from '../hooks/useAuth'
 import { useI18n } from '../hooks/useI18n'
@@ -134,6 +135,14 @@ function ServicesMarketplacePage() {
         ]}
       />
 
+      <QuickFilterChips
+        chips={[
+          { key: 'all', label: t('common.all'), active: !type, onClick: () => setType('') },
+          { key: 'pet_sitting', label: t('services.petSitting'), active: type === 'pet_sitting', onClick: () => setType(type === 'pet_sitting' ? '' : 'pet_sitting') },
+          { key: 'training', label: t('services.training'), active: type === 'training', onClick: () => setType(type === 'training' ? '' : 'training') },
+        ]}
+      />
+
       <CollapsiblePanel
         kicker={t('services.publish')}
         title={t('services.add')}
@@ -250,9 +259,7 @@ function ServicesMarketplacePage() {
       ) : null}
 
       {isLoading ? (
-        <div className="rounded-[28px] border border-violet-100 bg-white/84 px-5 py-12 text-center text-sm text-stone-500 dark:border-violet-300/16 dark:bg-white/10 dark:text-violet-100">
-          {t('common.loading')}
-        </div>
+        <SkeletonBlock count={4} label={t('common.loading')} variant="services" />
       ) : null}
 
       {!isLoading && services.length === 0 ? (
