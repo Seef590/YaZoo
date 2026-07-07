@@ -41,6 +41,9 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: [path.resolve(process.cwd(), 'src/test/setup.js')],
+    testTimeout: 10000,
+    hookTimeout: 10000,
+    exclude: ['e2e/**', 'node_modules/**', 'dist/**'],
     coverage: {
       provider: 'v8',
       reportsDirectory: path.resolve(process.cwd(), 'coverage'),

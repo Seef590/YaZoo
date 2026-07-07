@@ -1,10 +1,10 @@
 # AUDIT I18N UI MOBILE YAZOO
 
-Date: 2026-07-01T16:34:47.006Z
+Date: 2026-07-07T19:34:11.612Z
 
 ## Fichiers audites
 
-- 134 fichiers frontend dans frontend/src
+- 138 fichiers frontend dans frontend/src
 - backend/app/Http, backend/lang et routes API audites manuellement pendant la correction
 
 ## Domaines i18n verifies
@@ -33,8 +33,8 @@ Date: 2026-07-01T16:34:47.006Z
 
 ## Cles utilisees
 
-- 1146 cles t(...) detectees
-- 30 cles dynamiques detectees
+- 1218 cles t(...) detectees
+- 35 cles dynamiques detectees
 
 ## Domaines sans cle detectee
 
@@ -48,11 +48,13 @@ Date: 2026-07-01T16:34:47.006Z
 - admin.moderation.actions.${action}
 - adminStats.labels.${key}
 - adminUsers.actions.${modal.action}
+- animals.documentaryStatuses.${safeStatus}
 - compliance.badges.${type}
 - messages.dropdown.${tab}
 - moderationActions.actions.${action.action}
 - notifications.tabs.${filter}
 - notifications.tabs.${tab}
+- onboarding.userTypes.${type}
 - ordersUi.reservations.confirm.${action}
 - ordersUi.statuses.deliveryMethod.${method === 
 - ordersUi.statuses.kind.${kind}
@@ -63,6 +65,9 @@ Date: 2026-07-01T16:34:47.006Z
 - professionalVerification.businessTypes.${item.businessType}
 - professionalVerification.businessTypes.${type}
 - professionalVerification.businessTypes.${verification.businessType}
+- professionalVerification.documentTypes.${item.documentType}
+- professionalVerification.documentTypes.${type}
+- professionalVerification.documentTypes.${verification.documentType}
 - professionalVerification.statuses.${status}
 - reports.reasons.${item}
 - reports.reasons.${report.reason}

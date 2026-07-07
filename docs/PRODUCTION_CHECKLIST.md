@@ -59,11 +59,11 @@
 
 ## Tests et qualite
 
-- [ ] `php artisan test` OK.
-- [ ] `npm run lint` OK.
-- [ ] `npm test -- --run` OK.
-- [ ] `npm run build` OK.
-- [ ] Audit i18n OK.
+- [x] `php artisan test` OK. Preuve Phase 4A: suite backend complete relancee localement.
+- [x] `npm run lint` OK. Preuve Phase 4A: ESLint frontend relance localement.
+- [x] `npm test -- --run` OK. Preuve Phase 4A: deux runs Vitest consecutifs requis.
+- [x] `npm run build` OK. Preuve Phase 4A: build Vite production relance localement.
+- [x] Audit i18n OK. Preuve Phase 4A: audit local sans texte statique suspect.
 - [ ] Tests manuels mobile.
 - [ ] Tests RTL arabe.
 - [ ] Tests dark/light.
@@ -98,3 +98,17 @@
 - [ ] Plan action joint.
 - [ ] Risques et conformite joints.
 - [ ] Captures ou demo locale preparees.
+
+## Lecture Phase 4A preproduction
+
+| Domaine | Statut | Preuve | Prochaine action |
+| --- | --- | --- | --- |
+| Backend automated tests | Valide localement | `php artisan test` | Rejouer avant chaque release preproduction. |
+| Frontend lint/test/build | Valide localement | `npm run lint`, deux runs `npm test -- --run`, `npm run build` | Ajouter E2E Playwright en Phase 4B. |
+| i18n FR/AR/EN | Valide localement | `node scripts/audit-i18n.mjs` | Revue manuelle RTL/mobile. |
+| Sonar hotspots | Revue documentee | `docs/SONAR_SECURITY_REVIEW.md` | Reanalyse Sonar avec token local puis qualification dans UI. |
+| Monitoring externe | Prepare, non actif | Variables exemple + `docs/MONITORING_AND_ALERTING.md` | Activer via Azure App Settings apres choix Sentry/App Insights. |
+| CMI production | Non valide | CMI reste desactive | Attendre kit/sandbox officiel et recette bancaire. |
+| CNDP officielle | Non valide juridiquement | Dossier technique seulement | Validation juridique/comptable. |
+| ONSSA officielle | Non valide juridiquement | Formulations prudentes | Validation administrative et procedure officielle si necessaire. |
+| Backup restore | Non teste | Documentation seulement | Executer test de restauration preproduction. |

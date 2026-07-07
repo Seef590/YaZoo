@@ -31,7 +31,7 @@ function trimTrailingSlash(value) {
 function normalizeApiBaseUrl(value) {
   const normalizedUrl = trimTrailingSlash(value.trim())
 
-  if (/\/api$/i.test(normalizedUrl)) {
+  if (normalizedUrl.toLowerCase().endsWith('/api')) {
     return normalizedUrl
   }
 

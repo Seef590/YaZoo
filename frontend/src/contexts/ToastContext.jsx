@@ -19,7 +19,7 @@ export function ToastProvider({ children }) {
     toastSequenceRef.current += 1
 
     const normalizedToast = {
-      id: toast.id ?? `toast-${Date.now()}-${toastSequenceRef.current}`,
+      id: toast.id ?? `toast-${toastSequenceRef.current}`,
       tone: toast.tone ?? 'info',
       title: toast.title ?? 'Information',
       description: toast.description ?? '',
