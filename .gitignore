@@ -6,6 +6,7 @@
 !backend/.env.docker.example
 !backend/.env.production.example
 !frontend/.env.example
+!frontend/.env.e2e.example
 !frontend/.env.production.example
 .idea/
 .vscode/
@@ -58,4 +59,19 @@ backend/.phpunit.result.cache
 backend/curl-cookie-jar.txt
 backend/smoke-*
 frontend/.vite/
+frontend/playwright-report/
+frontend/test-results/
 *.log
+*.sql
+*.sql.gz
+*.dump
+*.bak
+*.backup
+*.zip
+*.tar
+*.gz
+*.7z
+*.pem
+*.key
+backups/
+dumps/

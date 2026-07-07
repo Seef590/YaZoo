@@ -114,4 +114,20 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Admin Bootstrap
+    |--------------------------------------------------------------------------
+    |
+    | Public registration must not create administrators in production. This
+    | switch only allows the legacy first-admin bootstrap in local/testing
+    | environments, and remains disabled by default.
+    |
+    */
+
+    'admin_bootstrap' => [
+        'enabled' => env('ADMIN_BOOTSTRAP_ENABLED', false),
+        'allowed_environments' => ['local', 'testing'],
+    ],
+
 ];

@@ -52,6 +52,7 @@ Configurer ces valeurs dans App Service > Configuration > Application settings.
 - `APP_DEBUG=false`
 - `APP_URL=https://<azure-webapp-name>.azurewebsites.net`
 - `APP_FORCE_HTTPS=true`
+- `ADMIN_BOOTSTRAP_ENABLED=false`
 - `LOG_CHANNEL=stack`
 - `LOG_STACK=stderr`
 - `LOG_LEVEL=info`
@@ -82,7 +83,11 @@ Configurer ces valeurs dans App Service > Configuration > Application settings.
 - `CORS_ALLOWED_ORIGINS=https://<static-web-app-name>.azurestaticapps.net`
 - `FILESYSTEM_DISK=public`
 - `MEDIA_STORAGE_DRIVER=filesystem`
+- `MEDIA_MONGODB_ENABLED=false`
+- `MEDIA_MONGODB_URI=`
 - `MAIL_MAILER=log`
+
+Phase 1 conserve `MEDIA_STORAGE_DRIVER=filesystem` pour ne pas casser les uploads existants. Ce mode doit etre accompagne d'une strategie de persistance/backup; le stockage local d'un App Service container n'est pas une solution durable pour les redeploiements, la scalabilite ou la haute disponibilite. Ne jamais utiliser `mongodb://127.0.0.1:27017` en production Azure. MongoDB media reste optionnel/dev tant qu'un service gere et une strategie d'exploitation ne sont pas explicitement configures. Azure Blob Storage est une cible future, non activee dans cette phase.
 
 ## Commandes Azure
 

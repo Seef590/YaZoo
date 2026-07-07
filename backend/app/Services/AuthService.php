@@ -66,7 +66,7 @@ class AuthService
         $user = Cache::lock('auth:first-admin-bootstrap', 10)->block(
             5,
             fn (): User => DB::transaction(function () use ($validated, $phone): User {
-                $isFirstAdmin = ! User::query()->where('is_admin', true)->exists();
+                $isFirstAdmin = $this->shouldBootstrapFirstAdmin();
                 $hasOtp = filled($validated['otp_code'] ?? null);
 
                 if ($hasOtp) {
@@ -153,7 +153,7 @@ class AuthService
         }
 
         $user = DB::transaction(function () use ($googleUser, $email): User {
-            $isFirstAdmin = ! User::query()->where('is_admin', true)->exists();
+            $isFirstAdmin = $this->shouldBootstrapFirstAdmin();
             $userQuery = User::query()->where('email', $email);
 
             if ($googleUser->getId()) {
@@ -265,6 +265,15 @@ class AuthService
         return $user
             ->createToken($deviceName, ['*'])
             ->plainTextToken;
+    }
+
+    protected function shouldBootstrapFirstAdmin(): bool
+    {
+        $allowedEnvironments = (array) config('auth.admin_bootstrap.allowed_environments', ['local', 'testing']);
+
+        return (bool) config('auth.admin_bootstrap.enabled', false)
+            && app()->environment($allowedEnvironments)
+            && ! User::query()->where('is_admin', true)->exists();
     }
 
     protected function resolveEmail(?string $email, ?string $phone): string

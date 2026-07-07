@@ -22,7 +22,7 @@ Artisan::command('yazoo:doctor', function () {
     $mysqlDatabase = (string) config('database.connections.mysql.database');
     $mysqlUsername = (string) config('database.connections.mysql.username');
     $mediaDriver = (string) config('media.driver', 'filesystem');
-    $mongoUri = (string) config('media.mongodb.uri', 'mongodb://127.0.0.1:27017');
+    $mongoUri = (string) config('media.mongodb.uri', '');
 
     $displayedMysqlDatabase = str_ends_with($mysqlDatabase, '.sqlite')
         ? 'a configurer'
@@ -74,6 +74,10 @@ Artisan::command('yazoo:doctor', function () {
     );
 
     try {
+        if ($mongoUri === '') {
+            throw new RuntimeException('URI non configuree');
+        }
+
         if (! MediaStorage::isMongoDriverAvailable()) {
             throw new RuntimeException('Extension absente');
         }

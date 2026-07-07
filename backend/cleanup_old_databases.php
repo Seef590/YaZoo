@@ -30,7 +30,11 @@ $mysqlHost = $_ENV['DB_HOST'] ?? '127.0.0.1';
 $mysqlPort = $_ENV['DB_PORT'] ?? '3306';
 $mysqlUser = $_ENV['DB_USERNAME'] ?? 'root';
 $mysqlPass = $_ENV['DB_PASSWORD'] ?? '';
-$mongoUri = $_ENV['MEDIA_MONGODB_URI'] ?? 'mongodb://127.0.0.1:27017';
+$mongoUri = $_ENV['MEDIA_MONGODB_URI'] ?? '';
+
+if ($mongoUri === '') {
+    throw new RuntimeException('MEDIA_MONGODB_URI is required before cleaning legacy MongoDB data.');
+}
 
 $legacyMysqlDatabase = 'yazoo2';
 $legacyMongoDatabase = 'yazoo_media';

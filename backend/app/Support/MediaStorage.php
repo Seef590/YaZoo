@@ -257,7 +257,7 @@ class MediaStorage
      */
     protected static function mongoClient(): Client
     {
-        $uri = (string) config('media.mongodb.uri', 'mongodb://127.0.0.1:27017');
+        $uri = (string) config('media.mongodb.uri', '');
 
         if ($uri === '') {
             throw new RuntimeException("L'URI MongoDB media n'est pas configuree.");
