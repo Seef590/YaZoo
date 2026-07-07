@@ -28,7 +28,20 @@ class ProductMarketplaceService
     protected function query(Request $request)
     {
         return Product::query()
-            ->with('user:id,name,email,phone,phone_verified_at,avatar,city,country')
+            ->with([
+                'user:id,name,email,phone,phone_verified_at,avatar,city,country',
+                'user.latestProfessionalVerification',
+            ])
+            ->withCount([
+                'reviews as reviews_count' => fn ($query) => $query->publiclyVisible(),
+                'favorites as favorites_count',
+            ])
+            ->withAvg(['reviews as average_rating' => fn ($query) => $query->publiclyVisible()], 'rating')
+            ->when($request->user(), function ($query, User $user): void {
+                $query->withExists([
+                    'favorites as is_favorited' => fn ($favoriteQuery) => $favoriteQuery->where('user_id', $user->id),
+                ]);
+            })
             ->when($request->filled('q'), function ($query) use ($request): void {
                 $this->search($query, ['name', 'description'], (string) $request->string('q')->trim());
             })
@@ -98,7 +111,23 @@ class ProductMarketplaceService
 
     public function loadForResponse(Product $product): Product
     {
-        return $product->load('user:id,name,email,phone,phone_verified_at,avatar,city,country');
+        $product->load([
+            'user:id,name,email,phone,phone_verified_at,avatar,city,country',
+            'user.latestProfessionalVerification',
+        ])
+            ->loadCount([
+                'reviews as reviews_count' => fn ($query) => $query->publiclyVisible(),
+                'favorites as favorites_count',
+            ])
+            ->loadAvg(['reviews as average_rating' => fn ($query) => $query->publiclyVisible()], 'rating');
+
+        if ($user = request()->user()) {
+            $product->loadExists([
+                'favorites as is_favorited' => fn ($query) => $query->where('user_id', $user->id),
+            ]);
+        }
+
+        return $product;
     }
 
     /**
@@ -148,6 +177,7 @@ class ProductMarketplaceService
         return 'marketplace:products:'.hash('xxh128', json_encode([
             'query' => $query,
             'per_page' => $perPage,
+            'user_id' => $request->user()?->id,
         ], JSON_THROW_ON_ERROR));
     }
 }

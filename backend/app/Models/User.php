@@ -239,6 +239,11 @@ class User extends Authenticatable
         return $this->hasOne(ProfessionalVerification::class)->latestOfMany();
     }
 
+    public function favorites(): HasMany
+    {
+        return $this->hasMany(Favorite::class);
+    }
+
     public function moderationActions(): HasMany
     {
         return $this->hasMany(ModerationAction::class, 'admin_id');
@@ -282,6 +287,20 @@ class User extends Authenticatable
     public function hasVerifiedPhone(): bool
     {
         return $this->phone_verified_at !== null;
+    }
+
+    public function hasApprovedProfessionalVerification(): bool
+    {
+        return $this->professionalVerificationStatus() === 'approved';
+    }
+
+    public function professionalVerificationStatus(): ?string
+    {
+        $verification = $this->relationLoaded('latestProfessionalVerification')
+            ? $this->latestProfessionalVerification
+            : $this->latestProfessionalVerification()->first();
+
+        return $verification?->effectiveStatus();
     }
 
     public function isSuspended(): bool

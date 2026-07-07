@@ -144,16 +144,16 @@ class ProfileController extends Controller
 
     private function loadProfileAggregates(User $user): void
     {
-        $relations = ['posts', 'animals', 'products', 'followers', 'following'];
+        $relations = ['posts', 'animals', 'products', 'serviceListings', 'veterinarians', 'followers', 'following'];
 
         if (Schema::hasTable('reservation_reviews')) {
-            $relations[] = 'reviewsReceived';
+            $relations['reviewsReceived'] = fn ($query) => $query->publiclyVisible();
         }
 
         $user->loadCount($relations);
 
         if (Schema::hasTable('reservation_reviews')) {
-            $user->loadAvg('reviewsReceived', 'rating');
+            $user->loadAvg(['reviewsReceived' => fn ($query) => $query->publiclyVisible()], 'rating');
         }
 
         if (Schema::hasTable('professional_verifications')) {

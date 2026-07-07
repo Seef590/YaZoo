@@ -80,4 +80,14 @@ class ServiceListing extends Model
     {
         return $this->morphMany(Reservation::class, 'reservable');
     }
+
+    public function reviews(): MorphMany
+    {
+        return $this->morphMany(ReservationReview::class, 'reviewable');
+    }
+
+    public function favorites(): MorphMany
+    {
+        return $this->morphMany(Favorite::class, 'favoritable');
+    }
 }

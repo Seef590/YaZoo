@@ -32,10 +32,17 @@ class VeterinarianResource extends JsonResource
             'longitude' => $this->longitude !== null ? (float) $this->longitude : null,
             'locationUrl' => $this->location_url,
             'isActive' => (bool) $this->is_active,
+            'averageRating' => null,
+            'reviewsCount' => 0,
+            'favoritesCount' => (int) ($this->favorites_count ?? 0),
+            'isFavorited' => (bool) ($this->is_favorited ?? false),
             'createdAt' => $this->created_at?->toISOString(),
             'owner' => [
                 'id' => $this->user?->id,
                 'name' => $this->user?->name,
+                'isPhoneVerified' => $this->user?->hasVerifiedPhone() ?? false,
+                'isProfessionalVerified' => $this->user?->hasApprovedProfessionalVerification() ?? false,
+                'professionalVerificationStatus' => $this->user?->professionalVerificationStatus(),
             ],
             'isOwner' => $request->user()?->is($this->user) ?? false,
         ];

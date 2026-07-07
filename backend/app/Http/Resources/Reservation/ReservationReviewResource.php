@@ -22,7 +22,13 @@ class ReservationReviewResource extends JsonResource
             'id' => $this->id,
             'rating' => $this->rating,
             'comment' => $this->comment,
+            'status' => $this->status ?? ReservationReview::STATUS_PUBLISHED,
+            'moderationReason' => $this->when(
+                ($request->user()?->is_admin ?? false) || ($request->user()?->id === $this->reviewer_id),
+                $this->moderation_reason,
+            ),
             'createdAt' => $this->created_at?->toISOString(),
+            'moderatedAt' => $this->moderated_at?->toISOString(),
             'reviewer' => [
                 'id' => $this->reviewer?->id,
                 'name' => $this->reviewer?->name,

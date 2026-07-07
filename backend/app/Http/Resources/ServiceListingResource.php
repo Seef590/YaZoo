@@ -37,6 +37,10 @@ class ServiceListingResource extends JsonResource
                 ($request->user()?->is_admin ?? false) || ($request->user()?->is($this->user) ?? false),
                 $this->moderation_note,
             ),
+            'averageRating' => $this->average_rating !== null ? round((float) $this->average_rating, 1) : null,
+            'reviewsCount' => (int) ($this->reviews_count ?? 0),
+            'favoritesCount' => (int) ($this->favorites_count ?? 0),
+            'isFavorited' => (bool) ($this->is_favorited ?? false),
             'createdAt' => $this->created_at?->toISOString(),
             'provider' => [
                 'id' => $this->user?->id,
@@ -46,6 +50,9 @@ class ServiceListingResource extends JsonResource
                 'avatar' => MediaStorage::resolveUrl($this->user?->avatar),
                 'city' => $this->user?->city,
                 'country' => $this->user?->country,
+                'isPhoneVerified' => $this->user?->hasVerifiedPhone() ?? false,
+                'isProfessionalVerified' => $this->user?->hasApprovedProfessionalVerification() ?? false,
+                'professionalVerificationStatus' => $this->user?->professionalVerificationStatus(),
             ],
             'isOwner' => $request->user()?->is($this->user) ?? false,
         ];

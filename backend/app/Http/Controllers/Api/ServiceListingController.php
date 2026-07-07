@@ -23,7 +23,20 @@ class ServiceListingController extends Controller
         $pagination = PaginationData::fromRequest($request, 12, 50);
 
         $query = ServiceListing::query()
-            ->with('user:id,name,email,phone,avatar,city,country')
+            ->with([
+                'user:id,name,email,phone,phone_verified_at,avatar,city,country',
+                'user.latestProfessionalVerification',
+            ])
+            ->withCount([
+                'reviews as reviews_count' => fn ($reviewQuery) => $reviewQuery->publiclyVisible(),
+                'favorites as favorites_count',
+            ])
+            ->withAvg(['reviews as average_rating' => fn ($reviewQuery) => $reviewQuery->publiclyVisible()], 'rating')
+            ->when($request->user(), function ($query, $user): void {
+                $query->withExists([
+                    'favorites as is_favorited' => fn ($favoriteQuery) => $favoriteQuery->where('user_id', $user->id),
+                ]);
+            })
             ->where('status', 'active')
             ->latest();
 
@@ -44,7 +57,15 @@ class ServiceListingController extends Controller
 
         return ServiceListingResource::collection(
             ServiceListing::query()
-                ->with('user:id,name,email,phone,avatar,city,country')
+                ->with([
+                    'user:id,name,email,phone,phone_verified_at,avatar,city,country',
+                    'user.latestProfessionalVerification',
+                ])
+                ->withCount([
+                    'reviews as reviews_count' => fn ($reviewQuery) => $reviewQuery->publiclyVisible(),
+                    'favorites as favorites_count',
+                ])
+                ->withAvg(['reviews as average_rating' => fn ($reviewQuery) => $reviewQuery->publiclyVisible()], 'rating')
                 ->where('user_id', $request->user()->id)
                 ->latest()
                 ->paginate($pagination->perPage),
@@ -67,7 +88,20 @@ class ServiceListingController extends Controller
 
         return ServiceListingResource::collection(
             ServiceListing::query()
-                ->with('user:id,name,email,phone,avatar,city,country')
+                ->with([
+                    'user:id,name,email,phone,phone_verified_at,avatar,city,country',
+                    'user.latestProfessionalVerification',
+                ])
+                ->withCount([
+                    'reviews as reviews_count' => fn ($reviewQuery) => $reviewQuery->publiclyVisible(),
+                    'favorites as favorites_count',
+                ])
+                ->withAvg(['reviews as average_rating' => fn ($reviewQuery) => $reviewQuery->publiclyVisible()], 'rating')
+                ->when($request->user(), function ($query, $user): void {
+                    $query->withExists([
+                        'favorites as is_favorited' => fn ($favoriteQuery) => $favoriteQuery->where('user_id', $user->id),
+                    ]);
+                })
                 ->where('status', 'active')
                 ->when($request->user(), fn ($query, $user) => $query->where('user_id', '!=', $user->id))
                 ->orderByDesc('reservations_count')
@@ -96,7 +130,7 @@ class ServiceListingController extends Controller
             $request,
         );
 
-        return ServiceListingResource::make($service->load('user'))
+        return ServiceListingResource::make($this->loadSocialSignals($service))
             ->response()
             ->setStatusCode(201);
     }
@@ -107,7 +141,7 @@ class ServiceListingController extends Controller
 
         $service->increment('views_count');
 
-        return ServiceListingResource::make($service->load('user'));
+        return ServiceListingResource::make($this->loadSocialSignals($service));
     }
 
     public function update(UpdateServiceListingRequest $request, ServiceListing $service): ServiceListingResource
@@ -126,7 +160,28 @@ class ServiceListingController extends Controller
             $request,
         );
 
-        return ServiceListingResource::make($service->load('user'));
+        return ServiceListingResource::make($this->loadSocialSignals($service));
+    }
+
+    private function loadSocialSignals(ServiceListing $service): ServiceListing
+    {
+        $service->load([
+            'user:id,name,email,phone,phone_verified_at,avatar,city,country',
+            'user.latestProfessionalVerification',
+        ])
+            ->loadCount([
+                'reviews as reviews_count' => fn ($reviewQuery) => $reviewQuery->publiclyVisible(),
+                'favorites as favorites_count',
+            ])
+            ->loadAvg(['reviews as average_rating' => fn ($reviewQuery) => $reviewQuery->publiclyVisible()], 'rating');
+
+        if ($user = request()->user()) {
+            $service->loadExists([
+                'favorites as is_favorited' => fn ($favoriteQuery) => $favoriteQuery->where('user_id', $user->id),
+            ]);
+        }
+
+        return $service;
     }
 
     public function destroy(Request $request, ServiceListing $service): JsonResponse

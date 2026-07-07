@@ -32,6 +32,16 @@ class AnimalMarketplaceService
                 'user:id,name,email,phone,phone_verified_at,avatar,city,country',
                 'user.latestProfessionalVerification',
             ])
+            ->withCount([
+                'reviews as reviews_count' => fn ($query) => $query->publiclyVisible(),
+                'favorites as favorites_count',
+            ])
+            ->withAvg(['reviews as average_rating' => fn ($query) => $query->publiclyVisible()], 'rating')
+            ->when($request->user(), function ($query, User $user): void {
+                $query->withExists([
+                    'favorites as is_favorited' => fn ($favoriteQuery) => $favoriteQuery->where('user_id', $user->id),
+                ]);
+            })
             ->when($request->filled('q'), function ($query) use ($request): void {
                 $this->search($query, ['name', 'type', 'breed', 'description'], (string) $request->string('q')->trim());
             })
@@ -111,10 +121,23 @@ class AnimalMarketplaceService
 
     public function loadForResponse(Animal $animal): Animal
     {
-        return $animal->load([
+        $animal->load([
             'user:id,name,email,phone,phone_verified_at,avatar,city,country',
             'user.latestProfessionalVerification',
-        ]);
+        ])
+            ->loadCount([
+                'reviews as reviews_count' => fn ($query) => $query->publiclyVisible(),
+                'favorites as favorites_count',
+            ])
+            ->loadAvg(['reviews as average_rating' => fn ($query) => $query->publiclyVisible()], 'rating');
+
+        if ($user = request()->user()) {
+            $animal->loadExists([
+                'favorites as is_favorited' => fn ($query) => $query->where('user_id', $user->id),
+            ]);
+        }
+
+        return $animal;
     }
 
     /**
@@ -164,6 +187,7 @@ class AnimalMarketplaceService
         return 'marketplace:animals:'.hash('xxh128', json_encode([
             'query' => $query,
             'per_page' => $perPage,
+            'user_id' => $request->user()?->id,
         ], JSON_THROW_ON_ERROR));
     }
 }

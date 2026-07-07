@@ -38,13 +38,19 @@ class UserProfileResource extends JsonResource
             'followingCount' => $this->following_count ?? 0,
             'animalsCount' => $this->animals_count ?? 0,
             'productsCount' => $this->products_count ?? 0,
+            'servicesCount' => $this->service_listings_count ?? 0,
+            'veterinariansCount' => $this->veterinarians_count ?? 0,
+            'activeListingsCount' => (int) ($this->animals_count ?? 0)
+                + (int) ($this->products_count ?? 0)
+                + (int) ($this->service_listings_count ?? 0)
+                + (int) ($this->veterinarians_count ?? 0),
             'ratingCount' => $this->reviews_received_count ?? 0,
             'ratingAverage' => $this->reviews_received_avg_rating !== null
                 ? round((float) $this->reviews_received_avg_rating, 1)
                 : null,
             'isPhoneVerified' => $this->hasVerifiedPhone(),
-            'isProfessionalVerified' => $this->latestProfessionalVerification?->status === 'approved',
-            'professionalVerificationStatus' => $this->latestProfessionalVerification?->status,
+            'isProfessionalVerified' => $this->hasApprovedProfessionalVerification(),
+            'professionalVerificationStatus' => $this->professionalVerificationStatus(),
             'isSuspended' => (bool) $this->is_suspended,
             'isBanned' => $this->banned_at !== null,
             'isFollowing' => $viewer

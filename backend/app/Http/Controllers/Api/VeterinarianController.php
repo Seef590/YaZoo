@@ -20,7 +20,16 @@ class VeterinarianController extends Controller
         $pagination = PaginationData::fromRequest($request, 12, 50);
 
         $query = Veterinarian::query()
-            ->with('user:id,name')
+            ->with([
+                'user:id,name,email,phone,phone_verified_at,avatar,city,country',
+                'user.latestProfessionalVerification',
+            ])
+            ->withCount(['favorites as favorites_count'])
+            ->when($request->user(), function ($query, $user): void {
+                $query->withExists([
+                    'favorites as is_favorited' => fn ($favoriteQuery) => $favoriteQuery->where('user_id', $user->id),
+                ]);
+            })
             ->latest();
 
         if (! $request->boolean('include_inactive')) {
@@ -61,7 +70,7 @@ class VeterinarianController extends Controller
             'user_id' => $request->user()->id,
         ]);
 
-        return VeterinarianResource::make($veterinarian->load('user'))
+        return VeterinarianResource::make($this->loadSocialSignals($veterinarian))
             ->response()
             ->setStatusCode(201);
     }
@@ -70,7 +79,7 @@ class VeterinarianController extends Controller
     {
         abort_if(! $veterinarian->is_active && ! request()->user()?->is($veterinarian->user), 404);
 
-        return VeterinarianResource::make($veterinarian->load('user'));
+        return VeterinarianResource::make($this->loadSocialSignals($veterinarian));
     }
 
     public function update(UpdateVeterinarianRequest $request, Veterinarian $veterinarian): VeterinarianResource
@@ -81,7 +90,7 @@ class VeterinarianController extends Controller
 
         $veterinarian->update($validated);
 
-        return VeterinarianResource::make($veterinarian->load('user'));
+        return VeterinarianResource::make($this->loadSocialSignals($veterinarian));
     }
 
     public function destroy(Request $request, Veterinarian $veterinarian): JsonResponse
@@ -112,5 +121,22 @@ class VeterinarianController extends Controller
         }
 
         return $validated;
+    }
+
+    private function loadSocialSignals(Veterinarian $veterinarian): Veterinarian
+    {
+        $veterinarian->load([
+            'user:id,name,email,phone,phone_verified_at,avatar,city,country',
+            'user.latestProfessionalVerification',
+        ])
+            ->loadCount(['favorites as favorites_count']);
+
+        if ($user = request()->user()) {
+            $veterinarian->loadExists([
+                'favorites as is_favorited' => fn ($favoriteQuery) => $favoriteQuery->where('user_id', $user->id),
+            ]);
+        }
+
+        return $veterinarian;
     }
 }
