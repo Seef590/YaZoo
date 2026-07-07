@@ -246,13 +246,15 @@ class AuthApiTest extends TestCase
         config(['auth.admin_bootstrap.enabled' => true]);
         $this->app->detectEnvironment(fn () => 'production');
 
-        $response = $this->postJson('/api/auth/register', [
-            'name' => 'Production User',
-            'email' => 'production-user@yazoo.app',
-            'password' => 'password123',
-            'password_confirmation' => 'password123',
-            'device_name' => 'phpunit',
-        ]);
+        $response = $this
+            ->withHeader('X-Forwarded-Proto', 'https')
+            ->postJson('/api/auth/register', [
+                'name' => 'Production User',
+                'email' => 'production-user@yazoo.app',
+                'password' => 'password123',
+                'password_confirmation' => 'password123',
+                'device_name' => 'phpunit',
+            ]);
 
         $response
             ->assertCreated()
