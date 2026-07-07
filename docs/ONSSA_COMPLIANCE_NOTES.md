@@ -20,7 +20,7 @@ Ces notes servent a presenter la base technique Phase 3 dans un dossier INDH san
 ## Limites actuelles
 
 - YaZoo ne verifie pas encore automatiquement l'authenticite des documents.
-- Les champs documentaires sont des references texte; un stockage prive renforce des documents devra etre finalise avant production publique.
+- Les documents professionnels sensibles sont stockes en prive via Laravel. Les anciennes references texte peuvent exister pour compatibilite mais ne doivent pas etre exposees publiquement.
 - Une verification professionnelle approuvee par YaZoo n'est pas une certification officielle ONSSA.
 - Les statuts de revue admin ne remplacent pas une decision administrative.
 - Aucun paiement en ligne ni transfert de propriete n'est gere par YaZoo dans cette phase.
@@ -45,14 +45,14 @@ Formulation recommandee:
 
 Formulations a eviter:
 
-- "YaZoo est conforme ONSSA."
-- "YaZoo certifie officiellement les professionnels."
-- "YaZoo garantit la legalite de chaque annonce."
-- "YaZoo remplace le controle veterinaire ou administratif."
+- Toute formule affirmant une conformite ONSSA officielle de YaZoo.
+- Toute formule affirmant une certification officielle des professionnels par YaZoo.
+- Toute formule garantissant la legalite de chaque annonce.
+- Toute formule laissant penser que YaZoo remplace un controle veterinaire ou administratif.
 
 ## Avant production publique
 
-- Ajouter stockage prive chiffre ou equivalent pour les documents sensibles.
+- Evaluer chiffrement applicatif ou stockage coffre documentaire pour les documents sensibles si le volume et le cadre juridique l'exigent.
 - Ajouter historique complet des actions admin en Phase 4.
 - Ajouter exports CSV et journal de moderation.
 - Rediger une procedure de conservation et suppression des documents professionnels.

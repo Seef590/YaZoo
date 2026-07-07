@@ -23,6 +23,7 @@ return [
         'created' => 'Avis envoye avec succes.',
         'already_submitted' => 'Vous avez deja laisse un avis pour cette mission.',
         'only_after_completion' => 'Un avis ne peut etre depose qu apres la fin de la mission.',
+        'self_forbidden' => 'Vous ne pouvez pas vous auto-evaluer.',
     ],
     'stories' => [
         'created' => 'Story ajoutee avec succes.',

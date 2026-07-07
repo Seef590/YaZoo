@@ -24,7 +24,9 @@ class StoreProfessionalVerificationRequest extends FormRequest
             'ice' => ['nullable', 'string', 'max:50'],
             'onssa_authorization_number' => ['nullable', 'string', 'max:100'],
             'professional_license_number' => ['nullable', 'string', 'max:100'],
-            'document_path' => ['nullable', 'string', 'max:2048'],
+            'document' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,webp', 'max:5120'],
+            'document_type' => ['nullable', 'string', Rule::in(ProfessionalVerification::DOCUMENT_TYPES)],
+            'document_expires_at' => ['nullable', 'date', 'after:today'],
         ];
     }
 
@@ -36,7 +38,7 @@ class StoreProfessionalVerificationRequest extends FormRequest
             'ice',
             'onssa_authorization_number',
             'professional_license_number',
-            'document_path',
+            'document_type',
         ])->mapWithKeys(fn (string $field): array => [
             $field => is_string($this->input($field)) ? trim($this->input($field)) : $this->input($field),
         ])->all());

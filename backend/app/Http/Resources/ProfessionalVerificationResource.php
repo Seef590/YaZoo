@@ -16,6 +16,11 @@ class ProfessionalVerificationResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $viewer = $request->user();
+        $isAdmin = (bool) ($viewer?->is_admin ?? false);
+        $isOwner = (int) ($viewer?->id ?? 0) === (int) $this->user_id;
+        $hasDocument = filled($this->document_path);
+
         return [
             'id' => $this->id,
             'businessType' => $this->business_type,
@@ -23,10 +28,23 @@ class ProfessionalVerificationResource extends JsonResource
             'ice' => $this->ice,
             'onssaAuthorizationNumber' => $this->onssa_authorization_number,
             'professionalLicenseNumber' => $this->professional_license_number,
-            'documentPath' => $this->document_path,
-            'status' => $this->status,
-            'adminNote' => $this->admin_note,
+            'documentPath' => null,
+            'hasDocument' => $hasDocument,
+            'documentType' => $this->document_type,
+            'documentOriginalName' => ($isAdmin || $isOwner) ? $this->document_original_name : null,
+            'documentMime' => $isAdmin ? $this->document_mime : null,
+            'documentSize' => ($isAdmin || $isOwner) ? $this->document_size : null,
+            'documentExpiresAt' => $this->document_expires_at?->toDateString(),
+            'documentDownloadUrl' => $this->when(
+                $isAdmin && $hasDocument,
+                fn (): string => "/api/admin/professional-verifications/{$this->id}/document",
+            ),
+            'status' => $this->effectiveStatus(),
+            'storedStatus' => $this->status,
+            'reviewReason' => ($isAdmin || $isOwner) ? $this->review_reason : null,
+            'adminNote' => $isAdmin ? $this->admin_note : null,
             'verifiedAt' => $this->verified_at?->toISOString(),
+            'reviewedAt' => $this->reviewed_at?->toISOString(),
             'createdAt' => $this->created_at?->toISOString(),
             'updatedAt' => $this->updated_at?->toISOString(),
             'user' => $this->whenLoaded('user', fn (): array => [
@@ -40,6 +58,10 @@ class ProfessionalVerificationResource extends JsonResource
             'verifier' => $this->whenLoaded('verifier', fn (): array => [
                 'id' => $this->verifier?->id,
                 'name' => $this->verifier?->name,
+            ]),
+            'reviewer' => $this->whenLoaded('reviewer', fn (): array => [
+                'id' => $this->reviewer?->id,
+                'name' => $this->reviewer?->name,
             ]),
         ];
     }

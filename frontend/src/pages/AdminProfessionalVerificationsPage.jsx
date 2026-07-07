@@ -10,16 +10,18 @@ import Button from '../components/ui/Button'
 import ComplianceBadge from '../components/ui/ComplianceBadge'
 import { useAuth } from '../hooks/useAuth'
 import { useI18n } from '../hooks/useI18n'
+import { getApiBaseUrl } from '../lib/appConfig'
 import { extractDataArray } from '../utils/apiData'
 import { getErrorMessage } from '../utils/getErrorMessage'
 
-const STATUS_OPTIONS = ['pending', 'approved', 'rejected']
+const STATUS_OPTIONS = ['pending', 'approved', 'rejected', 'expired']
 
 function AdminProfessionalVerificationsPage() {
   const { user } = useAuth()
   const { t } = useI18n()
   const [items, setItems] = useState([])
   const [notes, setNotes] = useState({})
+  const [reviewReasons, setReviewReasons] = useState({})
   const [errorMessage, setErrorMessage] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -64,6 +66,7 @@ function AdminProfessionalVerificationsPage() {
     try {
       const response = await updateAdminProfessionalVerificationStatusRequest(item.id, {
         status,
+        review_reason: reviewReasons[item.id] ?? item.reviewReason ?? '',
         admin_note: notes[item.id] ?? item.adminNote ?? '',
       })
       const updated = response.data.verification
@@ -108,8 +111,30 @@ function AdminProfessionalVerificationsPage() {
               <Meta label={t('professionalVerification.ice')} value={item.ice || t('common.notProvided')} />
               <Meta label={t('professionalVerification.onssaNumber')} value={item.onssaAuthorizationNumber || t('common.notProvided')} />
               <Meta label={t('professionalVerification.licenseNumber')} value={item.professionalLicenseNumber || t('common.notProvided')} />
-              <Meta label={t('professionalVerification.documentPath')} value={item.documentPath || t('common.notProvided')} />
+              <Meta label={t('professionalVerification.documentType')} value={item.documentType ? t(`professionalVerification.documentTypes.${item.documentType}`) : t('common.notProvided')} />
+              <Meta label={t('professionalVerification.documentOriginalName')} value={item.documentOriginalName || t('common.notProvided')} />
+              <Meta label={t('professionalVerification.documentSize')} value={formatFileSize(item.documentSize, t)} />
+              <Meta label={t('professionalVerification.documentExpiresAt')} value={item.documentExpiresAt || t('common.notProvided')} />
+              <Meta label={t('admin.professionalVerifications.submittedAt')} value={item.createdAt || t('common.notProvided')} />
+              <Meta label={t('professionalVerification.reviewReason')} value={item.reviewReason || t('common.notProvided')} />
             </dl>
+            {item.documentDownloadUrl ? (
+              <div className="mt-4">
+                <a
+                  href={resolveDocumentDownloadUrl(item.documentDownloadUrl)}
+                  className="inline-flex items-center justify-center rounded-full border border-violet-100 bg-white/80 px-4 py-2 text-sm font-semibold text-violet-900 transition hover:bg-violet-50 dark:border-violet-300/16 dark:bg-white/8 dark:text-violet-50"
+                >
+                  {t('admin.professionalVerifications.downloadDocument')}
+                </a>
+              </div>
+            ) : null}
+            <textarea
+              value={reviewReasons[item.id] ?? item.reviewReason ?? ''}
+              onChange={(event) => setReviewReasons((current) => ({ ...current, [item.id]: event.target.value }))}
+              rows={2}
+              className="mt-4 w-full rounded-[22px] border border-violet-100 bg-violet-50/55 px-4 py-3 text-sm text-stone-700 outline-none focus:border-violet-400 dark:border-violet-300/18 dark:bg-white/10 dark:text-violet-50"
+              placeholder={t('admin.professionalVerifications.reviewReason')}
+            />
             <textarea
               value={notes[item.id] ?? item.adminNote ?? ''}
               onChange={(event) => setNotes((current) => ({ ...current, [item.id]: event.target.value }))}
@@ -140,6 +165,7 @@ function AdminProfessionalVerificationsPage() {
 function StatusBadge({ status }) {
   if (status === 'approved') return <ComplianceBadge type="professionalApproved" />
   if (status === 'rejected') return <ComplianceBadge type="professionalRejected" />
+  if (status === 'expired') return <ComplianceBadge type="professionalRejected" />
   return <ComplianceBadge type="documentsPending" />
 }
 
@@ -166,6 +192,23 @@ function EmptyState({ children }) {
       {children}
     </div>
   )
+}
+
+function resolveDocumentDownloadUrl(url) {
+  if (!url) return ''
+  if (/^https?:\/\//i.test(url)) return url
+
+  return `${getApiBaseUrl()}${url.replace(/^\/api/i, '')}`
+}
+
+function formatFileSize(size, t) {
+  const numericSize = Number(size)
+
+  if (!Number.isFinite(numericSize) || numericSize <= 0) {
+    return t('common.notProvided')
+  }
+
+  return `${(numericSize / 1024).toFixed(1)} KB`
 }
 
 export default AdminProfessionalVerificationsPage

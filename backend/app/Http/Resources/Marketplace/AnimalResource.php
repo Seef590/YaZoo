@@ -46,11 +46,16 @@ class AnimalResource extends JsonResource
             'vaccinationBookPath' => $this->vaccination_book_path,
             'onssaAuthorizationNumber' => $this->onssa_authorization_number,
             'legalStatus' => $this->legal_status ?? Animal::LEGAL_STATUS_PENDING_REVIEW,
+            'documentaryStatus' => $this->documentaryStatus(),
             'moderationNote' => $this->when(
                 ($request->user()?->is_admin ?? false) || ($request->user()?->is($this->user) ?? false),
                 $this->moderation_note,
             ),
             'moderatedAt' => $this->moderated_at?->toISOString(),
+            'averageRating' => $this->average_rating !== null ? round((float) $this->average_rating, 1) : null,
+            'reviewsCount' => (int) ($this->reviews_count ?? 0),
+            'favoritesCount' => (int) ($this->favorites_count ?? 0),
+            'isFavorited' => (bool) ($this->is_favorited ?? false),
             'createdAt' => $this->created_at?->toISOString(),
             'author' => [
                 'id' => $this->user?->id,
@@ -61,10 +66,29 @@ class AnimalResource extends JsonResource
                 'avatar' => MediaStorage::resolveUrl($this->user?->avatar),
                 'city' => $this->user?->city,
                 'country' => $this->user?->country,
-                'isProfessionalVerified' => $this->user?->latestProfessionalVerification?->status === 'approved',
-                'professionalVerificationStatus' => $this->user?->latestProfessionalVerification?->status,
+                'isProfessionalVerified' => $this->user?->hasApprovedProfessionalVerification() ?? false,
+                'professionalVerificationStatus' => $this->user?->professionalVerificationStatus(),
             ],
             'isOwner' => $request->user()?->is($this->user) ?? false,
         ];
+    }
+
+    protected function documentaryStatus(): string
+    {
+        return match ($this->legal_status) {
+            'approved' => 'documents_verified_by_yazoo',
+            'rejected', 'suspended' => 'rejected',
+            'pending_review' => 'under_review',
+            default => ($this->hasDeclaredDocuments() ? 'under_review' : 'unverified'),
+        };
+    }
+
+    protected function hasDeclaredDocuments(): bool
+    {
+        return filled($this->health_certificate_path)
+            || filled($this->vaccination_book_path)
+            || filled($this->onssa_authorization_number)
+            || filled($this->identification_number)
+            || in_array($this->seller_type, ['professional', 'association'], true);
     }
 }

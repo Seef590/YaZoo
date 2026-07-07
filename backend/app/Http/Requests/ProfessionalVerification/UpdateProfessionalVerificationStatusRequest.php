@@ -20,6 +20,7 @@ class UpdateProfessionalVerificationStatusRequest extends FormRequest
     {
         return [
             'status' => ['required', 'string', Rule::in(ProfessionalVerification::STATUSES)],
+            'review_reason' => ['nullable', 'string', 'max:2000', 'required_if:status,rejected'],
             'admin_note' => ['nullable', 'string', 'max:2000'],
         ];
     }

@@ -21,13 +21,26 @@ const BUSINESS_TYPES = [
   'other',
 ]
 
+const DOCUMENT_TYPES = [
+  'cin',
+  'ice',
+  'license',
+  'onssa_authorization',
+  'professional_card',
+  'association_document',
+  'veterinarian_license',
+  'other',
+]
+
 const initialForm = {
   business_type: 'service_provider',
   legal_name: '',
   ice: '',
   onssa_authorization_number: '',
   professional_license_number: '',
-  document_path: '',
+  document_type: 'other',
+  document_expires_at: '',
+  document: null,
 }
 
 function ProfessionalVerificationPage() {
@@ -60,6 +73,10 @@ function ProfessionalVerificationPage() {
     setForm((current) => ({ ...current, [field]: event.target.value }))
   }
 
+  const handleFileChange = (event) => {
+    setForm((current) => ({ ...current, document: event.target.files?.[0] ?? null }))
+  }
+
   const handleSubmit = async (event) => {
     event.preventDefault()
     setErrorMessage('')
@@ -67,10 +84,12 @@ function ProfessionalVerificationPage() {
     setIsSubmitting(true)
 
     try {
-      const response = await createProfessionalVerificationRequest(form)
+      const payload = buildProfessionalVerificationPayload(form)
+      const response = await createProfessionalVerificationRequest(payload)
       const nextVerification = extractDataObject(response, null)?.verification
       setVerifications((current) => [nextVerification, ...current].filter(Boolean))
       setForm(initialForm)
+      event.currentTarget.reset()
       setSuccessMessage(t('professionalVerification.submitSuccess'))
     } catch (error) {
       setErrorMessage(getErrorMessage(error, t('professionalVerification.submitError')))
@@ -115,7 +134,31 @@ function ProfessionalVerificationPage() {
             <Field label={t('professionalVerification.ice')} value={form.ice} onChange={handleChange('ice')} />
             <Field label={t('professionalVerification.onssaNumber')} value={form.onssa_authorization_number} onChange={handleChange('onssa_authorization_number')} />
             <Field label={t('professionalVerification.licenseNumber')} value={form.professional_license_number} onChange={handleChange('professional_license_number')} />
-            <Field label={t('professionalVerification.documentPath')} value={form.document_path} onChange={handleChange('document_path')} />
+            <label className="block">
+              <span className="mb-2 block text-sm font-medium text-stone-700 dark:text-violet-100">{t('professionalVerification.documentType')}</span>
+              <select
+                value={form.document_type}
+                onChange={handleChange('document_type')}
+                className="w-full rounded-2xl border border-violet-100 bg-violet-50/55 px-4 py-3 text-sm text-stone-700 outline-none transition focus:border-violet-400 focus:bg-white dark:border-violet-300/18 dark:bg-white/10 dark:text-violet-50"
+              >
+                {DOCUMENT_TYPES.map((type) => (
+                  <option key={type} value={type}>{t(`professionalVerification.documentTypes.${type}`)}</option>
+                ))}
+              </select>
+            </label>
+            <Field type="date" label={t('professionalVerification.documentExpiresAt')} value={form.document_expires_at} onChange={handleChange('document_expires_at')} />
+            <label className="block md:col-span-2">
+              <span className="mb-2 block text-sm font-medium text-stone-700 dark:text-violet-100">{t('professionalVerification.documentFile')}</span>
+              <input
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp"
+                onChange={handleFileChange}
+                className="w-full rounded-2xl border border-violet-100 bg-violet-50/55 px-4 py-3 text-sm text-stone-700 outline-none transition file:me-3 file:rounded-full file:border-0 file:bg-violet-100 file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-violet-800 focus:border-violet-400 focus:bg-white dark:border-violet-300/18 dark:bg-white/10 dark:text-violet-50 dark:file:bg-violet-300/18 dark:file:text-violet-50"
+              />
+              <span className="mt-2 block text-xs text-stone-500 dark:text-violet-100/64">
+                {t('professionalVerification.documentHelp')}
+              </span>
+            </label>
           </div>
 
           <div className="mt-4 rounded-[22px] border border-amber-200 bg-amber-50/80 px-4 py-3 text-sm leading-6 text-amber-950 dark:border-amber-300/18 dark:bg-amber-400/10 dark:text-amber-100">
@@ -149,7 +192,12 @@ function ProfessionalVerificationPage() {
                   <StatusBadge status={verification.status} />
                 </div>
                 <p className="mt-2">{verification.legalName || t('common.notProvided')}</p>
-                {verification.adminNote ? <p className="mt-2 text-xs text-stone-500 dark:text-violet-100/64">{verification.adminNote}</p> : null}
+                {verification.documentType ? (
+                  <p className="mt-2 text-xs text-stone-500 dark:text-violet-100/64">
+                    {t('professionalVerification.documentType')}: {t(`professionalVerification.documentTypes.${verification.documentType}`)}
+                  </p>
+                ) : null}
+                {verification.reviewReason ? <p className="mt-2 text-xs text-stone-500 dark:text-violet-100/64">{verification.reviewReason}</p> : null}
               </article>
             ))}
           </div>
@@ -171,12 +219,30 @@ function Field({ label, ...props }) {
   )
 }
 
+function buildProfessionalVerificationPayload(form) {
+  const payload = new FormData()
+
+  for (const [key, value] of Object.entries(form)) {
+    if (key === 'document') {
+      if (value) payload.append('document', value)
+      continue
+    }
+
+    if (value !== '') {
+      payload.append(key, value)
+    }
+  }
+
+  return payload
+}
+
 function StatusBadge({ status }) {
   if (status === 'approved') {
     return <ComplianceBadge type="professionalApproved" />
   }
 
   if (status === 'rejected') return <ComplianceBadge type="professionalRejected" />
+  if (status === 'expired') return <ComplianceBadge type="professionalRejected" />
 
   return <ComplianceBadge type="documentsPending" />
 }

@@ -23,6 +23,7 @@ return [
         'created' => 'Review sent successfully.',
         'already_submitted' => 'You have already submitted a review for this mission.',
         'only_after_completion' => 'A review can only be submitted after the mission is completed.',
+        'self_forbidden' => 'You cannot review yourself.',
     ],
     'stories' => [
         'created' => 'Story added successfully.',

@@ -45,6 +45,7 @@ const SearchPage = lazy(() => import('./pages/SearchPage'))
 const ServicesMarketplacePage = lazy(() => import('./pages/ServicesMarketplacePage'))
 const SettingsPage = lazy(() => import('./pages/SettingsPage'))
 const TermsPage = lazy(() => import('./pages/TermsPage'))
+const TrustSafetyPage = lazy(() => import('./pages/TrustSafetyPage'))
 const VeterinariansMarketplacePage = lazy(() => import('./pages/VeterinariansMarketplacePage'))
 
 function App() {
@@ -63,6 +64,7 @@ function App() {
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/cgu" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/trust" element={<TrustSafetyPage />} />
         <Route path="/rules" element={<PublishingRulesPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/accessibility" element={<AccessibilityPage />} />

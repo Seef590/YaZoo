@@ -23,6 +23,7 @@ return [
         'created' => 'تم إرسال التقييم بنجاح.',
         'already_submitted' => 'لقد أرسلت تقييما لهذه المهمة من قبل.',
         'only_after_completion' => 'يمكن إرسال التقييم بعد انتهاء المهمة فقط.',
+        'self_forbidden' => 'You cannot review yourself.',
     ],
     'stories' => [
         'created' => 'تمت إضافة القصة بنجاح.',

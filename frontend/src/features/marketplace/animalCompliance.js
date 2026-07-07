@@ -9,6 +9,18 @@ export function getAnimalComplianceBadgeTypes(animal = {}) {
     badges.push('onssaProvided')
   }
 
+  const documentaryStatus = animal.documentaryStatus ?? 'unverified'
+
+  if (documentaryStatus === 'documents_verified_by_yazoo') {
+    badges.push('documentsVerifiedByYazoo')
+  } else if (documentaryStatus === 'under_review') {
+    badges.push('documentsUnderReview')
+  } else if (documentaryStatus === 'rejected') {
+    badges.push('documentsRejected')
+  } else {
+    badges.push('documentsUnverified')
+  }
+
   const legalStatus = animal.legalStatus ?? 'pending_review'
 
   if (legalStatus === 'approved') {

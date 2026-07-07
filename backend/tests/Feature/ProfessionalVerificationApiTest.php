@@ -3,8 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\ProfessionalVerification;
+use App\Models\Animal;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -14,25 +17,59 @@ class ProfessionalVerificationApiTest extends TestCase
 
     public function test_user_can_submit_and_list_professional_verification_requests(): void
     {
+        Storage::fake('local');
+
         $user = User::factory()->create();
         Sanctum::actingAs($user, ['*']);
 
-        $this->postJson('/api/professional-verifications', [
+        $this->post('/api/professional-verifications', [
             'business_type' => 'veterinarian',
             'legal_name' => 'Clinique YaZoo',
             'ice' => '0011223344',
             'onssa_authorization_number' => 'ONSSA-A-123',
             'professional_license_number' => 'LIC-456',
-            'document_path' => 'private/professional-verifications/demo.pdf',
+            'document_type' => 'veterinarian_license',
+            'document' => UploadedFile::fake()->create('license.pdf', 120, 'application/pdf'),
         ])
             ->assertCreated()
             ->assertJsonPath('verification.status', 'pending')
-            ->assertJsonPath('verification.businessType', 'veterinarian');
+            ->assertJsonPath('verification.businessType', 'veterinarian')
+            ->assertJsonPath('verification.documentPath', null)
+            ->assertJsonPath('verification.hasDocument', true);
 
         $this->getJson('/api/professional-verifications/me')
             ->assertOk()
             ->assertJsonCount(1, 'data')
-            ->assertJsonPath('data.0.legalName', 'Clinique YaZoo');
+            ->assertJsonPath('data.0.legalName', 'Clinique YaZoo')
+            ->assertJsonPath('data.0.documentPath', null)
+            ->assertJsonPath('data.0.documentDownloadUrl', null)
+            ->assertJsonPath('data.0.documentOriginalName', 'license.pdf');
+
+        $verification = ProfessionalVerification::query()->firstOrFail();
+
+        $this->assertNotNull($verification->document_path);
+        Storage::disk('local')->assertExists($verification->document_path);
+    }
+
+    public function test_user_supplied_document_path_is_ignored(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user, ['*']);
+
+        $this->postJson('/api/professional-verifications', [
+            'business_type' => 'veterinarian',
+            'document_type' => 'license',
+            'document_path' => 'professional-verifications/evil.pdf',
+        ])
+            ->assertCreated()
+            ->assertJsonPath('verification.documentPath', null)
+            ->assertJsonPath('verification.hasDocument', false);
+
+        $this->assertDatabaseHas('professional_verifications', [
+            'user_id' => $user->id,
+            'business_type' => 'veterinarian',
+            'document_path' => null,
+        ]);
     }
 
     public function test_admin_can_review_professional_verification_requests(): void
@@ -51,12 +88,205 @@ class ProfessionalVerificationApiTest extends TestCase
             'admin_note' => 'Documents verifies par l administration YaZoo.',
         ])
             ->assertOk()
-            ->assertJsonPath('verification.status', 'approved');
+            ->assertJsonPath('verification.status', 'approved')
+            ->assertJsonPath('verification.adminNote', 'Documents verifies par l administration YaZoo.');
 
         $this->assertDatabaseHas('professional_verifications', [
             'id' => $verification->id,
             'status' => 'approved',
             'verified_by' => $admin->id,
+            'reviewed_by' => $admin->id,
+        ]);
+    }
+
+    public function test_invalid_document_mime_is_refused(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user, ['*']);
+
+        $this->post('/api/professional-verifications', [
+            'business_type' => 'association',
+            'document_type' => 'association_document',
+            'document' => UploadedFile::fake()->create('notes.txt', 12, 'text/plain'),
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('document');
+    }
+
+    public function test_oversized_document_is_refused(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user, ['*']);
+
+        $this->post('/api/professional-verifications', [
+            'business_type' => 'pet_shop',
+            'document_type' => 'license',
+            'document' => UploadedFile::fake()->create('large.pdf', 5121, 'application/pdf'),
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('document');
+    }
+
+    public function test_user_cannot_download_another_users_professional_document(): void
+    {
+        Storage::fake('local');
+
+        $owner = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $verification = $this->verificationWithPrivateDocument($owner);
+
+        Sanctum::actingAs($otherUser, ['*']);
+
+        $this->getJson("/api/admin/professional-verifications/{$verification->id}/document")
+            ->assertForbidden();
+    }
+
+    public function test_guest_cannot_download_professional_document(): void
+    {
+        Storage::fake('local');
+
+        $verification = $this->verificationWithPrivateDocument(User::factory()->create());
+
+        $this->getJson("/api/admin/professional-verifications/{$verification->id}/document")
+            ->assertUnauthorized();
+    }
+
+    public function test_owner_non_admin_cannot_download_own_professional_document(): void
+    {
+        Storage::fake('local');
+
+        $owner = User::factory()->create();
+        $verification = $this->verificationWithPrivateDocument($owner);
+
+        Sanctum::actingAs($owner, ['*']);
+
+        $this->getJson("/api/admin/professional-verifications/{$verification->id}/document")
+            ->assertForbidden();
+    }
+
+    public function test_admin_can_download_private_professional_document(): void
+    {
+        Storage::fake('local');
+
+        $admin = User::factory()->create(['is_admin' => true]);
+        $verification = $this->verificationWithPrivateDocument(User::factory()->create(), '../../private.pdf');
+
+        Sanctum::actingAs($admin, ['*']);
+
+        $this->get("/api/admin/professional-verifications/{$verification->id}/document")
+            ->assertOk()
+            ->assertHeader('content-disposition', 'attachment; filename=private.pdf');
+    }
+
+    public function test_missing_private_document_returns_clean_not_found(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $verification = ProfessionalVerification::query()->create([
+            'user_id' => User::factory()->create()->id,
+            'business_type' => 'veterinarian',
+            'document_path' => 'professional-verifications/missing/private.pdf',
+            'document_original_name' => 'private.pdf',
+            'status' => 'pending',
+        ]);
+
+        Sanctum::actingAs($admin, ['*']);
+
+        $response = $this->getJson("/api/admin/professional-verifications/{$verification->id}/document")
+            ->assertNotFound();
+
+        $this->assertStringNotContainsString('professional-verifications/missing/private.pdf', $response->getContent());
+    }
+
+    public function test_rejected_document_shows_review_reason_without_private_admin_note_to_owner(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $owner = User::factory()->create();
+        $verification = ProfessionalVerification::query()->create([
+            'user_id' => $owner->id,
+            'business_type' => 'breeder',
+            'status' => 'pending',
+        ]);
+
+        Sanctum::actingAs($admin, ['*']);
+
+        $this->patchJson("/api/admin/professional-verifications/{$verification->id}/status", [
+            'status' => 'rejected',
+            'review_reason' => 'Document illisible.',
+            'admin_note' => 'Verifier un nouveau document avant approbation.',
+        ])->assertOk();
+
+        Sanctum::actingAs($owner, ['*']);
+
+        $this->getJson('/api/professional-verifications/me')
+            ->assertOk()
+            ->assertJsonPath('data.0.status', 'rejected')
+            ->assertJsonPath('data.0.reviewReason', 'Document illisible.')
+            ->assertJsonPath('data.0.adminNote', null);
+    }
+
+    public function test_expired_document_status_is_exposed_without_public_path(): void
+    {
+        $owner = User::factory()->create();
+        ProfessionalVerification::query()->create([
+            'user_id' => $owner->id,
+            'business_type' => 'service_provider',
+            'status' => 'approved',
+            'document_expires_at' => now()->subDay(),
+            'document_path' => 'professional-verifications/expired.pdf',
+        ]);
+
+        Sanctum::actingAs($owner, ['*']);
+
+        $this->getJson('/api/professional-verifications/me')
+            ->assertOk()
+            ->assertJsonPath('data.0.status', 'expired')
+            ->assertJsonPath('data.0.documentPath', null);
+    }
+
+    public function test_legal_config_endpoint_exposes_public_readiness_values(): void
+    {
+        config([
+            'legal.entity_name' => 'YaZoo Test',
+            'legal.data_request_response_days' => 30,
+        ]);
+
+        $this->getJson('/api/legal/config')
+            ->assertOk()
+            ->assertJsonPath('entityName', 'YaZoo Test')
+            ->assertJsonPath('dataRequestResponseDays', 30);
+    }
+
+    public function test_animal_resource_uses_prudent_documentary_status_without_onssa_certification_claim(): void
+    {
+        $seller = User::factory()->create();
+        $animal = Animal::factory()->create([
+            'user_id' => $seller->id,
+            'legal_status' => 'approved',
+            'onssa_authorization_number' => 'ONSSA-DECLARED-1',
+        ]);
+
+        Sanctum::actingAs(User::factory()->create(), ['*']);
+
+        $response = $this->getJson("/api/animals/{$animal->id}")
+            ->assertOk()
+            ->assertJsonPath('data.documentaryStatus', 'documents_verified_by_yazoo');
+
+        $payload = $response->getContent();
+
+        $this->assertStringNotContainsString('certifie ONSSA', $payload);
+        $this->assertStringNotContainsString('approuve ONSSA', $payload);
+    }
+
+    private function verificationWithPrivateDocument(User $owner, string $originalName = 'private.pdf'): ProfessionalVerification
+    {
+        Storage::disk('local')->put('professional-verifications/test/private.pdf', 'private document');
+
+        return ProfessionalVerification::query()->create([
+            'user_id' => $owner->id,
+            'business_type' => 'veterinarian',
+            'document_path' => 'professional-verifications/test/private.pdf',
+            'document_original_name' => $originalName,
+            'document_mime' => 'application/pdf',
+            'document_size' => 16,
+            'status' => 'pending',
         ]);
     }
 }
