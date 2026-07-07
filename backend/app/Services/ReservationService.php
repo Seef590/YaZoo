@@ -53,6 +53,7 @@ class ReservationService
             'buyer:id,name,email,phone,city,country',
             'seller:id,name,email,phone,city,country',
             'reservable.user:id,name,email,phone,avatar,city,country',
+            'payments',
             'reviews.reviewer:id,name,avatar',
             'reviews.reviewee:id,name,avatar',
         ]);

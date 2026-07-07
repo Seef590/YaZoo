@@ -35,6 +35,7 @@ class ReservationResource extends JsonResource
             'reservationStatus' => $this->reservation_status,
             'paymentStatus' => $this->payment_status,
             'paymentMethod' => $this->payment_method,
+            'payment' => $this->paymentSummary(),
             'deliveryMethod' => $this->delivery_method,
             'deliveryStatus' => $this->delivery_status,
             'quantity' => $this->quantity,
@@ -131,6 +132,30 @@ class ReservationResource extends JsonResource
     }
 
     /**
+     * @return array<string, mixed>|null
+     */
+    protected function paymentSummary(): ?array
+    {
+        $payment = $this->relationLoaded('payments')
+            ? $this->payments->sortByDesc('created_at')->first()
+            : null;
+
+        if (! $payment) {
+            return null;
+        }
+
+        return [
+            'id' => $payment->id,
+            'provider' => $payment->provider,
+            'status' => $payment->status,
+            'amount' => (float) $payment->amount,
+            'currency' => $payment->currency,
+            'checkoutUrl' => $payment->checkout_url,
+            'paidAt' => $payment->paid_at?->toISOString(),
+        ];
+    }
+
+    /**
      * Determine whether the buyer can still cancel the reservation.
      */
     protected function canBuyerCancel(): bool
@@ -198,7 +223,8 @@ class ReservationResource extends JsonResource
     protected function counterpartReviewFor(int $viewerId): ?array
     {
         $review = $this->reviews->first(function ($review) use ($viewerId): bool {
-            return (int) $review->reviewer_id !== $viewerId;
+            return (int) $review->reviewer_id !== $viewerId
+                && ($review->status ?? 'published') === 'published';
         });
 
         return $review ? ReservationReviewResource::make($review)->resolve() : null;

@@ -5,6 +5,16 @@ export const getOrdersHistoryRequest = () => api.get('/orders/history')
 export const getReservationInvoiceRequest = (reservationId) =>
   api.get(`/reservations/${reservationId}/invoice`)
 
+export const getPaymentConfigRequest = () => api.get('/payments/config')
+
+export const createReservationPaymentRequest = (reservationId, payload, idempotencyKey = '') => {
+  const config = idempotencyKey
+    ? { headers: { 'Idempotency-Key': idempotencyKey } }
+    : undefined
+
+  return api.post(`/reservations/${reservationId}/payments`, payload, config)
+}
+
 export const createAnimalReservationRequest = (animalId, payload) =>
   api.post(`/animals/${animalId}/reservations`, payload)
 

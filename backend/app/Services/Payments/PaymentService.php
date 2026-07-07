@@ -1,0 +1,355 @@
+<?php
+
+namespace App\Services\Payments;
+
+use App\DTOs\Payments\PaymentCallbackResult;
+use App\DTOs\Payments\PaymentInitiationResult;
+use App\Models\Payment;
+use App\Models\PaymentTransaction;
+use App\Models\Reservation;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
+
+class PaymentService
+{
+    public function __construct(
+        protected PaymentManager $paymentManager,
+    ) {}
+
+    public function createPendingPaymentForReservation(
+        User $buyer,
+        Reservation $reservation,
+        string $provider,
+        ?string $idempotencyKey = null,
+    ): Payment {
+        $provider = Payment::normalizeProvider($provider);
+        $this->validateProvider($provider);
+
+        return DB::transaction(function () use ($buyer, $reservation, $provider, $idempotencyKey): Payment {
+            $lockedReservation = Reservation::query()
+                ->lockForUpdate()
+                ->with('payments')
+                ->findOrFail($reservation->id);
+
+            $this->assertBuyerCanPayReservation($buyer, $lockedReservation);
+
+            if ($idempotencyKey) {
+                $existing = Payment::query()
+                    ->where('idempotency_key', $idempotencyKey)
+                    ->first();
+
+                if ($existing) {
+                    abort_unless(
+                        (int) $existing->reservation_id === (int) $lockedReservation->id
+                            && (int) $existing->buyer_id === (int) $buyer->id
+                            && $existing->provider === $provider,
+                        409,
+                        'Cle idempotence deja utilisee pour un autre paiement.',
+                    );
+
+                    return $existing->load(['reservation', 'buyer', 'seller', 'transactions']);
+                }
+            }
+
+            abort_if(
+                $this->activePaymentExists($lockedReservation, $provider),
+                422,
+                'Un paiement actif existe deja pour cette reservation et ce provider.',
+            );
+
+            $amount = $this->reservationGrandTotal($lockedReservation);
+            $commission = $this->computeCommission($amount);
+
+            return Payment::create([
+                'reservation_id' => $lockedReservation->id,
+                'buyer_id' => $buyer->id,
+                'seller_id' => $lockedReservation->seller_id,
+                'provider' => $provider,
+                'status' => Payment::STATUS_PENDING,
+                'amount' => $amount,
+                'currency' => (string) config('payments.currency', 'MAD'),
+                'commission_amount' => $commission,
+                'net_amount' => max(0, $amount - $commission),
+                'internal_reference' => $this->generateInternalReference(),
+                'idempotency_key' => $idempotencyKey,
+                'metadata' => [
+                    'reservation_status' => $lockedReservation->reservation_status,
+                    'legacy_payment_method' => $lockedReservation->payment_method,
+                ],
+            ])->load(['reservation', 'buyer', 'seller', 'transactions']);
+        });
+    }
+
+    public function initiatePayment(Payment $payment): PaymentInitiationResult
+    {
+        $payment = $payment->fresh(['reservation', 'buyer', 'seller']);
+        $gateway = $this->paymentManager->gateway($payment->provider);
+        $result = $gateway->initiate($payment);
+
+        $payment->forceFill([
+            'checkout_url' => $result->checkoutUrl,
+            'metadata' => array_merge($payment->metadata ?? [], [
+                'last_initiation_status' => $result->status,
+                'requires_redirect' => $result->requiresRedirect,
+            ]),
+        ])->save();
+
+        $this->recordTransaction(
+            $payment,
+            PaymentTransaction::TYPE_INITIATE,
+            PaymentTransaction::STATUS_SUCCEEDED,
+            null,
+            null,
+            $result->payload,
+            null,
+            null,
+        );
+
+        return $result;
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    public function handleProviderCallback(string $provider, array $payload, Request $request): PaymentCallbackResult
+    {
+        $provider = Payment::normalizeProvider($provider);
+        $this->validateProvider($provider, requireInitiationReady: false);
+
+        $gateway = $this->paymentManager->gateway($provider);
+        $result = $gateway->handleCallback($payload);
+        $payment = $this->paymentForCallback($result);
+
+        if ($payment) {
+            $this->recordTransaction(
+                $payment,
+                PaymentTransaction::TYPE_CALLBACK,
+                $result->success ? PaymentTransaction::STATUS_SUCCEEDED : ($result->signatureValid === false ? PaymentTransaction::STATUS_REJECTED : PaymentTransaction::STATUS_FAILED),
+                $result->providerReference,
+                $result->payload,
+                ['status' => $result->status, 'message' => $result->message],
+                $result->signatureValid,
+                $request,
+            );
+        }
+
+        if ($result->signatureValid === false) {
+            throw ValidationException::withMessages([
+                'signature' => ['Signature paiement invalide.'],
+            ]);
+        }
+
+        abort_if(! $payment, 404, 'Paiement introuvable pour ce callback.');
+
+        if ($result->success && $result->status === Payment::STATUS_PAID) {
+            $this->markPaid($payment, [
+                'provider_reference' => $result->providerReference,
+                'skip_transaction' => true,
+            ]);
+        } elseif ($result->status === Payment::STATUS_FAILED) {
+            $this->markFailed($payment, [
+                'provider_reference' => $result->providerReference,
+                'skip_transaction' => true,
+            ]);
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param  array<string, mixed>  $context
+     */
+    public function markPaid(Payment $payment, array $context = []): Payment
+    {
+        return DB::transaction(function () use ($payment, $context): Payment {
+            $lockedPayment = Payment::query()
+                ->lockForUpdate()
+                ->with('reservation')
+                ->findOrFail($payment->id);
+
+            if ($lockedPayment->status !== Payment::STATUS_PAID) {
+                $lockedPayment->forceFill([
+                    'status' => Payment::STATUS_PAID,
+                    'provider_reference' => $context['provider_reference'] ?? $lockedPayment->provider_reference,
+                    'paid_at' => $lockedPayment->paid_at ?: now(),
+                    'failed_at' => null,
+                    'cancelled_at' => null,
+                ])->save();
+            }
+
+            if ($lockedPayment->reservation && $lockedPayment->reservation->payment_status !== 'paid') {
+                $lockedPayment->reservation->forceFill([
+                    'payment_status' => 'paid',
+                ])->save();
+            }
+
+            if (! ($context['skip_transaction'] ?? false)) {
+                $this->recordTransaction(
+                    $lockedPayment,
+                    PaymentTransaction::TYPE_MANUAL_UPDATE,
+                    PaymentTransaction::STATUS_SUCCEEDED,
+                    $lockedPayment->provider_reference,
+                    $context,
+                    ['status' => Payment::STATUS_PAID],
+                    null,
+                    null,
+                );
+            }
+
+            return $lockedPayment->fresh(['reservation', 'buyer', 'seller', 'transactions']);
+        });
+    }
+
+    /**
+     * @param  array<string, mixed>  $context
+     */
+    public function markFailed(Payment $payment, array $context = []): Payment
+    {
+        return $this->markTerminal($payment, Payment::STATUS_FAILED, 'failed_at', $context);
+    }
+
+    /**
+     * @param  array<string, mixed>  $context
+     */
+    public function cancelPayment(Payment $payment, array $context = []): Payment
+    {
+        return $this->markTerminal($payment, Payment::STATUS_CANCELLED, 'cancelled_at', $context);
+    }
+
+    public function computeCommission(float $amount): float
+    {
+        $rate = max(0, (float) config('payments.commission_rate', 0));
+
+        return round($amount * $rate / 100, 2);
+    }
+
+    /**
+     * @param  array<string, mixed>  $context
+     */
+    protected function markTerminal(Payment $payment, string $status, string $timestampColumn, array $context): Payment
+    {
+        return DB::transaction(function () use ($payment, $status, $timestampColumn, $context): Payment {
+            $lockedPayment = Payment::query()
+                ->lockForUpdate()
+                ->with('reservation')
+                ->findOrFail($payment->id);
+
+            $lockedPayment->forceFill([
+                'status' => $status,
+                'provider_reference' => $context['provider_reference'] ?? $lockedPayment->provider_reference,
+                $timestampColumn => $lockedPayment->{$timestampColumn} ?: now(),
+            ])->save();
+
+            if ($status === Payment::STATUS_CANCELLED && $lockedPayment->reservation && $lockedPayment->reservation->payment_status !== 'paid') {
+                $lockedPayment->reservation->forceFill(['payment_status' => 'cancelled'])->save();
+            }
+
+            if (! ($context['skip_transaction'] ?? false)) {
+                $this->recordTransaction(
+                    $lockedPayment,
+                    PaymentTransaction::TYPE_MANUAL_UPDATE,
+                    PaymentTransaction::STATUS_SUCCEEDED,
+                    $lockedPayment->provider_reference,
+                    $context,
+                    ['status' => $status],
+                    null,
+                    null,
+                );
+            }
+
+            return $lockedPayment->fresh(['reservation', 'buyer', 'seller', 'transactions']);
+        });
+    }
+
+    protected function assertBuyerCanPayReservation(User $buyer, Reservation $reservation): void
+    {
+        abort_unless((int) $reservation->buyer_id === (int) $buyer->id, 403, 'Seul l acheteur peut initier le paiement.');
+        abort_if((int) $reservation->seller_id === (int) $buyer->id, 403, 'Vous ne pouvez pas payer votre propre annonce.');
+        abort_if(in_array($reservation->reservation_status, ['cancelled', 'rejected'], true), 422, 'Cette reservation ne peut pas etre payee.');
+        abort_if((string) config('payments.currency', 'MAD') !== 'MAD', 422, 'La devise paiement doit rester MAD.');
+    }
+
+    protected function activePaymentExists(Reservation $reservation, string $provider): bool
+    {
+        $ttl = max(1, (int) config('payments.active_payment_ttl_minutes', 30));
+
+        return Payment::query()
+            ->where('reservation_id', $reservation->id)
+            ->where('provider', $provider)
+            ->whereIn('status', Payment::ACTIVE_STATUSES)
+            ->where('created_at', '>=', now()->subMinutes($ttl))
+            ->exists();
+    }
+
+    protected function reservationGrandTotal(Reservation $reservation): float
+    {
+        $amount = (float) ($reservation->total_price ?? 0) + (float) ($reservation->delivery_fee ?? 0);
+
+        abort_if($amount < 0, 422, 'Montant de reservation invalide.');
+
+        return round($amount, 2);
+    }
+
+    protected function validateProvider(string $provider, bool $requireInitiationReady = true): void
+    {
+        abort_unless(in_array($provider, Payment::PROVIDERS, true), 422, 'Provider paiement invalide.');
+        abort_unless((bool) config("payments.providers.{$provider}.enabled", false), 422, 'Provider paiement desactive.');
+
+        if ($requireInitiationReady && $provider === Payment::PROVIDER_CMI) {
+            app(CmiGateway::class)->assertConfigurationComplete();
+        }
+    }
+
+    protected function generateInternalReference(): string
+    {
+        do {
+            $reference = 'PAY-'.now()->format('Ymd').'-'.Str::upper(Str::random(12));
+        } while (Payment::query()->where('internal_reference', $reference)->exists());
+
+        return $reference;
+    }
+
+    protected function paymentForCallback(PaymentCallbackResult $result): ?Payment
+    {
+        if (! $result->internalReference) {
+            return null;
+        }
+
+        return Payment::query()
+            ->where('internal_reference', $result->internalReference)
+            ->where('provider', $result->provider)
+            ->first();
+    }
+
+    /**
+     * @param  array<string, mixed>|null  $requestPayload
+     * @param  array<string, mixed>|null  $responsePayload
+     */
+    protected function recordTransaction(
+        Payment $payment,
+        string $type,
+        string $status,
+        ?string $providerReference,
+        ?array $requestPayload,
+        ?array $responsePayload,
+        ?bool $signatureValid,
+        ?Request $request,
+    ): PaymentTransaction {
+        return PaymentTransaction::create([
+            'payment_id' => $payment->id,
+            'provider' => $payment->provider,
+            'type' => $type,
+            'status' => $status,
+            'provider_reference' => $providerReference,
+            'request_payload' => PaymentTransaction::sanitizePayload($requestPayload),
+            'response_payload' => PaymentTransaction::sanitizePayload($responsePayload),
+            'signature_valid' => $signatureValid,
+            'ip_address' => $request?->ip(),
+            'user_agent' => $request?->userAgent(),
+            'processed_at' => now(),
+        ]);
+    }
+}

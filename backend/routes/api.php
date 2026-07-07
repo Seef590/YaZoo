@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\AdminExportController;
 use App\Http\Controllers\Api\AdminModerationController;
 use App\Http\Controllers\Api\AdminModerationActionController;
 use App\Http\Controllers\Api\AdminOrdersController;
+use App\Http\Controllers\Api\AdminReservationReviewController;
 use App\Http\Controllers\Api\AdminStatsController;
 use App\Http\Controllers\Api\AdminUserModerationController;
 use App\Http\Controllers\Api\AnimalController;
@@ -15,11 +16,13 @@ use App\Http\Controllers\Api\CommunityController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\ConversationController;
 use App\Http\Controllers\Api\DataDeletionRequestController;
+use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\HistoryController;
 use App\Http\Controllers\Api\MediaController;
 use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\MonitoringController;
 use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\ProfessionalVerificationController;
 use App\Http\Controllers\Api\PrivacyConsentController;
@@ -45,6 +48,18 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
         'status' => 'ok',
     ]));
 
+    Route::get('/legal/config', fn () => response()->json([
+        'entityName' => config('legal.entity_name'),
+        'legalStatus' => config('legal.legal_status'),
+        'address' => config('legal.address'),
+        'ice' => config('legal.ice'),
+        'privacyContactEmail' => config('legal.privacy_contact_email'),
+        'dataControllerName' => config('legal.data_controller_name'),
+        'dataRetentionDays' => config('legal.data_retention_days'),
+        'dataRequestResponseDays' => config('legal.data_request_response_days'),
+        'notice' => 'Informations administratives a valider juridiquement avant publication officielle.',
+    ]))->middleware('throttle:30,1');
+
     Route::get('/media/{fileId}', [MediaController::class, 'show'])
         ->where('fileId', '[A-Fa-f0-9]{24}');
 
@@ -56,6 +71,12 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
 
     Route::post('/privacy/consents/public', [PrivacyConsentController::class, 'storePublic'])
         ->middleware('throttle:20,1');
+
+    Route::get('/payments/config', [PaymentController::class, 'config'])
+        ->middleware('throttle:30,1');
+
+    Route::post('/payments/cmi/callback', [PaymentController::class, 'cmiCallback'])
+        ->middleware('throttle:30,1');
 
     Route::prefix('auth')->group(function (): void {
         Route::post('/otp/request', [AuthController::class, 'requestOtp'])->middleware('throttle:5,1');
@@ -101,6 +122,10 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
         Route::post('/users/{user}/follow', [ProfileController::class, 'follow']);
         Route::delete('/users/{user}/follow', [ProfileController::class, 'unfollow']);
 
+        Route::get('/favorites', [FavoriteController::class, 'index']);
+        Route::post('/favorites', [FavoriteController::class, 'store'])->middleware('throttle:30,1');
+        Route::delete('/favorites/{type}/{id}', [FavoriteController::class, 'destroy'])->middleware('throttle:30,1');
+
         Route::get('/animals', [AnimalController::class, 'index']);
         Route::get('/animals/{animal}', [AnimalController::class, 'show']);
 
@@ -132,6 +157,10 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
 
         Route::get('/reservations', [ReservationController::class, 'index']);
         Route::get('/reservations/{reservation}', [ReservationController::class, 'show']);
+        Route::get('/reservations/{reservation}/payments', [PaymentController::class, 'index']);
+        Route::post('/reservations/{reservation}/payments', [PaymentController::class, 'store'])
+            ->middleware('throttle:10,1');
+        Route::get('/payments/{payment}', [PaymentController::class, 'show']);
         Route::get('/orders/history', [ReservationController::class, 'history']);
         Route::get('/history', [HistoryController::class, 'index']);
         Route::get('/history/me', [HistoryController::class, 'index']);
@@ -198,6 +227,8 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
             Route::get('/reports', [ReportController::class, 'index']);
             Route::patch('/reports/{report}/status', [ReportController::class, 'updateStatus']);
             Route::get('/moderation-actions', [AdminModerationActionController::class, 'index']);
+            Route::get('/reviews', [AdminReservationReviewController::class, 'index']);
+            Route::patch('/reviews/{reservationReview}/status', [AdminReservationReviewController::class, 'updateStatus']);
             Route::patch('/content/{type}/{id}/moderation-status', [AdminContentModerationController::class, 'update']);
             Route::get('/exports/stats.csv', [AdminExportController::class, 'stats']);
             Route::get('/exports/reports.csv', [AdminExportController::class, 'reports']);
@@ -206,6 +237,8 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
             Route::get('/privacy/delete-requests', [DataDeletionRequestController::class, 'adminIndex']);
             Route::patch('/privacy/delete-requests/{dataDeletionRequest}/status', [DataDeletionRequestController::class, 'updateStatus']);
             Route::get('/professional-verifications', [ProfessionalVerificationController::class, 'adminIndex']);
+            Route::get('/professional-verifications/{professionalVerification}/document', [ProfessionalVerificationController::class, 'downloadDocument'])
+                ->middleware('throttle:20,1');
             Route::patch('/professional-verifications/{professionalVerification}/status', [ProfessionalVerificationController::class, 'updateStatus']);
             Route::get('/animals/review', [AdminAnimalReviewController::class, 'index']);
             Route::patch('/animals/{animal}/legal-status', [AdminAnimalReviewController::class, 'updateStatus']);

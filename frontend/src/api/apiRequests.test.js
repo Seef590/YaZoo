@@ -6,8 +6,10 @@ import {
   approveReservationRequest,
   cancelReservationRequest,
   completeReservationRequest,
+  createReservationPaymentRequest,
   createAnimalReservationRequest,
   createProductReservationRequest,
+  getPaymentConfigRequest,
   getOrdersHistoryRequest,
   getReservationInvoiceRequest,
   getReservationsRequest,
@@ -54,8 +56,10 @@ describe('api request wrappers', () => {
 
   it('appelle les endpoints reservations avec PATCH pour la livraison', () => {
     getReservationsRequest()
+    getPaymentConfigRequest()
     getOrdersHistoryRequest()
     getReservationInvoiceRequest(4)
+    createReservationPaymentRequest(4, { provider: 'cmi' }, 'idem-1')
     createAnimalReservationRequest(7, { delivery_method: 'pickup' })
     createProductReservationRequest(8, { quantity: 2 })
     approveReservationRequest(9)
@@ -65,8 +69,14 @@ describe('api request wrappers', () => {
     updateReservationDeliveryStatusRequest(9, { delivery_status: 'shipped' })
 
     expect(api.get).toHaveBeenCalledWith('/reservations')
+    expect(api.get).toHaveBeenCalledWith('/payments/config')
     expect(api.get).toHaveBeenCalledWith('/orders/history')
     expect(api.get).toHaveBeenCalledWith('/reservations/4/invoice')
+    expect(api.post).toHaveBeenCalledWith(
+      '/reservations/4/payments',
+      { provider: 'cmi' },
+      { headers: { 'Idempotency-Key': 'idem-1' } },
+    )
     expect(api.post).toHaveBeenCalledWith('/animals/7/reservations', { delivery_method: 'pickup' })
     expect(api.post).toHaveBeenCalledWith('/products/8/reservations', { quantity: 2 })
     expect(api.post).toHaveBeenCalledWith('/reservations/9/approve')

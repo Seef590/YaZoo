@@ -137,4 +137,12 @@ class Reservation extends Model
     {
         return $this->hasMany(ReservationReview::class);
     }
+
+    /**
+     * Get payments linked to the reservation.
+     */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
 }

@@ -12,6 +12,7 @@ class ReservationRepository
         'buyer:id,name,email,phone,avatar',
         'seller:id,name,email,phone,avatar',
         'reservable.user:id,name,email,phone,avatar,city,country',
+        'payments',
         'reviews.reviewer:id,name,avatar',
         'reviews.reviewee:id,name,avatar',
     ];
