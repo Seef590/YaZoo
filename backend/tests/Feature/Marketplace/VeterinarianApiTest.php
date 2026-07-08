@@ -5,6 +5,8 @@ namespace Tests\Feature\Marketplace;
 use App\Models\User;
 use App\Models\Veterinarian;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Middleware\TrustProxies;
+use Illuminate\Http\Request as HttpRequest;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -28,6 +30,37 @@ class VeterinarianApiTest extends TestCase
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0.name', 'Dr Public Vet');
+    }
+
+    public function test_pagination_links_honor_forwarded_https_proxy_headers(): void
+    {
+        Veterinarian::factory()->count(13)->create(['is_active' => true]);
+
+        TrustProxies::at('*');
+        TrustProxies::withHeaders(
+            HttpRequest::HEADER_X_FORWARDED_FOR
+            | HttpRequest::HEADER_X_FORWARDED_HOST
+            | HttpRequest::HEADER_X_FORWARDED_PORT
+            | HttpRequest::HEADER_X_FORWARDED_PROTO
+            | HttpRequest::HEADER_X_FORWARDED_PREFIX
+            | HttpRequest::HEADER_X_FORWARDED_AWS_ELB
+        );
+
+        $response = $this
+            ->withServerVariables([
+                'REMOTE_ADDR' => '10.0.0.5',
+                'HTTP_HOST' => 'yazoo-api.azurewebsites.net',
+                'HTTP_X_FORWARDED_FOR' => '203.0.113.10',
+                'HTTP_X_FORWARDED_HOST' => 'yazoo-api.azurewebsites.net',
+                'HTTP_X_FORWARDED_PROTO' => 'https',
+                'HTTP_X_FORWARDED_PORT' => '443',
+            ])
+            ->getJson('/api/veterinarians?per_page=1');
+
+        $response->assertOk();
+
+        $this->assertStringStartsWith('https://yazoo-api.azurewebsites.net', $response->json('links.first'));
+        $this->assertStringStartsWith('https://yazoo-api.azurewebsites.net', $response->json('meta.path'));
     }
 
     public function test_guest_can_view_active_veterinarian(): void

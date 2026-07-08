@@ -13,6 +13,7 @@ use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request as HttpRequest;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 
@@ -36,6 +37,23 @@ return Application::configure(basePath: dirname(__DIR__))
         ],
     ])
     ->withMiddleware(function (Middleware $middleware) {
+        $trustedProxies = array_values(array_filter(array_map(
+            'trim',
+            explode(',', (string) env('TRUSTED_PROXIES', env('APP_ENV') === 'production' ? '*' : ''))
+        )));
+
+        if ($trustedProxies !== []) {
+            $middleware->trustProxies(
+                at: count($trustedProxies) === 1 ? $trustedProxies[0] : $trustedProxies,
+                headers: HttpRequest::HEADER_X_FORWARDED_FOR
+                    | HttpRequest::HEADER_X_FORWARDED_HOST
+                    | HttpRequest::HEADER_X_FORWARDED_PORT
+                    | HttpRequest::HEADER_X_FORWARDED_PROTO
+                    | HttpRequest::HEADER_X_FORWARDED_PREFIX
+                    | HttpRequest::HEADER_X_FORWARDED_AWS_ELB,
+            );
+        }
+
         $middleware->append(ForceHttps::class);
         $middleware->append(SecurityHeaders::class);
 

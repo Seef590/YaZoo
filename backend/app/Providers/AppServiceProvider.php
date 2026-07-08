@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Notifications\Events\NotificationSent;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -27,6 +28,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if ($this->app->isProduction() || (bool) config('app.force_https')) {
+            URL::forceScheme('https');
+        }
+
         Model::preventLazyLoading(! $this->app->isProduction());
 
         RateLimiter::for('api', function (Request $request) {
