@@ -4,7 +4,9 @@ Date: 2026-07-07T21:46:51+01:00
 
 ## Deploiement verifie
 
-- Commit deploye: `62db185` (`test: simulate HTTPS in production auth bootstrap test`)
+- Commit deploye initial: `62db185` (`test: simulate HTTPS in production auth bootstrap test`)
+- Correctif post-deploiement: `bb43faf` (`fix: honor forwarded https scheme in production pagination`)
+- Rapport post-deploiement initial: `9d7168b` (`docs: add post-deployment verification report`)
 - Branche: `main`
 - GitHub Actions:
   - CI: success (`28895250184`)
@@ -28,6 +30,7 @@ Date: 2026-07-07T21:46:51+01:00
 - `https://yazoo.azurewebsites.net/trust`: 200 OK en requete GET
 - `https://yazoo.azurewebsites.net/marketplace`: 200 OK en requete GET
 - `https://yazoo-api.azurewebsites.net/api/payments/config`: 200 OK
+- `https://yazoo-api.azurewebsites.net/api/veterinarians`: 200 OK, pagination en `https://`
 
 ## App Settings non sensibles
 
@@ -35,6 +38,7 @@ Backend `yazoo-api`:
 
 - `ADMIN_BOOTSTRAP_ENABLED=false`
 - `CMI_ENABLED=false`
+- `TRUSTED_PROXIES=*` supporte par le code en production; les headers proxy Azure sont maintenant respectes.
 - `APP_ENV=production`
 - `APP_DEBUG=false`
 - `CORS_ALLOWED_ORIGINS=https://yazoo.azurewebsites.net`
@@ -70,7 +74,8 @@ Aucune valeur secrete n'a ete affichee dans cette verification.
 
 - Configuration logs Azure verifiee:
   - HTTP logs filesystem actives avec retention 3 jours.
-  - Application logs filesystem desactives.
+  - Application logs filesystem actives au niveau `Warning`.
+  - Detailed error messages et failed request tracing restent desactives.
 - Lecture `az webapp log tail` testee, sans erreur applicative exploitable retournee avant timeout.
 - Aucun secret n'a ete colle dans ce rapport.
 
@@ -79,6 +84,7 @@ Aucune valeur secrete n'a ete affichee dans cette verification.
 - Frontend racine charge.
 - Routes SPA publiques `/login`, `/trust`, `/marketplace`, `/marketplace/veterinarians` retournent le bundle HTML en GET.
 - API veterinaires invite retourne une reponse JSON 200.
+- Les champs `links.first`, `links.last`, `meta.links.*.url` et `meta.path` de `/api/veterinarians` utilisent `https://yazoo-api.azurewebsites.net`.
 - API notifications invite retourne 401 propre.
 - API auth/me invite retourne 401 propre.
 - API payments/config confirme CMI desactive.
@@ -111,9 +117,8 @@ Tests non realises faute de compte test fourni:
 
 ## Risques restants
 
-- Application logs Azure non actives: les logs applicatifs detailles ne sont pas disponibles par defaut.
+- Les logs applicatifs sont maintenant au niveau `Warning`; le monitoring reel reste a activer.
 - Verification directe `migrate:status` non effectuee faute de commande SSH non-interactive.
-- Les liens de pagination Laravel observes sur `/api/veterinarians` utilisent `http://` dans certains champs `links/meta.path`; a durcir via configuration proxy/URL si le frontend consomme ces liens directement.
 - Tests connectes non realises faute de compte test.
 - Monitoring reel non actif: aucune ressource Application Insights trouvee dans `yazoo-rg`.
 - CNDP/ONSSA restent a valider juridiquement; aucune certification officielle n'est revendiquee.
