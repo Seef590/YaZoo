@@ -23,7 +23,7 @@ function TabLink({ to, active, children }) {
   return (
     <Link
       to={to}
-      className={`shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition ${
+      className={`shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition lg:px-5 lg:py-2.5 lg:text-base ${
         active
           ? 'bg-[linear-gradient(135deg,#7c3aed,#a855f7,#c4b5fd)] text-white shadow-[0_12px_24px_rgba(124,58,237,0.16)]'
           : 'text-stone-600 hover:bg-violet-50 hover:text-violet-900'
@@ -38,16 +38,16 @@ export function MarketplaceHero({ active, title, description, imageSrc, imageAlt
   const { t } = useI18n()
 
   return (
-    <section className="max-w-full overflow-hidden rounded-[30px] border border-white/80 bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.18),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(221,214,254,0.5),_transparent_26%),linear-gradient(135deg,_rgba(255,255,255,0.98)_0%,_rgba(247,241,255,0.9)_48%,_rgba(237,233,254,0.84)_100%)] p-4 shadow-[0_24px_60px_rgba(124,58,237,0.1)] sm:rounded-[32px] sm:p-6">
-      <div className="grid min-w-0 gap-5 xl:grid-cols-[1.12fr_0.88fr] xl:items-center">
+    <section className="max-w-full overflow-hidden rounded-[30px] border border-white/80 bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.18),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(221,214,254,0.5),_transparent_26%),linear-gradient(135deg,_rgba(255,255,255,0.98)_0%,_rgba(247,241,255,0.9)_48%,_rgba(237,233,254,0.84)_100%)] p-4 shadow-[0_24px_60px_rgba(124,58,237,0.1)] sm:rounded-[32px] sm:p-6 lg:p-7">
+      <div className="grid min-w-0 gap-5 xl:grid-cols-[1.12fr_0.88fr] xl:items-center xl:gap-7">
         <div className="min-w-0">
           <p className="inline-flex max-w-full rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-violet-700">
             {t('common.marketplaceBadge')}
           </p>
-          <h1 className="mt-4 max-w-full text-2xl font-semibold leading-tight text-stone-950 sm:text-3xl">
+          <h1 className="mt-4 max-w-full text-2xl font-semibold leading-tight text-stone-950 sm:text-3xl xl:text-4xl">
             {title}
           </h1>
-          <p className="mt-3 max-w-2xl break-words text-sm leading-7 text-stone-600">
+          <p className="mt-3 max-w-3xl break-words text-sm leading-7 text-stone-600 lg:text-base xl:text-[17px] xl:leading-8">
             {description}
           </p>
           <div className="mt-5">
@@ -70,9 +70,9 @@ export function MarketplaceHero({ active, title, description, imageSrc, imageAlt
 
 export function HeroStatCard({ label, value }) {
   return (
-    <div className="rounded-[24px] border border-violet-100 bg-white/88 px-4 py-4 shadow-sm">
-      <p className="text-xs uppercase tracking-[0.18em] text-stone-500">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-stone-950">{value}</p>
+    <div className="rounded-[24px] border border-violet-100 bg-white/88 px-4 py-4 shadow-sm lg:px-5 lg:py-5">
+      <p className="text-xs uppercase tracking-[0.18em] text-stone-500 lg:text-sm">{label}</p>
+      <p className="mt-2 text-2xl font-semibold text-stone-950 lg:text-3xl">{value}</p>
     </div>
   )
 }
@@ -87,7 +87,7 @@ export function LinkButton({ children, to, variant = 'primary', className = '' }
   return (
     <Link
       to={to}
-      className={`inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${variants[variant]} ${className}`}
+      className={`inline-flex items-center justify-center rounded-full px-4 py-2 text-sm font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 lg:px-5 lg:py-2.5 lg:text-base ${variants[variant]} ${className}`}
     >
       {children}
     </Link>
@@ -244,7 +244,7 @@ export function QuickFilterChips({ chips }) {
             type="button"
             onClick={chip.onClick}
             aria-pressed={Boolean(chip.active)}
-            className={`shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition ${
+            className={`shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition lg:px-5 lg:py-2.5 lg:text-base ${
               chip.active
                 ? 'bg-violet-600 text-white shadow-[0_10px_22px_rgba(124,58,237,0.18)]'
                 : 'bg-white/84 text-violet-800 ring-1 ring-inset ring-violet-100 hover:bg-violet-50 dark:bg-white/10 dark:text-violet-50 dark:ring-violet-300/14'

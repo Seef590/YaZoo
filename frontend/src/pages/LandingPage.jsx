@@ -100,14 +100,14 @@ function LandingPage() {
                 <a
                   key={item.href}
                   href={item.href}
-                  className="rounded-full px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-white/46 hover:text-violet-800 dark:text-violet-50 dark:hover:bg-violet-400/15 dark:hover:text-white"
+                  className="rounded-full px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-white/46 hover:text-violet-800 dark:text-violet-50 dark:hover:bg-violet-400/15 dark:hover:text-white xl:px-5 xl:py-2.5 xl:text-base"
                 >
                   {item.label}
                 </a>
               ))}
               <Link
                 to="/login"
-                className="rounded-full px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-white/46 hover:text-violet-800 dark:text-violet-50 dark:hover:bg-violet-400/15 dark:hover:text-white"
+                className="rounded-full px-4 py-2 text-sm font-medium text-stone-700 transition hover:bg-white/46 hover:text-violet-800 dark:text-violet-50 dark:hover:bg-violet-400/15 dark:hover:text-white xl:px-5 xl:py-2.5 xl:text-base"
               >
                 {t('common.login')}
               </Link>
@@ -157,28 +157,28 @@ function LandingPage() {
 
         <section
           id="top"
-          className="grid gap-9 px-1 pb-10 pt-9 sm:pb-12 sm:pt-11 lg:grid-cols-[0.95fr_1.05fr] lg:items-center"
+          className="grid gap-9 px-1 pb-10 pt-9 sm:pb-12 sm:pt-11 lg:grid-cols-[0.95fr_1.05fr] lg:items-center xl:gap-12 xl:pb-14 xl:pt-12"
         >
           <div>
-            <h1 className="text-3xl font-semibold leading-tight text-stone-950 dark:text-white sm:text-4xl md:text-5xl">
+            <h1 className="text-3xl font-semibold leading-tight text-stone-950 dark:text-white sm:text-4xl md:text-5xl xl:text-6xl">
               {t('landing.heroLineOne')}
               <br />
               <span className="text-violet-700">{t('landing.heroLineTwo')}</span>
             </h1>
-            <p className="mt-5 max-w-2xl text-base leading-7 text-stone-600 dark:text-violet-100/78 md:text-lg">
+            <p className="mt-5 max-w-3xl text-base leading-7 text-stone-600 dark:text-violet-100/78 md:text-lg xl:text-xl xl:leading-8">
               {t('landing.heroDescription')}
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
               <a
                 href="#features"
-                className="inline-flex w-full items-center justify-center rounded-full bg-[linear-gradient(135deg,#7c3aed,#a855f7,#c4b5fd)] px-6 py-3 text-base font-semibold text-white shadow-[0_16px_30px_rgba(124,58,237,0.2)] transition hover:brightness-105 sm:w-auto"
+                className="inline-flex w-full items-center justify-center rounded-full bg-[linear-gradient(135deg,#7c3aed,#a855f7,#c4b5fd)] px-6 py-3 text-base font-semibold text-white shadow-[0_16px_30px_rgba(124,58,237,0.2)] transition hover:brightness-105 sm:w-auto lg:px-7 lg:py-3.5"
               >
                 {t('landing.discover')}
               </a>
               <Link
                 to="/register"
-                className="inline-flex w-full items-center justify-center rounded-full border border-violet-200 bg-white px-6 py-3 text-base font-medium text-violet-900 transition hover:-translate-y-0.5 hover:border-violet-300 hover:bg-violet-50 dark:border-violet-300/18 dark:bg-black/40 dark:text-violet-50 dark:hover:bg-violet-400/15 sm:w-auto"
+                className="inline-flex w-full items-center justify-center rounded-full border border-violet-200 bg-white px-6 py-3 text-base font-medium text-violet-900 transition hover:-translate-y-0.5 hover:border-violet-300 hover:bg-violet-50 dark:border-violet-300/18 dark:bg-black/40 dark:text-violet-50 dark:hover:bg-violet-400/15 sm:w-auto lg:px-7 lg:py-3.5"
               >
                 {t('common.register')}
               </Link>
@@ -201,16 +201,16 @@ function LandingPage() {
 
         <section
           id="features"
-          className="rounded-[30px] border border-white/80 bg-white/88 p-5 shadow-[0_20px_60px_rgba(124,58,237,0.08)] backdrop-blur dark:border-violet-300/16 dark:bg-[linear-gradient(135deg,_rgba(5,3,10,0.98),_rgba(30,15,52,0.92))] sm:rounded-[34px] sm:p-7"
+          className="rounded-[30px] border border-white/80 bg-white/88 p-5 shadow-[0_20px_60px_rgba(124,58,237,0.08)] backdrop-blur dark:border-violet-300/16 dark:bg-[linear-gradient(135deg,_rgba(5,3,10,0.98),_rgba(30,15,52,0.92))] sm:rounded-[34px] sm:p-7 lg:p-8 xl:p-10"
         >
-          <h2 className="text-center text-2xl font-semibold text-stone-950 dark:text-white sm:text-3xl">
+          <h2 className="text-center text-2xl font-semibold text-stone-950 dark:text-white sm:text-3xl xl:text-4xl">
             {t('landing.howItWorks')}
           </h2>
-          <div className="mt-7 grid gap-5 md:grid-cols-3">
+          <div className="mt-7 grid gap-5 md:grid-cols-3 xl:mt-9 xl:gap-6">
             {featureCards.map((feature) => (
               <article
                 key={feature.title}
-                className="rounded-[28px] border border-violet-100 bg-[linear-gradient(180deg,_rgba(255,255,255,0.99),_rgba(244,237,255,0.82))] p-4 transition duration-200 hover:-translate-y-1 hover:border-violet-200 hover:shadow-[0_18px_40px_rgba(124,58,237,0.08)] dark:border-violet-300/16 dark:bg-[linear-gradient(135deg,_rgba(8,5,13,0.98),_rgba(24,11,43,0.96))] sm:p-5"
+                className="rounded-[28px] border border-violet-100 bg-[linear-gradient(180deg,_rgba(255,255,255,0.99),_rgba(244,237,255,0.82))] p-4 transition duration-200 hover:-translate-y-1 hover:border-violet-200 hover:shadow-[0_18px_40px_rgba(124,58,237,0.08)] dark:border-violet-300/16 dark:bg-[linear-gradient(135deg,_rgba(8,5,13,0.98),_rgba(24,11,43,0.96))] sm:p-5 xl:p-6"
               >
                 <img
                   src={feature.image}
@@ -218,10 +218,10 @@ function LandingPage() {
                   className="h-48 w-full rounded-[20px] object-cover sm:h-64 md:h-80 lg:h-96 xl:h-[28rem]"
                   loading="lazy"
                 />
-                <h3 className="mt-4 text-lg font-semibold text-stone-950 dark:text-white">
+                <h3 className="mt-4 text-lg font-semibold text-stone-950 dark:text-white lg:text-xl">
                   {feature.title}
                 </h3>
-                <p className="mt-2 text-sm leading-7 text-stone-600 dark:text-violet-100/78">
+                <p className="mt-2 text-sm leading-7 text-stone-600 dark:text-violet-100/78 lg:text-base lg:leading-7 xl:text-[17px] xl:leading-8">
                   {feature.description}
                 </p>
               </article>
@@ -231,18 +231,18 @@ function LandingPage() {
 
         <section
           id="communaute"
-          className="mt-8 grid gap-6 rounded-[30px] border border-white/80 bg-white/90 p-5 shadow-[0_20px_60px_rgba(124,58,237,0.08)] backdrop-blur dark:border-violet-300/16 dark:bg-[linear-gradient(135deg,_rgba(5,3,10,0.98),_rgba(30,15,52,0.92))] sm:rounded-[34px] sm:p-6 lg:grid-cols-[1fr_1fr]"
+          className="mt-8 grid gap-6 rounded-[30px] border border-white/80 bg-white/90 p-5 shadow-[0_20px_60px_rgba(124,58,237,0.08)] backdrop-blur dark:border-violet-300/16 dark:bg-[linear-gradient(135deg,_rgba(5,3,10,0.98),_rgba(30,15,52,0.92))] sm:rounded-[34px] sm:p-6 lg:grid-cols-[1fr_1fr] lg:items-center xl:gap-8 xl:p-8"
         >
           <div>
-            <h2 className="text-2xl font-semibold text-stone-950 dark:text-white sm:text-3xl">
+            <h2 className="text-2xl font-semibold text-stone-950 dark:text-white sm:text-3xl xl:text-4xl">
               {t('landing.whyChooseTitle')}
             </h2>
-            <p className="mt-4 text-sm leading-7 text-stone-600 dark:text-violet-100/78">
+            <p className="mt-4 max-w-3xl text-sm leading-7 text-stone-600 dark:text-violet-100/78 lg:text-base xl:text-[17px] xl:leading-8">
               {t('landing.whyChooseText')}
             </p>
             <Link
               to="/login"
-              className="mt-6 inline-flex items-center rounded-full bg-[linear-gradient(135deg,#7c3aed,#a855f7,#c4b5fd)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(124,58,237,0.18)] transition hover:brightness-105"
+              className="mt-6 inline-flex items-center rounded-full bg-[linear-gradient(135deg,#7c3aed,#a855f7,#c4b5fd)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(124,58,237,0.18)] transition hover:brightness-105 lg:px-6 lg:py-3 lg:text-base"
             >
               {t('landing.joinCommunity')}
             </Link>
