@@ -17,7 +17,7 @@ class PaymentApiTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_buyer_can_create_pending_manual_bank_transfer_payment(): void
+    public function test_buyer_can_create_manual_bank_transfer_awaiting_verification_payment(): void
     {
         $reservation = $this->reservation();
         Sanctum::actingAs($reservation->buyer, ['*']);
@@ -26,7 +26,7 @@ class PaymentApiTest extends TestCase
             'provider' => Payment::PROVIDER_MANUAL_BANK_TRANSFER,
         ])
             ->assertCreated()
-            ->assertJsonPath('data.status', Payment::STATUS_PENDING)
+            ->assertJsonPath('data.status', Payment::STATUS_AWAITING_VERIFICATION)
             ->assertJsonPath('data.provider', Payment::PROVIDER_MANUAL_BANK_TRANSFER)
             ->assertJsonPath('data.amount', 315)
             ->assertJsonPath('initiation.requiresRedirect', false);
@@ -35,10 +35,10 @@ class PaymentApiTest extends TestCase
             'reservation_id' => $reservation->id,
             'buyer_id' => $reservation->buyer_id,
             'provider' => Payment::PROVIDER_MANUAL_BANK_TRANSFER,
-            'status' => Payment::STATUS_PENDING,
+            'status' => Payment::STATUS_AWAITING_VERIFICATION,
             'currency' => 'MAD',
         ]);
-        $this->assertSame('pending', $reservation->refresh()->payment_status);
+        $this->assertSame('awaiting_verification', $reservation->refresh()->payment_status);
     }
 
     public function test_legacy_bank_transfer_reservation_remains_readable_and_finalizable(): void
@@ -62,7 +62,7 @@ class PaymentApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.reservationStatus', 'completed')
             ->assertJsonPath('data.paymentMethod', 'bank_transfer')
-            ->assertJsonPath('data.paymentStatus', 'paid')
+            ->assertJsonPath('data.paymentStatus', 'pending')
             ->assertJsonPath('data.invoiceNumber', fn ($value) => is_string($value) && str_starts_with($value, 'YAZ-'));
     }
 
@@ -151,8 +151,8 @@ class PaymentApiTest extends TestCase
 
         $payment = Payment::query()->firstOrFail();
 
-        $this->assertSame(Payment::STATUS_PENDING, $payment->status);
-        $this->assertSame('pending', $reservation->refresh()->payment_status);
+        $this->assertSame(Payment::STATUS_AWAITING_VERIFICATION, $payment->status);
+        $this->assertSame('awaiting_verification', $reservation->refresh()->payment_status);
         $this->assertDatabaseHas('payment_transactions', [
             'payment_id' => $payment->id,
             'type' => PaymentTransaction::TYPE_INITIATE,
@@ -169,9 +169,100 @@ class PaymentApiTest extends TestCase
             'provider' => Payment::PROVIDER_CASH_ON_PICKUP,
         ])
             ->assertCreated()
-            ->assertJsonPath('data.status', Payment::STATUS_PENDING);
+            ->assertJsonPath('data.status', Payment::STATUS_AWAITING_VERIFICATION);
 
-        $this->assertSame('pending', $reservation->refresh()->payment_status);
+        $this->assertSame('awaiting_verification', $reservation->refresh()->payment_status);
+    }
+
+    public function test_admin_can_confirm_manual_bank_transfer_payment_once(): void
+    {
+        $reservation = $this->reservation();
+        Sanctum::actingAs($reservation->buyer, ['*']);
+
+        $this->postJson("/api/reservations/{$reservation->id}/payments", [
+            'provider' => Payment::PROVIDER_MANUAL_BANK_TRANSFER,
+        ])->assertCreated();
+
+        $payment = Payment::query()->firstOrFail();
+        $admin = User::factory()->admin()->create();
+        Sanctum::actingAs($admin, ['*']);
+
+        $this->patchJson("/api/payments/{$payment->id}/manual-confirm", [
+            'note' => 'Recu bancaire verifie.',
+            'provider_reference' => 'BANK-REF-1',
+        ])
+            ->assertOk()
+            ->assertJsonPath('data.status', Payment::STATUS_PAID)
+            ->assertJsonPath('data.providerReference', 'BANK-REF-1');
+
+        $this->assertSame('paid', $reservation->refresh()->payment_status);
+        $this->assertDatabaseHas('payment_transactions', [
+            'payment_id' => $payment->id,
+            'type' => PaymentTransaction::TYPE_MANUAL_UPDATE,
+            'status' => PaymentTransaction::STATUS_SUCCEEDED,
+        ]);
+
+        $this->patchJson("/api/payments/{$payment->id}/manual-confirm", [
+            'note' => 'Deuxieme appel idempotent.',
+        ])->assertOk();
+
+        $this->assertDatabaseCount('payment_transactions', 2);
+    }
+
+    public function test_buyer_cannot_confirm_own_manual_payment_as_paid(): void
+    {
+        $reservation = $this->reservation();
+        Sanctum::actingAs($reservation->buyer, ['*']);
+
+        $this->postJson("/api/reservations/{$reservation->id}/payments", [
+            'provider' => Payment::PROVIDER_MANUAL_BANK_TRANSFER,
+        ])->assertCreated();
+
+        $payment = Payment::query()->firstOrFail();
+
+        $this->patchJson("/api/payments/{$payment->id}/manual-confirm", [
+            'note' => 'Tentative acheteur',
+        ])->assertForbidden();
+
+        $this->assertSame(Payment::STATUS_AWAITING_VERIFICATION, $payment->refresh()->status);
+        $this->assertSame('awaiting_verification', $reservation->refresh()->payment_status);
+    }
+
+    public function test_seller_can_confirm_cash_on_pickup_payment(): void
+    {
+        $reservation = $this->reservation(['payment_method' => 'cash_on_pickup']);
+        Sanctum::actingAs($reservation->buyer, ['*']);
+
+        $this->postJson("/api/reservations/{$reservation->id}/payments", [
+            'provider' => Payment::PROVIDER_CASH_ON_PICKUP,
+        ])->assertCreated();
+
+        $payment = Payment::query()->firstOrFail();
+        Sanctum::actingAs($reservation->seller, ['*']);
+
+        $this->patchJson("/api/payments/{$payment->id}/manual-confirm", [
+            'note' => 'Cash recu a la recuperation.',
+        ])
+            ->assertOk()
+            ->assertJsonPath('data.status', Payment::STATUS_PAID);
+
+        $this->assertSame('paid', $reservation->refresh()->payment_status);
+    }
+
+    public function test_manual_bank_transfer_confirmation_requires_admin_note(): void
+    {
+        $reservation = $this->reservation();
+        Sanctum::actingAs($reservation->buyer, ['*']);
+
+        $this->postJson("/api/reservations/{$reservation->id}/payments", [
+            'provider' => Payment::PROVIDER_MANUAL_BANK_TRANSFER,
+        ])->assertCreated();
+
+        $payment = Payment::query()->firstOrFail();
+        Sanctum::actingAs(User::factory()->admin()->create(), ['*']);
+
+        $this->patchJson("/api/payments/{$payment->id}/manual-confirm")
+            ->assertUnprocessable();
     }
 
     public function test_cmi_disabled_refuses_initiation(): void

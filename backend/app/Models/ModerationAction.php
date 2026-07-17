@@ -28,6 +28,7 @@ class ModerationAction extends Model
         'restore_animal',
         'update_report_status',
         'update_professional_verification',
+        'download_professional_verification_document',
         'update_delete_request',
     ];
 

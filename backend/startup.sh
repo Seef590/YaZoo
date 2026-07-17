@@ -1,14 +1,16 @@
 #!/bin/sh
 set -e
 
-mkdir -p /var/lib/nginx/tmp /var/log/nginx /run/nginx storage/app
+mkdir -p /var/lib/nginx/tmp /var/log/nginx /run/nginx storage/app storage/app/private
 
 if [ -d /home/site ]; then
-    mkdir -p /home/site/yazoo-storage/app/public
+    mkdir -p /home/site/yazoo-storage/app/public /home/site/yazoo-storage/app/private
     rm -rf storage/app/public
     ln -s /home/site/yazoo-storage/app/public storage/app/public
+    rm -rf storage/app/private
+    ln -s /home/site/yazoo-storage/app/private storage/app/private
 else
-    mkdir -p storage/app/public
+    mkdir -p storage/app/public storage/app/private
 fi
 
 chown -R nginx:nginx /var/lib/nginx /var/log/nginx /run/nginx

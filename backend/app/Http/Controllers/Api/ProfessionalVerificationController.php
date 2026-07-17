@@ -28,17 +28,18 @@ class ProfessionalVerificationController extends Controller
         unset($validated['document']);
 
         if ($document) {
+            $extension = strtolower($document->extension() ?: $document->getClientOriginalExtension());
             $path = $document->storeAs(
                 'professional-verifications/'.$request->user()->id,
-                Str::uuid()->toString().'.'.strtolower($document->getClientOriginalExtension()),
-                'local',
+                Str::uuid()->toString().'.'.$extension,
+                $this->documentDisk(),
             );
 
             $validated = [
                 ...$validated,
                 'document_path' => $path,
                 'document_original_name' => $document->getClientOriginalName(),
-                'document_mime' => $document->getMimeType(),
+                'document_mime' => $document->getMimeType() ?: $document->getClientMimeType(),
                 'document_size' => $document->getSize(),
             ];
         }
@@ -111,14 +112,36 @@ class ProfessionalVerificationController extends Controller
 
     public function downloadDocument(Request $request, ProfessionalVerification $professionalVerification): StreamedResponse
     {
-        abort_unless((bool) $request->user()?->is_admin, 403);
+        $user = $request->user();
+        abort_unless($user && ($user->is_admin || (int) $user->id === (int) $professionalVerification->user_id), 403);
         abort_unless(filled($professionalVerification->document_path), 404);
-        abort_unless(Storage::disk('local')->exists($professionalVerification->document_path), 404);
+        abort_unless($this->isSafeDocumentPath((string) $professionalVerification->document_path), 404);
+        abort_unless(Storage::disk($this->documentDisk())->exists($professionalVerification->document_path), 404);
 
-        return Storage::disk('local')->download(
+        if ($user->is_admin) {
+            $this->logger->log($request, 'download_professional_verification_document', $professionalVerification, null, [
+                'verification_id' => $professionalVerification->id,
+                'owner_id' => $professionalVerification->user_id,
+            ]);
+        }
+
+        return Storage::disk($this->documentDisk())->download(
             $professionalVerification->document_path,
             $this->safeDownloadName($professionalVerification),
         );
+    }
+
+    protected function documentDisk(): string
+    {
+        return (string) config('professional_verifications.disk', 'private');
+    }
+
+    protected function isSafeDocumentPath(string $path): bool
+    {
+        return $path !== ''
+            && ! str_contains($path, "\0")
+            && ! str_contains(str_replace('\\', '/', $path), '../')
+            && str_starts_with(str_replace('\\', '/', $path), 'professional-verifications/');
     }
 
     protected function safeDownloadName(ProfessionalVerification $professionalVerification): string

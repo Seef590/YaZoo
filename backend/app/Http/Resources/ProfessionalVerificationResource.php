@@ -36,8 +36,8 @@ class ProfessionalVerificationResource extends JsonResource
             'documentSize' => ($isAdmin || $isOwner) ? $this->document_size : null,
             'documentExpiresAt' => $this->document_expires_at?->toDateString(),
             'documentDownloadUrl' => $this->when(
-                $isAdmin && $hasDocument,
-                fn (): string => "/api/admin/professional-verifications/{$this->id}/document",
+                ($isAdmin || $isOwner) && $hasDocument,
+                fn (): string => "/api/professional-verifications/{$this->id}/document",
             ),
             'status' => $this->effectiveStatus(),
             'storedStatus' => $this->status,

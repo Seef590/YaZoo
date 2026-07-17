@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\ProfessionalVerification;
 use App\Models\Animal;
+use App\Models\ProfessionalVerification;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -17,7 +17,7 @@ class ProfessionalVerificationApiTest extends TestCase
 
     public function test_user_can_submit_and_list_professional_verification_requests(): void
     {
-        Storage::fake('local');
+        Storage::fake('private');
 
         $user = User::factory()->create();
         Sanctum::actingAs($user, ['*']);
@@ -42,13 +42,13 @@ class ProfessionalVerificationApiTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0.legalName', 'Clinique YaZoo')
             ->assertJsonPath('data.0.documentPath', null)
-            ->assertJsonPath('data.0.documentDownloadUrl', null)
+            ->assertJsonPath('data.0.documentDownloadUrl', '/api/professional-verifications/1/document')
             ->assertJsonPath('data.0.documentOriginalName', 'license.pdf');
 
         $verification = ProfessionalVerification::query()->firstOrFail();
 
         $this->assertNotNull($verification->document_path);
-        Storage::disk('local')->assertExists($verification->document_path);
+        Storage::disk('private')->assertExists($verification->document_path);
     }
 
     public function test_user_supplied_document_path_is_ignored(): void
@@ -127,7 +127,7 @@ class ProfessionalVerificationApiTest extends TestCase
 
     public function test_user_cannot_download_another_users_professional_document(): void
     {
-        Storage::fake('local');
+        Storage::fake('private');
 
         $owner = User::factory()->create();
         $otherUser = User::factory()->create();
@@ -141,7 +141,7 @@ class ProfessionalVerificationApiTest extends TestCase
 
     public function test_guest_cannot_download_professional_document(): void
     {
-        Storage::fake('local');
+        Storage::fake('private');
 
         $verification = $this->verificationWithPrivateDocument(User::factory()->create());
 
@@ -149,22 +149,23 @@ class ProfessionalVerificationApiTest extends TestCase
             ->assertUnauthorized();
     }
 
-    public function test_owner_non_admin_cannot_download_own_professional_document(): void
+    public function test_owner_can_download_own_professional_document(): void
     {
-        Storage::fake('local');
+        Storage::fake('private');
 
         $owner = User::factory()->create();
         $verification = $this->verificationWithPrivateDocument($owner);
 
         Sanctum::actingAs($owner, ['*']);
 
-        $this->getJson("/api/admin/professional-verifications/{$verification->id}/document")
-            ->assertForbidden();
+        $this->get("/api/professional-verifications/{$verification->id}/document")
+            ->assertOk()
+            ->assertHeader('content-disposition', 'attachment; filename=private.pdf');
     }
 
     public function test_admin_can_download_private_professional_document(): void
     {
-        Storage::fake('local');
+        Storage::fake('private');
 
         $admin = User::factory()->create(['is_admin' => true]);
         $verification = $this->verificationWithPrivateDocument(User::factory()->create(), '../../private.pdf');
@@ -174,6 +175,13 @@ class ProfessionalVerificationApiTest extends TestCase
         $this->get("/api/admin/professional-verifications/{$verification->id}/document")
             ->assertOk()
             ->assertHeader('content-disposition', 'attachment; filename=private.pdf');
+
+        $this->assertDatabaseHas('moderation_actions', [
+            'admin_id' => $admin->id,
+            'action' => 'download_professional_verification_document',
+            'target_type' => ProfessionalVerification::class,
+            'target_id' => $verification->id,
+        ]);
     }
 
     public function test_missing_private_document_returns_clean_not_found(): void
@@ -193,6 +201,47 @@ class ProfessionalVerificationApiTest extends TestCase
             ->assertNotFound();
 
         $this->assertStringNotContainsString('professional-verifications/missing/private.pdf', $response->getContent());
+    }
+
+    public function test_unsafe_document_path_is_not_downloaded(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $verification = ProfessionalVerification::query()->create([
+            'user_id' => User::factory()->create()->id,
+            'business_type' => 'veterinarian',
+            'document_path' => '../private.pdf',
+            'document_original_name' => 'private.pdf',
+            'status' => 'pending',
+        ]);
+
+        Sanctum::actingAs($admin, ['*']);
+
+        $this->getJson("/api/admin/professional-verifications/{$verification->id}/document")
+            ->assertNotFound();
+    }
+
+    public function test_expired_private_documents_can_be_purged_after_retention(): void
+    {
+        Storage::fake('private');
+        config(['professional_verifications.retention_days' => 30]);
+
+        $verification = $this->verificationWithPrivateDocument(User::factory()->create());
+        $verification->forceFill([
+            'document_expires_at' => now()->subDays(31),
+        ])->save();
+
+        Storage::disk('private')->assertExists($verification->document_path);
+
+        $this->artisan('yazoo:purge-professional-documents')
+            ->expectsOutputToContain('scanned=1 deleted=1 disk=private')
+            ->assertExitCode(0);
+
+        Storage::disk('private')->assertMissing('professional-verifications/test/private.pdf');
+        $this->assertDatabaseHas('professional_verifications', [
+            'id' => $verification->id,
+            'document_path' => null,
+            'document_size' => null,
+        ]);
     }
 
     public function test_rejected_document_shows_review_reason_without_private_admin_note_to_owner(): void
@@ -277,7 +326,7 @@ class ProfessionalVerificationApiTest extends TestCase
 
     private function verificationWithPrivateDocument(User $owner, string $originalName = 'private.pdf'): ProfessionalVerification
     {
-        Storage::disk('local')->put('professional-verifications/test/private.pdf', 'private document');
+        Storage::disk('private')->put('professional-verifications/test/private.pdf', 'private document');
 
         return ProfessionalVerification::query()->create([
             'user_id' => $owner->id,

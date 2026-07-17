@@ -32,6 +32,7 @@ class Reservation extends Model
 
     public const PAYMENT_STATUSES = [
         'pending',
+        'awaiting_verification',
         'paid',
         'cancelled',
     ];

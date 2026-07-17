@@ -83,6 +83,8 @@ class AdminUserModerationController extends Controller
                 'suspended_at' => $user->suspended_at ?? now(),
                 'suspended_reason' => $request->validated('reason'),
             ]);
+
+            $user->tokens()->delete();
         } else {
             $user->update([
                 'banned_at' => null,

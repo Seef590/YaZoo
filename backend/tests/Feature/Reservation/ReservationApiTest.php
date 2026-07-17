@@ -108,7 +108,7 @@ class ReservationApiTest extends TestCase
         $this->postJson("/api/reservations/{$reservation->id}/complete")
             ->assertOk()
             ->assertJsonPath('data.reservationStatus', 'completed')
-            ->assertJsonPath('data.paymentStatus', 'paid')
+            ->assertJsonPath('data.paymentStatus', 'pending')
             ->assertJsonPath('data.invoiceNumber', fn ($value) => is_string($value) && str_starts_with($value, 'YAZ-'));
 
         $this->assertSame('sold', $animal->refresh()->listing_status);
@@ -177,7 +177,7 @@ class ReservationApiTest extends TestCase
         $this->postJson("/api/reservations/{$reservationId}/complete")
             ->assertOk()
             ->assertJsonPath('data.reservationStatus', 'completed')
-            ->assertJsonPath('data.paymentStatus', 'paid')
+            ->assertJsonPath('data.paymentStatus', 'pending')
             ->assertJsonPath('data.invoiceNumber', fn ($value) => is_string($value) && str_starts_with($value, 'YAZ-'));
 
         $product->refresh();

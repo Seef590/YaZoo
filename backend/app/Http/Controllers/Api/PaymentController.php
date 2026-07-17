@@ -81,6 +81,23 @@ class PaymentController extends Controller
         return PaymentResource::make($payment);
     }
 
+    public function confirmManual(Request $request, Payment $payment): JsonResponse
+    {
+        $validated = $request->validate([
+            'note' => ['nullable', 'string', 'max:2000'],
+            'provider_reference' => ['nullable', 'string', 'max:190'],
+        ]);
+
+        $confirmed = $this->payments->confirmManualPayment($payment, $request->user(), [
+            ...$validated,
+            'request' => $request,
+        ]);
+
+        return response()->json([
+            'data' => PaymentResource::make($confirmed)->resolve($request),
+        ]);
+    }
+
     public function cmiCallback(Request $request): JsonResponse
     {
         $result = $this->payments->handleProviderCallback(

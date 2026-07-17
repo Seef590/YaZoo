@@ -26,7 +26,9 @@ $blockedDirectoryNames = @(
     "dist",
     "coverage",
     ".scannerwork",
-    "backups"
+    "backups",
+    "test-results",
+    "playwright-report"
 )
 
 $blockedRelativeDirectories = @(
@@ -52,18 +54,32 @@ $blockedExtensions = @(
     ".tmp",
     ".temp",
     ".swp",
-    ".swo"
+    ".swo",
+    ".cookie",
+    ".cookies",
+    ".har"
 )
 
 $blockedExactNames = @(
     ".env",
     ".DS_Store",
     "Thumbs.db",
-    "desktop.ini"
+    "desktop.ini",
+    "sonar-issues.json",
+    "sonar-hotspots.json"
 )
 
 $excluded = New-Object System.Collections.Generic.List[string]
 $copiedCount = 0
+$exclusionCategories = [ordered]@{
+    secrets = 0
+    dependencies = 0
+    buildArtifacts = 0
+    logsBackupsDumps = 0
+    archives = 0
+    temp = 0
+    scanner = 0
+}
 
 function Convert-ToZipPath {
     param([Parameter(Mandatory)][string] $Path)
@@ -83,23 +99,28 @@ function Test-IsBlockedPath {
     $extension = $File.Extension.ToLowerInvariant()
 
     if ($blockedExactNames -contains $File.Name) {
+        Add-ExclusionCategory -File $File -RelativePath $RelativePath
         return $true
     }
 
     if ($lowerName -eq ".env" -or $lowerName.StartsWith(".env.")) {
+        Add-ExclusionCategory -File $File -RelativePath $RelativePath
         return $true
     }
 
     if ($lowerName.StartsWith("~") -or $lowerName.EndsWith("~")) {
+        $script:exclusionCategories.temp++
         return $true
     }
 
     if ($blockedExtensions -contains $extension) {
+        Add-ExclusionCategory -File $File -RelativePath $RelativePath
         return $true
     }
 
     foreach ($part in $parts) {
         if ($blockedDirectoryNames -contains $part) {
+            Add-ExclusionCategory -File $File -RelativePath $RelativePath
             return $true
         }
     }
@@ -108,11 +129,64 @@ function Test-IsBlockedPath {
         $blocked = (Convert-ToZipPath $blockedRelativeDirectory).TrimEnd("/")
         if ($zipPathStyle.Equals($blocked, [System.StringComparison]::OrdinalIgnoreCase) -or
             $zipPathStyle.StartsWith($blocked + "/", [System.StringComparison]::OrdinalIgnoreCase)) {
+            Add-ExclusionCategory -File $File -RelativePath $RelativePath
             return $true
         }
     }
 
     return $false
+}
+
+function Add-ExclusionCategory {
+    param(
+        [Parameter(Mandatory)][System.IO.FileInfo] $File,
+        [Parameter(Mandatory)][string] $RelativePath
+    )
+
+    $path = (Convert-ToZipPath $RelativePath).ToLowerInvariant()
+    $name = $File.Name.ToLowerInvariant()
+    $extension = $File.Extension.ToLowerInvariant()
+
+    if ($name -eq ".env" -or $name.StartsWith(".env.") -or $extension -in @(".pem", ".key", ".cookie", ".cookies")) {
+        $script:exclusionCategories.secrets++
+    } elseif ($path -match "(^|/)(node_modules|vendor)(/|$)") {
+        $script:exclusionCategories.dependencies++
+    } elseif ($path -match "(^|/)(dist|coverage|test-results|playwright-report)(/|$)") {
+        $script:exclusionCategories.buildArtifacts++
+    } elseif ($path -match "(^|/)(backups|logs)(/|$)" -or $extension -in @(".sql", ".dump", ".bak", ".backup", ".log", ".gz")) {
+        $script:exclusionCategories.logsBackupsDumps++
+    } elseif ($path -match "(^|/)(.scannerwork)(/|$)" -or $name -in @("sonar-issues.json", "sonar-hotspots.json")) {
+        $script:exclusionCategories.scanner++
+    } elseif ($extension -in @(".zip", ".tar", ".7z")) {
+        $script:exclusionCategories.archives++
+    } else {
+        $script:exclusionCategories.temp++
+    }
+}
+
+function Test-SecretLikeContent {
+    param([Parameter(Mandatory)][string] $Path)
+
+    $name = [System.IO.Path]::GetFileName($Path).ToLowerInvariant()
+    if ($name.EndsWith(".env.example")) {
+        return $false
+    }
+
+    $extension = [System.IO.Path]::GetExtension($Path).ToLowerInvariant()
+    if ($extension -notin @(".php", ".js", ".jsx", ".ts", ".tsx", ".json", ".yml", ".yaml", ".md", ".ps1", ".sh", ".conf", ".example")) {
+        return $false
+    }
+
+    $content = Get-Content -LiteralPath $Path -Raw -ErrorAction SilentlyContinue
+    if (-not $content) {
+        return $false
+    }
+
+    $sanitized = $content -replace "(?im)^\s*(param|function)\b.*$", ""
+    $sanitized = $sanitized -replace "(?im)^\s*[A-Za-z0-9_.-]*password[A-Za-z0-9_.-]*\s*:\s*['""][^'""]+['""],?\s*$", ""
+    $sanitized = $sanitized -replace "(?im)^\s*[A-Za-z0-9_.-]*token[A-Za-z0-9_.-]*\s*:\s*['""][^'""]+['""],?\s*$", ""
+
+    return ($sanitized -match "(?i)(api[_-]?key|secret|client[_-]?secret|access[_-]?token|refresh[_-]?token|bearer)\s*[:=]\s*['""](?!\$)[^'""]{12,}['""]")
 }
 
 function Test-IsForbiddenZipEntry {
@@ -182,6 +256,17 @@ try {
 
     Compress-Archive -LiteralPath $tempProject -DestinationPath $zipPath -CompressionLevel Optimal
 
+    $secretHits = @(Get-ChildItem -LiteralPath $tempProject -Recurse -Force -File | Where-Object {
+        Test-SecretLikeContent -Path $_.FullName
+    })
+
+    if ($secretHits.Count -gt 0) {
+        $relativeSecretHits = @($secretHits | ForEach-Object { $_.FullName.Substring($tempProject.Length + 1) })
+        Write-Host "Fichiers suspects: $($relativeSecretHits -join ', ')"
+        Write-Error "Export refuse: scan de secrets positif dans $($secretHits.Count) fichier(s)."
+        exit 1
+    }
+
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     $zip = [System.IO.Compression.ZipFile]::OpenRead($zipPath)
     try {
@@ -196,11 +281,13 @@ try {
         exit 1
     }
 
+    $zipItem = Get-Item -LiteralPath $zipPath
     Write-Host "Export INDH YaZoo termine."
-    Write-Host "ZIP: $zipPath"
+    Write-Host "Fichier: $($zipItem.Name)"
     Write-Host "Fichiers inclus: $($entries.Count)"
-    Write-Host "Fichiers copies: $copiedCount"
-    Write-Host "Elements exclus: $($excluded.Count)"
+    Write-Host "Taille octets: $($zipItem.Length)"
+    $categorySummary = ($exclusionCategories.GetEnumerator() | ForEach-Object { "$($_.Key)=$($_.Value)" }) -join ', '
+    Write-Host "Categories exclues: $categorySummary"
     Write-Host "Statut: OK - aucun element interdit detecte dans le ZIP."
 } finally {
     if (-not $KeepTemp -and (Test-Path -LiteralPath $tempRoot)) {

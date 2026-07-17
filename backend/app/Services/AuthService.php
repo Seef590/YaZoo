@@ -122,6 +122,8 @@ class AuthService
                 ])->save();
             }
 
+            $this->ensureCanAuthenticate($user, 'phone');
+
             return new AuthResult(
                 $user,
                 $this->createPlainTextToken($user, (string) ($validated['device_name'] ?? 'yazoo-web')),
@@ -135,6 +137,8 @@ class AuthService
                 'email' => [__('messages.auth.invalid_credentials')],
             ]);
         }
+
+        $this->ensureCanAuthenticate($user, 'email');
 
         return new AuthResult(
             $user,
@@ -193,6 +197,8 @@ class AuthService
 
             return $user;
         });
+
+        $this->ensureCanAuthenticate($user, 'email');
 
         return new AuthResult(
             $user,
@@ -265,6 +271,15 @@ class AuthService
         return $user
             ->createToken($deviceName, ['*'])
             ->plainTextToken;
+    }
+
+    protected function ensureCanAuthenticate(User $user, string $field): void
+    {
+        if ($user->banned_at !== null) {
+            throw ValidationException::withMessages([
+                $field => [__('messages.admin.user_banned')],
+            ]);
+        }
     }
 
     protected function shouldBootstrapFirstAdmin(): bool

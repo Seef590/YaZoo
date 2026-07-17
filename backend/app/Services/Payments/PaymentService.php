@@ -108,6 +108,13 @@ class PaymentService
             null,
         );
 
+        if ($this->isManualProvider($payment->provider)) {
+            $this->markAwaitingVerification($payment, [
+                'initiation_status' => $result->status,
+                'message' => $result->message,
+            ]);
+        }
+
         return $result;
     }
 
@@ -206,6 +213,68 @@ class PaymentService
     /**
      * @param  array<string, mixed>  $context
      */
+    public function confirmManualPayment(Payment $payment, User $actor, array $context = []): Payment
+    {
+        return DB::transaction(function () use ($payment, $actor, $context): Payment {
+            $lockedPayment = Payment::query()
+                ->lockForUpdate()
+                ->with('reservation')
+                ->findOrFail($payment->id);
+
+            abort_unless($this->isManualProvider($lockedPayment->provider), 422, 'Ce paiement ne supporte pas la confirmation manuelle.');
+            $this->authorizeManualConfirmation($lockedPayment, $actor, $context);
+
+            if ($lockedPayment->status === Payment::STATUS_PAID) {
+                return $lockedPayment->fresh(['reservation', 'buyer', 'seller', 'transactions']);
+            }
+
+            abort_unless(
+                in_array($lockedPayment->status, [Payment::STATUS_PENDING, Payment::STATUS_AWAITING_VERIFICATION], true),
+                422,
+                'Ce paiement ne peut plus etre confirme.',
+            );
+
+            $lockedPayment->forceFill([
+                'status' => Payment::STATUS_PAID,
+                'provider_reference' => $context['provider_reference'] ?? $lockedPayment->provider_reference,
+                'paid_at' => $lockedPayment->paid_at ?: now(),
+                'failed_at' => null,
+                'cancelled_at' => null,
+                'metadata' => array_merge($lockedPayment->metadata ?? [], [
+                    'manual_confirmed_by' => $actor->id,
+                    'manual_confirmed_at' => now()->toISOString(),
+                    'manual_confirmation_note' => $context['note'] ?? null,
+                ]),
+            ])->save();
+
+            if ($lockedPayment->reservation && $lockedPayment->reservation->payment_status !== 'paid') {
+                $lockedPayment->reservation->forceFill([
+                    'payment_status' => 'paid',
+                ])->save();
+            }
+
+            $this->recordTransaction(
+                $lockedPayment,
+                PaymentTransaction::TYPE_MANUAL_UPDATE,
+                PaymentTransaction::STATUS_SUCCEEDED,
+                $lockedPayment->provider_reference,
+                [
+                    'operator_id' => $actor->id,
+                    'note' => $context['note'] ?? null,
+                    'confirmed_at' => now()->toISOString(),
+                ],
+                ['status' => Payment::STATUS_PAID],
+                null,
+                $context['request'] ?? null,
+            );
+
+            return $lockedPayment->fresh(['reservation', 'buyer', 'seller', 'transactions']);
+        });
+    }
+
+    /**
+     * @param  array<string, mixed>  $context
+     */
     public function markFailed(Payment $payment, array $context = []): Payment
     {
         return $this->markTerminal($payment, Payment::STATUS_FAILED, 'failed_at', $context);
@@ -264,6 +333,37 @@ class PaymentService
         });
     }
 
+    /**
+     * @param  array<string, mixed>  $context
+     */
+    protected function markAwaitingVerification(Payment $payment, array $context): Payment
+    {
+        return DB::transaction(function () use ($payment, $context): Payment {
+            $lockedPayment = Payment::query()
+                ->lockForUpdate()
+                ->with('reservation')
+                ->findOrFail($payment->id);
+
+            if ($lockedPayment->status === Payment::STATUS_PENDING) {
+                $lockedPayment->forceFill([
+                    'status' => Payment::STATUS_AWAITING_VERIFICATION,
+                    'metadata' => array_merge($lockedPayment->metadata ?? [], [
+                        'awaiting_verification_at' => now()->toISOString(),
+                        'awaiting_verification_context' => $context,
+                    ]),
+                ])->save();
+            }
+
+            if ($lockedPayment->reservation && $lockedPayment->reservation->payment_status === 'pending') {
+                $lockedPayment->reservation->forceFill([
+                    'payment_status' => 'awaiting_verification',
+                ])->save();
+            }
+
+            return $lockedPayment;
+        });
+    }
+
     protected function assertBuyerCanPayReservation(User $buyer, Reservation $reservation): void
     {
         abort_unless((int) $reservation->buyer_id === (int) $buyer->id, 403, 'Seul l acheteur peut initier le paiement.');
@@ -301,6 +401,30 @@ class PaymentService
         if ($requireInitiationReady && $provider === Payment::PROVIDER_CMI) {
             app(CmiGateway::class)->assertConfigurationComplete();
         }
+    }
+
+    protected function isManualProvider(string $provider): bool
+    {
+        return in_array($provider, [Payment::PROVIDER_MANUAL_BANK_TRANSFER, Payment::PROVIDER_CASH_ON_PICKUP], true);
+    }
+
+    /**
+     * @param  array<string, mixed>  $context
+     */
+    protected function authorizeManualConfirmation(Payment $payment, User $actor, array $context): void
+    {
+        if ($payment->provider === Payment::PROVIDER_MANUAL_BANK_TRANSFER) {
+            abort_unless((bool) $actor->is_admin, 403, 'Seul un administrateur peut confirmer un virement bancaire.');
+            abort_unless(filled($context['note'] ?? null), 422, 'Une note de verification est obligatoire.');
+
+            return;
+        }
+
+        abort_unless(
+            (bool) $actor->is_admin || (int) $actor->id === (int) $payment->seller_id,
+            403,
+            'Seul le vendeur ou un administrateur peut confirmer le paiement a la recuperation.',
+        );
     }
 
     protected function generateInternalReference(): string

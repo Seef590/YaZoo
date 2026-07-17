@@ -12,9 +12,13 @@ class Payment extends Model
     use HasFactory;
 
     public const PROVIDER_CASH_ON_PICKUP = 'cash_on_pickup';
+
     public const PROVIDER_MANUAL_BANK_TRANSFER = 'manual_bank_transfer';
+
     public const PROVIDER_CMI = 'cmi';
+
     public const PROVIDER_PAYZONE = 'payzone';
+
     public const PROVIDER_STRIPE = 'stripe';
 
     public const PROVIDERS = [
@@ -26,14 +30,22 @@ class Payment extends Model
     ];
 
     public const STATUS_PENDING = 'pending';
+
+    public const STATUS_AWAITING_VERIFICATION = 'awaiting_verification';
+
     public const STATUS_AUTHORIZED = 'authorized';
+
     public const STATUS_PAID = 'paid';
+
     public const STATUS_FAILED = 'failed';
+
     public const STATUS_REFUNDED = 'refunded';
+
     public const STATUS_CANCELLED = 'cancelled';
 
     public const STATUSES = [
         self::STATUS_PENDING,
+        self::STATUS_AWAITING_VERIFICATION,
         self::STATUS_AUTHORIZED,
         self::STATUS_PAID,
         self::STATUS_FAILED,
@@ -43,6 +55,7 @@ class Payment extends Model
 
     public const ACTIVE_STATUSES = [
         self::STATUS_PENDING,
+        self::STATUS_AWAITING_VERIFICATION,
         self::STATUS_AUTHORIZED,
     ];
 

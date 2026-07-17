@@ -7,6 +7,7 @@ use App\Services\AuthService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Testing\TestResponse;
+use Illuminate\Validation\ValidationException;
 use Laravel\Socialite\Contracts\User as SocialiteUser;
 use Tests\TestCase;
 
@@ -137,9 +138,104 @@ class AuthApiTest extends TestCase
 
         $this->withCredentials()
             ->withUnencryptedCookie('yazoo_api_token', $encryptedToken)
+            ->withUnencryptedCookie('XSRF-TOKEN', 'csrf-test-token')
+            ->withHeader('X-XSRF-TOKEN', 'csrf-test-token')
+            ->withHeader('Origin', 'https://yazoo.azurewebsites.net')
             ->postJson('/api/auth/logout')
             ->assertOk()
             ->assertJsonPath('message', 'Deconnexion reussie.');
+    }
+
+    public function test_cookie_authenticated_mutation_requires_csrf_token(): void
+    {
+        User::factory()->create([
+            'email' => 'csrf-missing@yazoo.app',
+            'password' => 'password123',
+        ]);
+
+        $loginResponse = $this->postJson('/api/auth/login', [
+            'email' => 'csrf-missing@yazoo.app',
+            'password' => 'password123',
+            'device_name' => 'frontend',
+        ]);
+
+        $this->withCredentials()
+            ->withUnencryptedCookie('yazoo_api_token', $this->authCookieValue($loginResponse))
+            ->withHeader('Origin', 'https://yazoo.azurewebsites.net')
+            ->postJson('/api/posts', [
+                'content' => 'Mutation sans CSRF',
+                'visibility' => 'public',
+            ])
+            ->assertStatus(419);
+    }
+
+    public function test_cookie_authenticated_mutation_rejects_untrusted_origin(): void
+    {
+        User::factory()->create([
+            'email' => 'csrf-origin@yazoo.app',
+            'password' => 'password123',
+        ]);
+
+        $loginResponse = $this->postJson('/api/auth/login', [
+            'email' => 'csrf-origin@yazoo.app',
+            'password' => 'password123',
+            'device_name' => 'frontend',
+        ]);
+
+        $this->withCredentials()
+            ->withUnencryptedCookie('yazoo_api_token', $this->authCookieValue($loginResponse))
+            ->withUnencryptedCookie('XSRF-TOKEN', 'csrf-test-token')
+            ->withHeader('X-XSRF-TOKEN', 'csrf-test-token')
+            ->withHeader('Origin', 'https://evil.example')
+            ->postJson('/api/posts', [
+                'content' => 'Mutation mauvaise origine',
+                'visibility' => 'public',
+            ])
+            ->assertStatus(419);
+    }
+
+    public function test_cookie_authenticated_mutation_with_csrf_succeeds_and_get_remains_read_only(): void
+    {
+        User::factory()->create([
+            'email' => 'csrf-ok@yazoo.app',
+            'password' => 'password123',
+        ]);
+
+        $loginResponse = $this->postJson('/api/auth/login', [
+            'email' => 'csrf-ok@yazoo.app',
+            'password' => 'password123',
+            'device_name' => 'frontend',
+        ]);
+        $encryptedToken = $this->authCookieValue($loginResponse);
+
+        $this->withCredentials()
+            ->withUnencryptedCookie('yazoo_api_token', $encryptedToken)
+            ->getJson('/api/posts')
+            ->assertOk();
+
+        $this->withCredentials()
+            ->withUnencryptedCookie('yazoo_api_token', $encryptedToken)
+            ->withUnencryptedCookie('XSRF-TOKEN', 'csrf-test-token')
+            ->withHeader('X-XSRF-TOKEN', 'csrf-test-token')
+            ->withHeader('Origin', 'https://yazoo.azurewebsites.net')
+            ->postJson('/api/posts', [
+                'content' => 'Mutation avec CSRF',
+                'visibility' => 'public',
+            ])
+            ->assertCreated();
+    }
+
+    public function test_bearer_mutation_does_not_require_cookie_csrf(): void
+    {
+        $user = User::factory()->create();
+        $token = $user->createToken('api-client')->plainTextToken;
+
+        $this->withHeader('Authorization', 'Bearer '.$token)
+            ->postJson('/api/posts', [
+                'content' => 'Mutation Bearer legitime',
+                'visibility' => 'public',
+            ])
+            ->assertCreated();
     }
 
     public function test_request_otp_never_exposes_debug_code(): void
@@ -170,6 +266,24 @@ class AuthApiTest extends TestCase
         $this->postJson('/api/auth/login', [
             'email' => 'wrong@yazoo.app',
             'password' => 'bad-password',
+            'device_name' => 'phpunit',
+        ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['email']);
+    }
+
+    public function test_banned_user_cannot_login_with_password(): void
+    {
+        User::factory()->create([
+            'email' => 'banned@yazoo.app',
+            'password' => 'password123',
+            'banned_at' => now(),
+            'banned_reason' => 'Abus',
+        ]);
+
+        $this->postJson('/api/auth/login', [
+            'email' => 'banned@yazoo.app',
+            'password' => 'password123',
             'device_name' => 'phpunit',
         ])
             ->assertUnprocessable()
@@ -277,6 +391,23 @@ class AuthApiTest extends TestCase
             'email' => 'google-user@yazoo.app',
             'is_admin' => false,
         ]);
+    }
+
+    public function test_google_oauth_refuses_existing_banned_user(): void
+    {
+        User::factory()->create([
+            'email' => 'banned-google@yazoo.app',
+            'banned_at' => now(),
+            'banned_reason' => 'Abus',
+        ]);
+
+        $this->expectException(ValidationException::class);
+
+        app(AuthService::class)->loginWithGoogle($this->googleUser(
+            'google-banned',
+            'banned-google@yazoo.app',
+            'Banned Google User',
+        ));
     }
 
     public function test_create_admin_command_can_create_an_admin(): void

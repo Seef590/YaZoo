@@ -367,7 +367,9 @@ class ReservationService
 
             $lockedReservation->update([
                 'reservation_status' => 'completed',
-                'payment_status' => 'paid',
+                'payment_status' => $lockedReservation->payments()->where('status', 'paid')->exists()
+                    ? 'paid'
+                    : $lockedReservation->payment_status,
                 'invoice_number' => $lockedReservation->invoice_number ?: $this->generateInvoiceNumber($lockedReservation),
                 'invoice_issued_at' => CarbonImmutable::now(),
                 'completed_at' => CarbonImmutable::now(),

@@ -3,8 +3,8 @@
 use App\Http\Controllers\Api\AdminAnimalReviewController;
 use App\Http\Controllers\Api\AdminContentModerationController;
 use App\Http\Controllers\Api\AdminExportController;
-use App\Http\Controllers\Api\AdminModerationController;
 use App\Http\Controllers\Api\AdminModerationActionController;
+use App\Http\Controllers\Api\AdminModerationController;
 use App\Http\Controllers\Api\AdminOrdersController;
 use App\Http\Controllers\Api\AdminReservationReviewController;
 use App\Http\Controllers\Api\AdminStatsController;
@@ -24,14 +24,14 @@ use App\Http\Controllers\Api\MonitoringController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\PostController;
-use App\Http\Controllers\Api\ProfessionalVerificationController;
 use App\Http\Controllers\Api\PrivacyConsentController;
 use App\Http\Controllers\Api\PrivacyController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\ProfessionalVerificationController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\ReservationController;
 use App\Http\Controllers\Api\ReservationReviewController;
-use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\SearchController;
 use App\Http\Controllers\Api\ServiceListingController;
 use App\Http\Controllers\Api\StoryController;
@@ -85,7 +85,7 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
         Route::get('/google', [AuthController::class, 'redirectToGoogle'])->middleware('throttle:10,1');
         Route::get('/google/callback', [AuthController::class, 'handleGoogleCallback'])->middleware('throttle:10,1');
 
-        Route::middleware([UseSanctumTokenFromCookie::class, 'auth:sanctum'])->group(function (): void {
+        Route::middleware(['cookie_csrf', UseSanctumTokenFromCookie::class, 'auth:sanctum', 'active_mutation'])->group(function (): void {
             Route::get('/me', [AuthController::class, 'me']);
             Route::post('/logout', [AuthController::class, 'logout']);
         });
@@ -96,7 +96,7 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
     Route::get('/veterinarians', [VeterinarianController::class, 'index']);
     Route::get('/veterinarians/{veterinarian}', [VeterinarianController::class, 'show']);
 
-    Route::middleware([UseSanctumTokenFromCookie::class, 'auth:sanctum'])->group(function (): void {
+    Route::middleware(['cookie_csrf', UseSanctumTokenFromCookie::class, 'auth:sanctum', 'active_mutation'])->group(function (): void {
         Route::get('/posts', [PostController::class, 'index']);
         Route::middleware(['throttle:feed-write', 'not_suspended'])->group(function (): void {
             Route::post('/posts', [PostController::class, 'store']);
@@ -161,6 +161,8 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
         Route::post('/reservations/{reservation}/payments', [PaymentController::class, 'store'])
             ->middleware('throttle:10,1');
         Route::get('/payments/{payment}', [PaymentController::class, 'show']);
+        Route::patch('/payments/{payment}/manual-confirm', [PaymentController::class, 'confirmManual'])
+            ->middleware('throttle:10,1');
         Route::get('/orders/history', [ReservationController::class, 'history']);
         Route::get('/history', [HistoryController::class, 'index']);
         Route::get('/history/me', [HistoryController::class, 'index']);
@@ -217,6 +219,8 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
         Route::get('/privacy/delete-request', [DataDeletionRequestController::class, 'show']);
         Route::post('/professional-verifications', [ProfessionalVerificationController::class, 'store']);
         Route::get('/professional-verifications/me', [ProfessionalVerificationController::class, 'me']);
+        Route::get('/professional-verifications/{professionalVerification}/document', [ProfessionalVerificationController::class, 'downloadDocument'])
+            ->middleware('throttle:20,1');
 
         Route::prefix('admin')->middleware('admin')->group(function (): void {
             Route::get('/users', [AdminUserModerationController::class, 'index']);

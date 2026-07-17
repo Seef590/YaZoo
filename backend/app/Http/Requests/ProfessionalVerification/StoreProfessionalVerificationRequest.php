@@ -24,7 +24,13 @@ class StoreProfessionalVerificationRequest extends FormRequest
             'ice' => ['nullable', 'string', 'max:50'],
             'onssa_authorization_number' => ['nullable', 'string', 'max:100'],
             'professional_license_number' => ['nullable', 'string', 'max:100'],
-            'document' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,webp', 'max:5120'],
+            'document' => [
+                'nullable',
+                'file',
+                'mimetypes:application/pdf,image/jpeg,image/png,image/webp',
+                'extensions:pdf,jpg,jpeg,png,webp',
+                'max:5120',
+            ],
             'document_type' => ['nullable', 'string', Rule::in(ProfessionalVerification::DOCUMENT_TYPES)],
             'document_expires_at' => ['nullable', 'date', 'after:today'],
         ];

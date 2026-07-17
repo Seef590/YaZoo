@@ -6,6 +6,7 @@
   "globalHeaders": {
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
     "Referrer-Policy": "strict-origin-when-cross-origin",
     "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
     "Content-Security-Policy": "default-src 'self'; frame-ancestors 'none'; base-uri 'self'; object-src 'none'; img-src 'self' https://yazoo-api.azurewebsites.net data: blob:; media-src 'self' https://yazoo-api.azurewebsites.net blob:; connect-src 'self' https: wss:; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self' data:"
