@@ -191,7 +191,7 @@ function PostCard({
   }
 
   return (
-    <article className={`group relative w-full max-w-full min-w-0 box-border rounded-[30px] border border-white/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.99),_rgba(246,239,255,0.94))] shadow-[0_24px_56px_rgba(124,58,237,0.08)] transition-all duration-200 hover:-translate-y-1 hover:border-violet-200 hover:shadow-[0_28px_60px_rgba(124,58,237,0.12)] dark:border-violet-300/12 dark:bg-[linear-gradient(180deg,_rgba(24,16,38,0.96),_rgba(36,20,61,0.92))] dark:shadow-[0_24px_60px_rgba(0,0,0,0.34)] ${isMenuOpen ? 'z-40 overflow-visible' : 'z-0 overflow-hidden'}`}>
+    <article className={`group relative mx-auto box-border w-full max-w-[42rem] min-w-0 rounded-[30px] border border-white/80 bg-[linear-gradient(180deg,_rgba(255,255,255,0.99),_rgba(246,239,255,0.94))] shadow-[0_24px_56px_rgba(124,58,237,0.08)] transition-all duration-200 hover:-translate-y-1 hover:border-violet-200 hover:shadow-[0_28px_60px_rgba(124,58,237,0.12)] dark:border-violet-300/12 dark:bg-[linear-gradient(180deg,_rgba(24,16,38,0.96),_rgba(36,20,61,0.92))] dark:shadow-[0_24px_60px_rgba(0,0,0,0.34)] ${isMenuOpen ? 'z-40 overflow-visible' : 'z-0 overflow-hidden'}`}>
       <div className="h-1.5 rounded-t-[30px] bg-[linear-gradient(90deg,#7c3aed,#a855f7,#d8b4fe,#ede9fe)]" />
 
       <div className={`w-full min-w-0 max-w-full px-3 py-4 sm:p-5 ${isMenuOpen ? 'overflow-visible' : 'overflow-hidden'}`}>
@@ -299,14 +299,14 @@ function PostCard({
                 <video
                   src={mediaUrl}
                   controls
-                  className="aspect-[4/3] h-auto max-h-[70vh] w-full max-w-full object-cover sm:aspect-[16/10] md:max-h-[34rem] md:object-contain"
+                  className="mx-auto block h-auto max-h-[70vh] w-full max-w-full object-contain md:max-h-[42rem] xl:max-h-[min(62vh,38rem)]"
                   onError={() => setHasMediaError(true)}
                 />
               ) : (
                 <img
                   src={mediaUrl}
                   alt={t('post.mediaAlt')}
-                  className="aspect-[4/3] h-auto max-h-[70vh] w-full max-w-full object-cover transition duration-500 group-hover:scale-[1.01] sm:aspect-[16/10] md:max-h-[34rem] md:object-contain"
+                  className="mx-auto block h-auto w-auto max-h-[70vh] max-w-full object-contain md:max-h-[42rem] xl:max-h-[min(62vh,38rem)]"
                   onError={() => setHasMediaError(true)}
                 />
               )}

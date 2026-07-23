@@ -38,6 +38,10 @@ import { asArray, extractDataArray, extractDataObject } from '../utils/apiData'
 import { getErrorMessage } from '../utils/getErrorMessage'
 import { normalizeProfileMediaPayload } from '../utils/media'
 
+const FEED_COLUMN_CLASS = 'mx-auto w-full max-w-[42rem] min-w-0'
+const FEED_GRID_CLASS =
+  'grid min-w-0 gap-6 xl:grid-cols-[minmax(0,42rem)_minmax(280px,320px)] xl:justify-center'
+
 function FeedPage() {
   const location = useLocation()
   const navigate = useNavigate()
@@ -490,74 +494,82 @@ function FeedPage() {
 
   return (
     <section className="max-w-full min-w-0 space-y-6 overflow-x-clip">
-      <section className="max-w-full min-w-0 overflow-hidden rounded-[30px] border border-white/80 bg-white/88 p-4 shadow-[0_20px_48px_rgba(124,58,237,0.08)] backdrop-blur">
-        <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-violet-700 dark:text-violet-200">
-              {t('feed.quickShare')}
-            </p>
+      <div className={FEED_GRID_CLASS}>
+        <section className={`${FEED_COLUMN_CLASS} overflow-hidden rounded-[30px] border border-white/80 bg-white/88 p-4 shadow-[0_20px_48px_rgba(124,58,237,0.08)] backdrop-blur`}>
+          <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.18em] text-violet-700 dark:text-violet-200">
+                {t('feed.quickShare')}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsStoryComposerOpen(true)}
+              className="w-full rounded-full bg-violet-50 px-4 py-2 text-xs font-medium text-violet-700 transition hover:bg-violet-100 sm:w-auto"
+            >
+              {t('post.share')}
+            </button>
           </div>
-          <button
-            type="button"
-            onClick={() => setIsStoryComposerOpen(true)}
-            className="w-full rounded-full bg-violet-50 px-4 py-2 text-xs font-medium text-violet-700 transition hover:bg-violet-100 sm:w-auto"
-          >
-            {t('post.share')}
-          </button>
-        </div>
 
-        {isStoriesLoading ? (
-          <div className="yz-horizontal-scroll mt-4 pb-1">
-            {Array.from({ length: 4 }).map((_, index) => (
-              <div
-                key={`story-skeleton-${index}`}
-                className="min-w-[120px] animate-pulse rounded-[28px] border border-violet-100 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.8))] p-4"
-              >
-                <div className="mx-auto h-[74px] w-[74px] rounded-full bg-violet-100" />
-                <div className="mx-auto mt-3 h-3 w-20 rounded-full bg-violet-100" />
-                <div className="mx-auto mt-2 h-2.5 w-16 rounded-full bg-violet-50" />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="yz-horizontal-scroll mt-4 pb-1">
-            {storyRowItems.map((storyGroup) => (
-              <StoryCard
-                key={storyGroup.id}
-                storyGroup={storyGroup}
-                t={t}
-                onOpen={() => handleOpenStory(storyGroup)}
-                onAddStory={
-                  storyGroup.isOwn && !storyGroup.isComposerShortcut
-                    ? () => setIsStoryComposerOpen(true)
-                    : null
-                }
-              />
-            ))}
-          </div>
-        )}
-      </section>
+          {isStoriesLoading ? (
+            <div className="yz-horizontal-scroll mt-4 pb-1">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div
+                  key={`story-skeleton-${index}`}
+                  className="min-w-[120px] animate-pulse rounded-[28px] border border-violet-100 bg-[linear-gradient(180deg,_rgba(255,255,255,0.98),_rgba(244,237,255,0.8))] p-4"
+                >
+                  <div className="mx-auto h-[74px] w-[74px] rounded-full bg-violet-100" />
+                  <div className="mx-auto mt-3 h-3 w-20 rounded-full bg-violet-100" />
+                  <div className="mx-auto mt-2 h-2.5 w-16 rounded-full bg-violet-50" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="yz-horizontal-scroll mt-4 pb-1">
+              {storyRowItems.map((storyGroup) => (
+                <StoryCard
+                  key={storyGroup.id}
+                  storyGroup={storyGroup}
+                  t={t}
+                  onOpen={() => handleOpenStory(storyGroup)}
+                  onAddStory={
+                    storyGroup.isOwn && !storyGroup.isComposerShortcut
+                      ? () => setIsStoryComposerOpen(true)
+                      : null
+                  }
+                />
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
 
       {storyErrorMessage ? (
-        <div role="alert" className="rounded-[28px] border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-700">
-          {storyErrorMessage}
+        <div className={FEED_GRID_CLASS}>
+          <div role="alert" className={`${FEED_COLUMN_CLASS} rounded-[28px] border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-700`}>
+            {storyErrorMessage}
+          </div>
         </div>
       ) : null}
 
       {storySuccessMessage ? (
-        <div role="status" aria-live="polite" className="rounded-[28px] border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-700">
-          {storySuccessMessage}
+        <div className={FEED_GRID_CLASS}>
+          <div role="status" aria-live="polite" className={`${FEED_COLUMN_CLASS} rounded-[28px] border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-700`}>
+            {storySuccessMessage}
+          </div>
         </div>
       ) : null}
 
       {errorMessage ? (
-        <div role="alert" className="rounded-[28px] border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-700">
-          {errorMessage}
+        <div className={FEED_GRID_CLASS}>
+          <div role="alert" className={`${FEED_COLUMN_CLASS} rounded-[28px] border border-rose-200 bg-rose-50 px-5 py-4 text-sm text-rose-700`}>
+            {errorMessage}
+          </div>
         </div>
       ) : null}
 
-      <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="min-w-0 space-y-6">
+      <div className={FEED_GRID_CLASS}>
+        <div className={`${FEED_COLUMN_CLASS} space-y-6`}>
           <UserSuggestionsSection
             users={userSuggestions}
             currentUserId={user?.id}

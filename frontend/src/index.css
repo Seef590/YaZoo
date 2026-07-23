@@ -267,6 +267,38 @@ svg {
   text-shadow: 0 6px 16px rgba(124, 58, 237, 0.2);
 }
 
+.yz-desktop-sidebar {
+  width: 5rem;
+  transition:
+    width 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.yz-desktop-sidebar:hover,
+.yz-desktop-sidebar:focus-within {
+  width: 16.5rem;
+  box-shadow: 18px 0 48px rgba(76, 29, 149, 0.14);
+}
+
+.yz-desktop-sidebar-label {
+  display: block;
+  max-width: 0;
+  opacity: 0;
+  transition:
+    max-width 160ms ease,
+    opacity 120ms ease;
+}
+
+.yz-desktop-sidebar:hover .yz-desktop-sidebar-label,
+.yz-desktop-sidebar:focus-within .yz-desktop-sidebar-label {
+  max-width: 11rem;
+  opacity: 1;
+}
+
+.yz-desktop-sidebar summary::-webkit-details-marker {
+  display: none;
+}
+
 :focus-visible {
   outline: 2px solid rgba(124, 58, 237, 0.75);
   outline-offset: 2px;

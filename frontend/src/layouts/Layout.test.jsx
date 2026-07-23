@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -40,15 +40,16 @@ vi.mock('../api/search', () => ({
   searchUsersRequest: vi.fn().mockResolvedValue({ data: { data: [] } }),
 }))
 
-function renderLayout() {
-  localStorage.setItem('yazoo-locale', 'fr')
+function renderLayout({ initialEntry = '/feed', locale = 'fr' } = {}) {
+  localStorage.setItem('yazoo-locale', locale)
 
   return render(
-    <MemoryRouter initialEntries={['/feed']} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <MemoryRouter initialEntries={[initialEntry]} future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <I18nProvider>
         <Routes>
           <Route element={<Layout />}>
             <Route path="/feed" element={<p>Feed content</p>} />
+            <Route path="/messages" element={<p>Messages content</p>} />
             <Route path="/notifications" element={<p>Notifications content</p>} />
           </Route>
         </Routes>
@@ -81,7 +82,44 @@ describe('Layout', () => {
     markNotificationReadRequest.mockResolvedValue({ data: {} })
   })
 
-  it('rafraichit les messages et charge les apercus sans void', async () => {
+  it('rend la sidebar avec la route active et conserve les liens existants', () => {
+    renderLayout()
+
+    const sidebar = screen.getByTestId('desktop-sidebar')
+    const sidebarQueries = within(sidebar)
+    const headerQueries = within(screen.getByTestId('app-header'))
+
+    expect(sidebar).toHaveClass('hidden', 'xl:flex')
+    expect(headerQueries.getByRole('link', { name: 'Feed' })).toBeInTheDocument()
+    expect(headerQueries.queryByRole('button', { name: 'Messages' })).not.toBeInTheDocument()
+    expect(sidebarQueries.getByRole('link', { name: 'Feed' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+    expect(sidebarQueries.getByRole('link', { name: 'Marché YaZoo' })).toHaveAttribute(
+      'href',
+      '/marketplace',
+    )
+    expect(sidebarQueries.getByRole('link', { name: 'Communautés' })).toHaveAttribute(
+      'href',
+      '/communities',
+    )
+    expect(sidebarQueries.getByRole('link', { name: 'Historique' })).toHaveAttribute(
+      'href',
+      '/orders/history',
+    )
+  })
+
+  it('affiche les libelles arabes et le RTL dans la sidebar', () => {
+    renderLayout({ locale: 'ar' })
+
+    const sidebar = screen.getByTestId('desktop-sidebar')
+
+    expect(sidebar).toHaveAttribute('dir', 'rtl')
+    expect(within(sidebar).getByRole('link', { name: 'المجتمعات' })).toBeInTheDocument()
+  })
+
+  it('ouvre et ferme le dock de messages avec les donnees existantes', async () => {
     const user = userEvent.setup()
 
     renderLayout()
@@ -90,11 +128,24 @@ describe('Layout', () => {
       expect(getUnreadMessagesCountRequest).toHaveBeenCalled()
     })
 
-    await user.click(screen.getByRole('button', { name: 'Messages' }))
+    const dock = screen.getByTestId('desktop-messages-dock')
+    await user.click(within(dock).getByRole('button', { name: 'Messages' }))
 
     await waitFor(() => {
       expect(getConversationsRequest).toHaveBeenCalled()
     })
+
+    const dialog = within(dock).getByRole('dialog', { name: 'Messages' })
+    expect(dialog).toBeInTheDocument()
+
+    await user.click(within(dialog).getByRole('button', { name: 'Fermer le menu' }))
+    expect(within(dock).queryByRole('dialog', { name: 'Messages' })).not.toBeInTheDocument()
+  })
+
+  it('masque le dock sur la page messages', () => {
+    renderLayout({ initialEntry: '/messages' })
+
+    expect(screen.queryByTestId('desktop-messages-dock')).not.toBeInTheDocument()
   })
 
   it('marque une notification comme lue depuis le menu', async () => {

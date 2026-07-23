@@ -9,6 +9,9 @@ import {
   markNotificationReadRequest,
 } from '../api/notifications'
 import { searchUsersRequest } from '../api/search'
+import DesktopMessagesDock from '../components/messages/DesktopMessagesDock'
+import DesktopSidebar from '../components/navigation/DesktopSidebar'
+import AppIcon from '../components/ui/AppIcon'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import Footer from '../components/ui/Footer'
@@ -18,6 +21,7 @@ import { useI18n } from '../hooks/useI18n'
 import { useNotifications } from '../hooks/useNotifications'
 import { asArray, extractDataArray, extractDataObject } from '../utils/apiData'
 import { formatDate } from '../utils/formatDate'
+import { sortMessageConversations } from '../utils/messages'
 
 function Layout() {
   const navigate = useNavigate()
@@ -29,8 +33,7 @@ function Layout() {
   const [messagePreview, setMessagePreview] = useState([])
   const [isMessagesOpen, setIsMessagesOpen] = useState(false)
   const [isMessagesLoading, setIsMessagesLoading] = useState(false)
-  const [messageFilter, setMessageFilter] = useState('all')
-  const messageMenuRef = useRef(null)
+  const desktopMessagesDockRef = useRef(null)
   const [notificationPreview, setNotificationPreview] = useState([])
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
   const [isNotificationsLoading, setIsNotificationsLoading] = useState(false)
@@ -80,7 +83,9 @@ function Layout() {
 
   useEffect(() => {
     const handlePointerDown = (event) => {
-      if (!messageMenuRef.current?.contains(event.target)) {
+      if (
+        !desktopMessagesDockRef.current?.contains(event.target)
+      ) {
         setIsMessagesOpen(false)
       }
 
@@ -95,6 +100,12 @@ function Layout() {
       globalThis.removeEventListener('pointerdown', handlePointerDown)
     }
   }, [])
+
+  useEffect(() => {
+    if (location.pathname.startsWith('/messages')) {
+      setIsMessagesOpen(false)
+    }
+  }, [location.pathname])
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -314,36 +325,57 @@ function Layout() {
     goToSearch(globalSearch)
   }
 
-  const navigationItems = [
-    { to: '/feed', label: t('common.feed') },
-    { to: '/marketplace', label: t('common.marketplace') },
-    { to: '/communities', label: t('common.communities') },
-    { to: '/messages', label: t('common.messages') },
-    { to: '/reservations', label: t('common.reservations') },
-    { to: '/orders/history', label: t('common.history') },
-    { to: '/trust', label: t('common.trustSafety') },
-    { to: '/settings', label: t('common.settings') },
+  const primaryNavigationItems = [
+    { to: '/feed', label: t('common.feed'), icon: 'home' },
+    { to: '/marketplace', label: t('common.marketplace'), icon: 'marketplace' },
+    { to: '/communities', label: t('common.communities'), icon: 'communities' },
+    { to: '/messages', label: t('common.messages'), icon: 'chat' },
+    { to: '/reservations', label: t('common.reservations'), icon: 'reservations' },
+    { to: '/orders/history', label: t('common.history'), icon: 'history' },
   ]
+  const secondaryNavigationItems = [
+    { to: '/trust', label: t('common.trustSafety'), icon: 'shield' },
+    { to: '/settings', label: t('common.settings'), icon: 'settings' },
+  ]
+  const adminNavigationItems = []
 
   if (user?.isAdmin) {
-    navigationItems.push(
-      { to: '/admin/moderation', label: t('common.adminContent') },
-      { to: '/admin/stats', label: t('common.adminStats') },
-      { to: '/admin/users', label: t('common.adminUsers') },
-      { to: '/admin/moderation-actions', label: t('common.adminModerationActions') },
-      { to: '/admin/animals/review', label: t('common.adminAnimalReview') },
-      { to: '/admin/professional-verifications', label: t('common.adminProfessionalVerifications') },
-      { to: '/admin/orders', label: t('common.adminOrders') },
+    adminNavigationItems.push(
+      { to: '/admin/moderation', label: t('common.adminContent'), icon: 'admin' },
+      { to: '/admin/stats', label: t('common.adminStats'), icon: 'admin' },
+      { to: '/admin/users', label: t('common.adminUsers'), icon: 'admin' },
+      { to: '/admin/moderation-actions', label: t('common.adminModerationActions'), icon: 'admin' },
+      { to: '/admin/animals/review', label: t('common.adminAnimalReview'), icon: 'admin' },
+      { to: '/admin/professional-verifications', label: t('common.adminProfessionalVerifications'), icon: 'admin' },
+      { to: '/admin/orders', label: t('common.adminOrders'), icon: 'admin' },
     )
   }
+  const navigationItems = [
+    ...primaryNavigationItems,
+    ...secondaryNavigationItems,
+    ...adminNavigationItems,
+  ]
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.18),_transparent_24%),radial-gradient(circle_at_top_right,_rgba(244,208,255,0.24),_transparent_20%),linear-gradient(180deg,_#fffaff_0%,_#f7f1ff_100%)] transition-colors dark:bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.26),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(76,29,149,0.28),_transparent_24%),linear-gradient(180deg,_#08050d_0%,_#12091f_54%,_#1b1030_100%)]">
       <a href="#main-content" className="yz-skip-link">
         {t('accessibility.skipToContent')}
       </a>
-      <div className="w-full overflow-x-clip px-3 pb-[calc(8rem+env(safe-area-inset-bottom))] pt-3 sm:px-4 sm:pt-4 lg:px-6 lg:pb-8">
-        <header className="sticky top-3 z-30 rounded-[26px] border border-white/55 bg-[linear-gradient(135deg,_rgba(255,255,255,0.52),_rgba(248,240,255,0.36),_rgba(255,255,255,0.24))] p-3 shadow-[0_20px_48px_rgba(124,58,237,0.1)] backdrop-blur-2xl transition-colors dark:border-violet-300/15 dark:bg-[linear-gradient(135deg,_rgba(24,16,38,0.82),_rgba(49,24,83,0.54),_rgba(12,8,20,0.72))] dark:shadow-[0_24px_60px_rgba(0,0,0,0.38)] sm:p-4">
+      <DesktopSidebar
+        adminItems={adminNavigationItems}
+        isRtl={isRtl}
+        messagesCount={unreadMessagesCount}
+        primaryItems={primaryNavigationItems}
+        secondaryItems={secondaryNavigationItems}
+        t={t}
+        user={user}
+      />
+
+      <div className="w-full overflow-x-clip px-3 pb-[calc(8rem+env(safe-area-inset-bottom))] pt-3 sm:px-4 sm:pt-4 lg:px-6 lg:pb-8 xl:pl-[6.5rem]">
+        <header
+          data-testid="app-header"
+          className="sticky top-3 z-30 rounded-[26px] border border-white/55 bg-[linear-gradient(135deg,_rgba(255,255,255,0.52),_rgba(248,240,255,0.36),_rgba(255,255,255,0.24))] p-3 shadow-[0_20px_48px_rgba(124,58,237,0.1)] backdrop-blur-2xl transition-colors dark:border-violet-300/15 dark:bg-[linear-gradient(135deg,_rgba(24,16,38,0.82),_rgba(49,24,83,0.54),_rgba(12,8,20,0.72))] dark:shadow-[0_24px_60px_rgba(0,0,0,0.38)] sm:p-4"
+        >
           <div className="flex items-center gap-3">
             <NavLink to="/feed" className="flex min-w-0 items-center gap-3">
               <img src="/yazoo-logo.svg" alt={t('layout.logoLabel')} className="h-12 w-12 shrink-0 object-contain" />
@@ -371,17 +403,6 @@ function Layout() {
               </button>
 
               <DesktopActionLink to="/feed" icon="home" label={t('common.feed')} className="hidden lg:inline-flex" />
-              <MessageMenu
-                conversations={messagePreview}
-                filter={messageFilter}
-                isLoading={isMessagesLoading}
-                isOpen={isMessagesOpen}
-                onFilterChange={setMessageFilter}
-                onToggle={handleToggleMessages}
-                refObject={messageMenuRef}
-                t={t}
-                unreadCount={unreadMessagesCount}
-              />
               <NotificationMenu
                 refObject={notificationMenuRef}
                 filter={notificationFilter}
@@ -456,6 +477,18 @@ function Layout() {
         messagesCount={unreadMessagesCount}
         notificationsCount={unreadCount}
       />
+      {!location.pathname.startsWith('/messages') ? (
+        <DesktopMessagesDock
+          conversations={messagePreview}
+          isLoading={isMessagesLoading}
+          isOpen={isMessagesOpen}
+          isRtl={isRtl}
+          onToggle={handleToggleMessages}
+          refObject={desktopMessagesDockRef}
+          t={t}
+          unreadCount={unreadMessagesCount}
+        />
+      ) : null}
       <OnboardingPrompt userId={user?.id} />
     </div>
   )
@@ -463,7 +496,7 @@ function Layout() {
 
 function DesktopNav({ items }) {
   return (
-    <nav className="mt-3 hidden overflow-x-auto rounded-[24px] border border-white/55 bg-[linear-gradient(135deg,_rgba(255,255,255,0.44),_rgba(248,240,255,0.32),_rgba(255,255,255,0.2))] p-2 shadow-[0_16px_36px_rgba(124,58,237,0.08)] backdrop-blur-2xl transition-colors dark:border-violet-300/12 dark:bg-[linear-gradient(135deg,_rgba(24,16,38,0.64),_rgba(49,24,83,0.34),_rgba(12,8,20,0.56))] lg:block">
+    <nav className="mt-3 hidden overflow-x-auto rounded-[24px] border border-white/55 bg-[linear-gradient(135deg,_rgba(255,255,255,0.44),_rgba(248,240,255,0.32),_rgba(255,255,255,0.2))] p-2 shadow-[0_16px_36px_rgba(124,58,237,0.08)] backdrop-blur-2xl transition-colors dark:border-violet-300/12 dark:bg-[linear-gradient(135deg,_rgba(24,16,38,0.64),_rgba(49,24,83,0.34),_rgba(12,8,20,0.56))] lg:block xl:hidden">
       <div className="mx-auto flex min-w-max items-center justify-center gap-2">
         {items.map((item) => (
           <NavLink
@@ -798,156 +831,6 @@ function DesktopActionLink({ to, icon, label, badgeCount = 0, badgeLabel = '', c
   )
 }
 
-function MessageMenu({
-  conversations,
-  filter,
-  isLoading,
-  isOpen,
-  onFilterChange,
-  onToggle,
-  refObject,
-  t,
-  unreadCount,
-}) {
-  const safeConversations = sortMessageConversations(conversations)
-  const visibleConversations =
-    filter === 'unread'
-      ? safeConversations.filter((conversation) => (conversation.unreadCount ?? 0) > 0)
-      : safeConversations
-
-  return (
-    <div ref={refObject} className="relative hidden lg:block">
-      <button
-        type="button"
-        onClick={onToggle}
-        className={`relative inline-flex h-10 w-10 items-center justify-center rounded-2xl border transition ${
-          isOpen
-            ? 'border-violet-300 bg-[linear-gradient(135deg,#7c3aed,#a855f7,#c4b5fd)] text-white shadow-[0_10px_22px_rgba(124,58,237,0.18)]'
-            : 'border-white/55 bg-white/35 text-stone-700 hover:border-violet-200 hover:bg-white/55 hover:text-violet-900 dark:border-violet-300/15 dark:bg-white/8 dark:text-violet-50 dark:hover:bg-white/14'
-        }`}
-        aria-label={t('common.messages')}
-        aria-expanded={isOpen}
-        title={t('common.messages')}
-      >
-        <AppIcon name="chat" className="h-5 w-5" />
-        {unreadCount > 0 ? (
-          <UnreadBadge label={t('messages.unreadAria', { count: unreadCount })}>
-            {formatBadgeCount(unreadCount)}
-          </UnreadBadge>
-        ) : null}
-      </button>
-
-      {isOpen ? (
-        <section className="absolute end-0 top-[calc(100%+0.75rem)] z-50 w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-[28px] border border-white/70 bg-white/96 text-start shadow-[0_28px_70px_rgba(35,13,68,0.22)] backdrop-blur-2xl dark:border-violet-300/16 dark:bg-[#150c23]/96">
-          <header className="border-b border-violet-100/70 px-4 py-4 dark:border-violet-300/14">
-            <div className="flex items-center justify-between gap-3">
-              <h2 className="text-lg font-semibold text-stone-950 dark:text-violet-50">
-                {t('messages.dropdown.title')}
-              </h2>
-              {unreadCount > 0 ? (
-                <span
-                  className="rounded-full bg-violet-50 px-3 py-1.5 text-xs font-semibold text-violet-700 dark:bg-white/10 dark:text-violet-100"
-                  dir="ltr"
-                >
-                  {t('messages.dropdown.unreadCount', { count: unreadCount })}
-                </span>
-              ) : null}
-            </div>
-            <div className="mt-3 flex gap-2">
-              {['all', 'unread'].map((tab) => (
-                <button
-                  key={tab}
-                  type="button"
-                  onClick={() => onFilterChange(tab)}
-                  className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
-                    filter === tab
-                      ? 'bg-violet-600 text-white'
-                      : 'bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-white/10 dark:text-violet-100'
-                  }`}
-                >
-                  {t(`messages.dropdown.${tab}`)}
-                </button>
-              ))}
-            </div>
-          </header>
-
-          <div className="max-h-[28rem] overflow-y-auto p-2">
-            {isLoading ? <NotificationState>{t('common.loading')}</NotificationState> : null}
-            {!isLoading && visibleConversations.length === 0 ? (
-              <NotificationState>{t('messages.dropdown.empty')}</NotificationState>
-            ) : null}
-            {!isLoading && visibleConversations.length > 0 ? (
-              <div className="space-y-1">
-                {visibleConversations.map((conversation) => {
-                  const display = getMessageConversationDisplay(conversation, t)
-                  const conversationUrl = `/messages?conversation=${encodeURIComponent(conversation.id)}`
-                  const unreadConversationCount = conversation.unreadCount ?? 0
-
-                  return (
-                    <Link
-                      key={conversation.id}
-                      to={conversationUrl}
-                      onClick={() => {
-                        onToggle()
-                      }}
-                      className={`flex min-w-0 gap-3 rounded-[22px] px-3 py-3 transition hover:bg-violet-50 dark:hover:bg-white/10 ${
-                        unreadConversationCount > 0 ? 'bg-violet-50/70 dark:bg-violet-500/12' : ''
-                      }`}
-                      aria-label={t('messages.dropdown.openConversation')}
-                    >
-                      <Avatar
-                        name={display.name}
-                        src={display.avatar}
-                        className="h-11 w-11 shrink-0"
-                      />
-                      <span className="min-w-0 flex-1">
-                        <span className="flex min-w-0 items-center justify-between gap-3">
-                          <span className="truncate text-sm font-semibold text-stone-950 dark:text-violet-50">
-                            {display.name}
-                          </span>
-                          {unreadConversationCount > 0 ? (
-                            <span
-                              className="shrink-0 rounded-full bg-violet-600 px-2 py-0.5 text-[11px] font-bold text-white"
-                              dir="ltr"
-                            >
-                              {unreadConversationCount}
-                            </span>
-                          ) : null}
-                        </span>
-                        <span className="mt-0.5 line-clamp-2 block text-xs leading-5 text-stone-600 dark:text-violet-100/72">
-                          {display.lastMessage}
-                        </span>
-                        <span className="mt-1 block text-[11px] font-medium text-violet-700 dark:text-violet-200">
-                          {display.updatedAt}
-                        </span>
-                      </span>
-                      {unreadConversationCount > 0 ? (
-                        <span className="mt-2 h-2.5 w-2.5 shrink-0 rounded-full bg-violet-600" />
-                      ) : null}
-                    </Link>
-                  )
-                })}
-              </div>
-            ) : null}
-          </div>
-
-          <footer className="border-t border-violet-100/70 p-3 dark:border-violet-300/14">
-            <Link
-              to="/messages"
-              onClick={() => {
-                onToggle()
-              }}
-              className="block rounded-[18px] bg-violet-50 px-4 py-2.5 text-center text-sm font-semibold text-violet-800 transition hover:bg-violet-100 dark:bg-white/10 dark:text-violet-50 dark:hover:bg-white/14"
-            >
-              {t('messages.dropdown.viewAll')}
-            </Link>
-          </footer>
-        </section>
-      ) : null}
-    </div>
-  )
-}
-
 function NotificationMenu({
   filter,
   isLoading,
@@ -1153,36 +1036,6 @@ function formatBadgeCount(count) {
   return count > 99 ? '99+' : String(count)
 }
 
-function sortMessageConversations(items) {
-  return [...asArray(items)].sort(
-    (firstConversation, secondConversation) =>
-      new Date(secondConversation.updatedAt ?? secondConversation.updated_at ?? 0).getTime() -
-      new Date(firstConversation.updatedAt ?? firstConversation.updated_at ?? 0).getTime(),
-  )
-}
-
-function getMessageConversationDisplay(conversation, t) {
-  const participant = conversation.participant ?? {}
-  const participantName = participant.name ?? participant.username ?? t('common.user')
-  const lastMessage =
-    conversation.latestMessage?.body ??
-    conversation.latest_message?.body ??
-    conversation.last_message ??
-    t('messages.readyToStart')
-  const updatedAt =
-    conversation.updatedAt ??
-    conversation.updated_at ??
-    conversation.latestMessage?.createdAt ??
-    conversation.latest_message?.created_at
-
-  return {
-    avatar: participant.avatar ?? participant.avatarUrl ?? participant.avatar_url ?? '',
-    lastMessage,
-    name: participantName,
-    updatedAt: updatedAt ? formatDate(updatedAt) : t('messages.dropdown.lastMessage'),
-  }
-}
-
 function getNotificationMenuDisplay(notification, t) {
   if (notification.type === 'user_followed') {
     const followerName =
@@ -1279,123 +1132,6 @@ function InlinePill({ children, tone = 'stone' }) {
   )
 }
 
-function AppIcon({ name, className = 'h-5 w-5' }) {
-  if (name === 'home') {
-    return (
-      <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
-        <path
-          d="M3.75 10.5 12 4.5l8.25 6v8.25a1.5 1.5 0 0 1-1.5 1.5h-4.5v-6h-4.5v6h-4.5a1.5 1.5 0 0 1-1.5-1.5V10.5Z"
-          stroke="currentColor"
-          strokeWidth="1.7"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    )
-  }
-
-  if (name === 'chat') {
-    return (
-      <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
-        <path
-          d="M7.5 16.5 4.5 19.5v-12A2.25 2.25 0 0 1 6.75 5.25h10.5A2.25 2.25 0 0 1 19.5 7.5v6A2.25 2.25 0 0 1 17.25 15.75H7.5Z"
-          stroke="currentColor"
-          strokeWidth="1.7"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    )
-  }
-
-  if (name === 'bell') {
-    return (
-      <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
-        <path
-          d="M14.25 18.75a2.25 2.25 0 1 1-4.5 0m7.5-6v-1.5a5.25 5.25 0 1 0-10.5 0v1.5L5.25 15v1.5h13.5V15l-1.5-2.25Z"
-          stroke="currentColor"
-          strokeWidth="1.7"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    )
-  }
-
-  if (name === 'story') {
-    return (
-      <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
-        <path
-          d="M12 20.25a8.25 8.25 0 1 0 0-16.5 8.25 8.25 0 0 0 0 16.5Z"
-          stroke="currentColor"
-          strokeWidth="1.7"
-        />
-        <path
-          d="M12 8.25v7.5m3.75-3.75h-7.5"
-          stroke="currentColor"
-          strokeWidth="1.7"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    )
-  }
-
-  if (name === 'search') {
-    return (
-      <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
-        <path
-          d="m16.5 16.5 3.75 3.75m-1.5-8.625a7.125 7.125 0 1 1-14.25 0 7.125 7.125 0 0 1 14.25 0Z"
-          stroke="currentColor"
-          strokeWidth="1.7"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    )
-  }
-
-  if (name === 'menu') {
-    return (
-      <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
-        <path
-          d="M4.5 7.5h15m-15 4.5h15m-15 4.5h15"
-          stroke="currentColor"
-          strokeWidth="1.7"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    )
-  }
-
-  if (name === 'close') {
-    return (
-      <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
-        <path
-          d="m6.75 6.75 10.5 10.5m0-10.5-10.5 10.5"
-          stroke="currentColor"
-          strokeWidth="1.7"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    )
-  }
-
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
-      <path
-        d="M12 4.5v15m7.5-7.5h-15"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
-
 DesktopNav.propTypes = {
   items: PropTypes.array,
 }
@@ -1449,18 +1185,6 @@ NotificationState.propTypes = {
   children: PropTypes.node,
 }
 
-MessageMenu.propTypes = {
-  conversations: PropTypes.array,
-  filter: PropTypes.string,
-  isLoading: PropTypes.bool,
-  isOpen: PropTypes.bool,
-  onFilterChange: PropTypes.func,
-  onToggle: PropTypes.func,
-  refObject: PropTypes.oneOfType([PropTypes.func, PropTypes.object]),
-  t: PropTypes.func,
-  unreadCount: PropTypes.number,
-}
-
 MobileBottomDock.propTypes = {
   user: PropTypes.object,
   onCreateStory: PropTypes.func,
@@ -1495,11 +1219,6 @@ MobileDockStoryButton.propTypes = {
 InlinePill.propTypes = {
   children: PropTypes.node,
   tone: PropTypes.string,
-}
-
-AppIcon.propTypes = {
-  name: PropTypes.string,
-  className: PropTypes.string,
 }
 
 export default Layout
