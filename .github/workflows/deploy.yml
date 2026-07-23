@@ -10,6 +10,43 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.scope.outputs.backend }}
+      frontend: ${{ steps.scope.outputs.frontend }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Detect deployment scope
+        id: scope
+        shell: bash
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+          CURRENT_SHA: ${{ github.sha }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "backend=true" >> "$GITHUB_OUTPUT"
+            echo "frontend=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if git diff --quiet "$BEFORE_SHA" "$CURRENT_SHA" -- \
+            backend/ infra/nginx/api.conf .github/workflows/deploy.yml LICENSE .dockerignore; then
+            echo "backend=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "backend=true" >> "$GITHUB_OUTPUT"
+          fi
+
+          if git diff --quiet "$BEFORE_SHA" "$CURRENT_SHA" -- \
+            frontend/ infra/nginx/frontend.conf .github/workflows/deploy.yml LICENSE .dockerignore; then
+            echo "frontend=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "frontend=true" >> "$GITHUB_OUTPUT"
+          fi
+
   tests:
     runs-on: ubuntu-latest
     steps:
@@ -40,17 +77,19 @@ jobs:
         run: npm run build
 
   build-and-deploy:
-    needs: tests
+    needs: [changes, tests]
     runs-on: ubuntu-latest
     permissions:
       contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: docker/login-action@v3
+        if: needs.changes.outputs.backend == 'true' || needs.changes.outputs.frontend == 'true'
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build and push backend image
+        if: needs.changes.outputs.backend == 'true'
         run: |
           docker build -f backend/Dockerfile \
             -t "${{ secrets.DOCKERHUB_USERNAME }}/yazoo-api:${{ github.sha }}" \
@@ -59,6 +98,7 @@ jobs:
           docker push "${{ secrets.DOCKERHUB_USERNAME }}/yazoo-api:${{ github.sha }}"
           docker push "${{ secrets.DOCKERHUB_USERNAME }}/yazoo-api:latest"
       - name: Refresh backend App Service container
+        if: needs.changes.outputs.backend == 'true'
         env:
           PUBLISH_PROFILE: ${{ secrets.AZURE_API_PUBLISH_PROFILE }}
         run: |
@@ -84,11 +124,13 @@ jobs:
             -u "$SCM_USER:$SCM_PASS" \
             "https://yazoo-api.scm.azurewebsites.net/docker/hook"
       - uses: actions/setup-node@v4
+        if: needs.changes.outputs.frontend == 'true'
         with:
           node-version: "22"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - name: Build and push frontend image
+        if: needs.changes.outputs.frontend == 'true'
         run: |
           docker build -f frontend/Dockerfile \
             -t "${{ secrets.DOCKERHUB_USERNAME }}/yazoo-frontend:${{ github.sha }}" \
@@ -97,6 +139,7 @@ jobs:
           docker push "${{ secrets.DOCKERHUB_USERNAME }}/yazoo-frontend:${{ github.sha }}"
           docker push "${{ secrets.DOCKERHUB_USERNAME }}/yazoo-frontend:latest"
       - name: Refresh frontend App Service container
+        if: needs.changes.outputs.frontend == 'true'
         env:
           PUBLISH_PROFILE: ${{ secrets.AZURE_FRONTEND_PUBLISH_PROFILE }}
         run: |
