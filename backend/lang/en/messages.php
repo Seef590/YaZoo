@@ -86,6 +86,10 @@ return [
     'professional_verifications' => [
         'submitted' => 'Professional verification request sent. It will be reviewed manually.',
         'status_updated' => 'Professional verification status updated.',
+        'business_types' => [
+            'seller' => 'Seller',
+            'trainer' => 'Trainer',
+        ],
     ],
     'reports' => [
         'created' => 'Report sent. Our team will review it.',

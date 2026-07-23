@@ -86,6 +86,10 @@ return [
     'professional_verifications' => [
         'submitted' => 'Demande de verification professionnelle envoyee. Elle sera traitee manuellement.',
         'status_updated' => 'Statut de verification professionnelle mis a jour.',
+        'business_types' => [
+            'seller' => 'Vendeur',
+            'trainer' => 'Dresseur',
+        ],
     ],
     'reports' => [
         'created' => 'Signalement envoye. Notre equipe le verifiera.',

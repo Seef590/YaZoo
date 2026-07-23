@@ -30,7 +30,6 @@ import StoryViewer from '../components/feed/StoryViewer'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import FollowButton from '../components/ui/FollowButton'
-import ScrollTopButton from '../components/ui/ScrollTopButton'
 import SkeletonBlock from '../components/ui/SkeletonBlock'
 import { useAuth } from '../hooks/useAuth'
 import { useI18n } from '../hooks/useI18n'
@@ -41,6 +40,7 @@ import { normalizeProfileMediaPayload } from '../utils/media'
 const FEED_COLUMN_CLASS = 'mx-auto w-full max-w-[42rem] min-w-0'
 const FEED_GRID_CLASS =
   'grid min-w-0 gap-6 xl:grid-cols-[minmax(0,42rem)_minmax(280px,320px)] xl:justify-center'
+const STORIES_ROW_CLASS = 'w-full min-w-0 xl:col-span-2'
 
 function FeedPage() {
   const location = useLocation()
@@ -495,7 +495,10 @@ function FeedPage() {
   return (
     <section className="max-w-full min-w-0 space-y-6 overflow-x-clip">
       <div className={FEED_GRID_CLASS}>
-        <section className={`${FEED_COLUMN_CLASS} overflow-hidden rounded-[30px] border border-white/80 bg-white/88 p-4 shadow-[0_20px_48px_rgba(124,58,237,0.08)] backdrop-blur`}>
+        <section
+          data-testid="stories-row"
+          className={`${STORIES_ROW_CLASS} overflow-hidden rounded-[30px] border border-white/80 bg-white/88 p-4 shadow-[0_20px_48px_rgba(124,58,237,0.08)] backdrop-blur dark:border-violet-300/14 dark:bg-white/8`}
+        >
           <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-xs uppercase tracking-[0.18em] text-violet-700 dark:text-violet-200">
@@ -569,7 +572,7 @@ function FeedPage() {
       ) : null}
 
       <div className={FEED_GRID_CLASS}>
-        <div className={`${FEED_COLUMN_CLASS} space-y-6`}>
+        <div data-testid="feed-main-column" className={`${FEED_COLUMN_CLASS} space-y-6`}>
           <UserSuggestionsSection
             users={userSuggestions}
             currentUserId={user?.id}
@@ -819,7 +822,6 @@ function FeedPage() {
         }}
       />
 
-      <ScrollTopButton />
     </section>
   )
 }

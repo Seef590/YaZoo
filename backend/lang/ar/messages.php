@@ -86,6 +86,10 @@ return [
     'professional_verifications' => [
         'submitted' => 'تم إرسال طلب التحقق المهني وسيتم مراجعته يدويا.',
         'status_updated' => 'تم تحديث حالة التحقق المهني.',
+        'business_types' => [
+            'seller' => 'بائع',
+            'trainer' => 'مدرب',
+        ],
     ],
     'reports' => [
         'created' => 'تم إرسال البلاغ. سيقوم فريقنا بمراجعته.',

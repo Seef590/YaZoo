@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createVeterinarianRequest, listVeterinariansRequest } from '../api/veterinarians'
 import VeterinarianCard from '../components/marketplace/VeterinarianCard'
 import { Field, MarketplaceHero, QuickFilterChips } from '../components/marketplace/MarketplaceCommon'
@@ -7,6 +7,7 @@ import CollapsiblePanel from '../components/ui/CollapsiblePanel'
 import SkeletonBlock from '../components/ui/SkeletonBlock'
 import veterinarianHeroImage from '../assets/images/vétérinaire.png'
 import { useAuth } from '../hooks/useAuth'
+import { useMarketplaceCreateIntent } from '../hooks/useMarketplaceCreateIntent'
 import { useI18n } from '../hooks/useI18n'
 import { getErrorMessage } from '../utils/getErrorMessage'
 
@@ -41,6 +42,8 @@ function VeterinariansMarketplacePage() {
   const [error, setError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
   const [formError, setFormError] = useState('')
+  const openCreatePanel = useCallback(() => setIsCreateOpen(true), [])
+  const createPanelRef = useMarketplaceCreateIntent({ onOpen: openCreatePanel })
 
   const activeFiltersCount = useMemo(
     () => Object.values(appliedFilters).filter(Boolean).length,
@@ -192,17 +195,18 @@ function VeterinariansMarketplacePage() {
       />
 
       {isAuthenticated ? (
-        <CollapsiblePanel
-          kicker={t('veterinarians.title')}
-          title={t('veterinarians.createListing')}
-          description={t('veterinarians.clinicInformation')}
-          summary={t('veterinarians.addListing')}
-          isOpen={isCreateOpen}
-          onToggle={() => setIsCreateOpen((current) => !current)}
-          showLabel={t('veterinarians.addListing')}
-          hideLabel={t('creation.hideForm')}
-        >
-          <form className="space-y-4" onSubmit={handleSubmit}>
+        <div ref={createPanelRef}>
+          <CollapsiblePanel
+            kicker={t('veterinarians.title')}
+            title={t('veterinarians.createListing')}
+            description={t('veterinarians.clinicInformation')}
+            summary={t('veterinarians.addListing')}
+            isOpen={isCreateOpen}
+            onToggle={() => setIsCreateOpen((current) => !current)}
+            showLabel={t('veterinarians.addListing')}
+            hideLabel={t('creation.hideForm')}
+          >
+            <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="grid gap-3 md:grid-cols-2">
               <Field label={t('veterinarians.name')} value={form.name} onChange={handleFormChange('name')} required />
               <Field label={t('veterinarians.clinicName')} value={form.clinic_name} onChange={handleFormChange('clinic_name')} />
@@ -250,8 +254,9 @@ function VeterinariansMarketplacePage() {
                 {isSubmitting ? t('common.sending') : t('veterinarians.create')}
               </Button>
             </div>
-          </form>
-        </CollapsiblePanel>
+            </form>
+          </CollapsiblePanel>
+        </div>
       ) : null}
 
       <CollapsiblePanel

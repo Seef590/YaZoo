@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import animalFamilyImage from '../assets/images/cute-animals-group-white-background-removebg-preview.webp'
 import AnimalCard from '../components/marketplace/AnimalCard'
@@ -8,12 +8,15 @@ import AnimalsFilters from '../components/marketplace/AnimalsFilters'
 import { MarketplaceHero, QuickFilterChips } from '../components/marketplace/MarketplaceCommon'
 import CollapsiblePanel from '../components/ui/CollapsiblePanel'
 import { useAnimalsMarketplace } from '../hooks/useAnimalsMarketplace'
+import { useMarketplaceCreateIntent } from '../hooks/useMarketplaceCreateIntent'
 import { useI18n } from '../hooks/useI18n'
 
 function AnimalsMarketplacePage() {
   const { t } = useI18n()
   const marketplace = useAnimalsMarketplace()
   const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const openCreatePanel = useCallback(() => setIsCreateOpen(true), [])
+  const createPanelRef = useMarketplaceCreateIntent({ onOpen: openCreatePanel })
 
   return (
     <section className="space-y-6">
@@ -80,30 +83,32 @@ function AnimalsMarketplacePage() {
       <StatusMessage tone="error" message={marketplace.errorMessage} />
       <StatusMessage tone="success" message={marketplace.successMessage} />
 
-      <CollapsiblePanel
-        kicker={t('common.animals')}
-        title={marketplace.editingId ? t('creation.editMode') : t('creation.addAnimal')}
-        description={t('marketplace.creationPanelDescription')}
-        summary={marketplace.editingId ? t('creation.editMode') : t('creation.addAnimal')}
-        isOpen={isCreateOpen || Boolean(marketplace.editingId)}
-        onToggle={() => setIsCreateOpen((current) => !current)}
-        showLabel={t('creation.addAnimal')}
-        hideLabel={t('creation.hideForm')}
-      >
-        <AnimalListingForm
-          form={marketplace.form}
-          editingId={marketplace.editingId}
-          isSubmitting={marketplace.isSubmitting}
-          photoFile={marketplace.photoFile}
-          galleryFiles={marketplace.galleryFiles}
-          existingPreviewUrls={marketplace.existingPreviewUrls}
-          onCancelEdit={marketplace.resetForm}
-          onFormChange={marketplace.handleFormChange}
-          onGalleryFilesChange={marketplace.setGalleryFiles}
-          onPhotoFileChange={marketplace.setPhotoFile}
-          onSubmit={marketplace.handleSubmit}
-        />
-      </CollapsiblePanel>
+      <div ref={createPanelRef}>
+        <CollapsiblePanel
+          kicker={t('common.animals')}
+          title={marketplace.editingId ? t('creation.editMode') : t('creation.addAnimal')}
+          description={t('marketplace.creationPanelDescription')}
+          summary={marketplace.editingId ? t('creation.editMode') : t('creation.addAnimal')}
+          isOpen={isCreateOpen || Boolean(marketplace.editingId)}
+          onToggle={() => setIsCreateOpen((current) => !current)}
+          showLabel={t('creation.addAnimal')}
+          hideLabel={t('creation.hideForm')}
+        >
+          <AnimalListingForm
+            form={marketplace.form}
+            editingId={marketplace.editingId}
+            isSubmitting={marketplace.isSubmitting}
+            photoFile={marketplace.photoFile}
+            galleryFiles={marketplace.galleryFiles}
+            existingPreviewUrls={marketplace.existingPreviewUrls}
+            onCancelEdit={marketplace.resetForm}
+            onFormChange={marketplace.handleFormChange}
+            onGalleryFilesChange={marketplace.setGalleryFiles}
+            onPhotoFileChange={marketplace.setPhotoFile}
+            onSubmit={marketplace.handleSubmit}
+          />
+        </CollapsiblePanel>
+      </div>
 
       <MarketplaceGrid
         isLoading={marketplace.isLoading}

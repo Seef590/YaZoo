@@ -142,10 +142,24 @@ describe('Layout', () => {
     expect(within(dock).queryByRole('dialog', { name: 'Messages' })).not.toBeInTheDocument()
   })
 
+  it('aligne les actions flottantes desktop et utilise le fallback professionnel', () => {
+    renderLayout()
+
+    const actions = screen.getByTestId('desktop-floating-actions')
+
+    expect(actions).toHaveClass('fixed', 'gap-3', 'xl:flex')
+    expect(within(actions).getByTestId('desktop-messages-dock')).toBeInTheDocument()
+    expect(within(actions).getByTestId('desktop-marketplace-publish')).toHaveAttribute(
+      'href',
+      '/settings/professional-verification',
+    )
+  })
+
   it('masque le dock sur la page messages', () => {
     renderLayout({ initialEntry: '/messages' })
 
     expect(screen.queryByTestId('desktop-messages-dock')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('desktop-floating-actions')).not.toBeInTheDocument()
   })
 
   it('marque une notification comme lue depuis le menu', async () => {

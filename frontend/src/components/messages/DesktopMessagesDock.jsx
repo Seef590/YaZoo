@@ -47,7 +47,7 @@ function DesktopMessagesDock({
   return (
     <div
       ref={refObject}
-      className="fixed bottom-6 right-6 z-40 hidden xl:block"
+      className="relative"
       data-testid="desktop-messages-dock"
       dir={isRtl ? 'rtl' : 'ltr'}
     >
@@ -56,7 +56,7 @@ function DesktopMessagesDock({
           role="dialog"
           aria-modal="false"
           aria-label={t('messages.dropdown.title')}
-          className="mb-3 flex max-h-[min(70vh,38rem)] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-[30px] border border-white/70 bg-white/96 text-start shadow-[0_30px_80px_rgba(35,13,68,0.24)] backdrop-blur-2xl dark:border-violet-300/16 dark:bg-[#150c23]/96"
+          className="absolute bottom-[calc(100%+0.75rem)] right-0 flex max-h-[min(70vh,38rem)] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-[30px] border border-white/70 bg-white/96 text-start shadow-[0_30px_80px_rgba(35,13,68,0.24)] backdrop-blur-2xl dark:border-violet-300/16 dark:bg-[#150c23]/96"
         >
           <header className="flex items-center justify-between gap-3 border-b border-violet-100/70 px-4 py-4 dark:border-violet-300/14">
             <div className="min-w-0">
@@ -152,7 +152,7 @@ function DesktopMessagesDock({
         type="button"
         ref={triggerRef}
         onClick={onToggle}
-        className="ms-auto flex min-h-12 items-center gap-3 rounded-full border border-white/65 bg-[linear-gradient(135deg,_rgba(255,255,255,0.92),_rgba(246,239,255,0.86))] px-4 py-2 text-stone-800 shadow-[0_20px_48px_rgba(76,29,149,0.18)] backdrop-blur-2xl transition hover:-translate-y-0.5 hover:border-violet-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400 dark:border-violet-300/18 dark:bg-[linear-gradient(135deg,_rgba(24,16,38,0.96),_rgba(49,24,83,0.9))] dark:text-violet-50 dark:shadow-[0_24px_56px_rgba(0,0,0,0.36)]"
+        className="ms-auto flex min-h-12 items-center gap-3 rounded-full border border-white/65 bg-[linear-gradient(135deg,_rgba(255,255,255,0.92),_rgba(246,239,255,0.86))] px-4 py-2 text-stone-800 shadow-[0_20px_48px_rgba(76,29,149,0.18)] backdrop-blur-2xl transition hover:-translate-y-0.5 hover:border-violet-200 motion-reduce:transform-none motion-reduce:transition-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400 dark:border-violet-300/18 dark:bg-[linear-gradient(135deg,_rgba(24,16,38,0.96),_rgba(49,24,83,0.9))] dark:text-violet-50 dark:shadow-[0_24px_56px_rgba(0,0,0,0.36)]"
         aria-label={t('common.messages')}
         aria-expanded={isOpen}
         aria-haspopup="dialog"

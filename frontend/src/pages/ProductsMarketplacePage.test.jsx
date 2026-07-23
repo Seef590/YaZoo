@@ -1,6 +1,6 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, useLocation } from 'react-router-dom'
 import { vi } from 'vitest'
 
 import ProductsMarketplacePage from './ProductsMarketplacePage'
@@ -61,4 +61,32 @@ describe('ProductsMarketplacePage', () => {
     expect(formData.get('listing_status')).toBe('available')
     expect(await screen.findByText('Produit cree avec succes.')).toBeInTheDocument()
   })
+
+  it('ouvre et focalise le formulaire depuis create=1 sans soumettre', async () => {
+    render(
+      <MemoryRouter
+        initialEntries={['/marketplace/products?create=1&q=panier']}
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      >
+        <I18nProvider>
+          <ProductsMarketplacePage />
+          <LocationProbe />
+        </I18nProvider>
+      </MemoryRouter>,
+    )
+
+    const nameField = await screen.findByLabelText('Nom')
+
+    await waitFor(() => {
+      expect(nameField).toHaveFocus()
+      expect(screen.getByTestId('location-search')).toHaveTextContent('?q=panier')
+    })
+    expect(productService.createProduct).not.toHaveBeenCalled()
+  })
 })
+
+function LocationProbe() {
+  const location = useLocation()
+
+  return <output data-testid="location-search">{location.search}</output>
+}

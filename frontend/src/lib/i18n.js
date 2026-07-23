@@ -7384,6 +7384,45 @@ messages.ar = deepMerge(messages.ar, {
   },
 })
 
+messages.fr = deepMerge(messages.fr, {
+  marketplace: {
+    publishShortcut: 'Publier dans le Marché YaZoo',
+    completeProfessionalVerification: 'Vérifier mon activité pour publier',
+  },
+  professionalVerification: {
+    businessTypes: {
+      seller: 'Vendeur',
+      trainer: 'Dresseur',
+    },
+  },
+})
+
+messages.ar = deepMerge(messages.ar, {
+  marketplace: {
+    publishShortcut: 'النشر في سوق YaZoo',
+    completeProfessionalVerification: 'تحقق من نشاطي المهني للنشر',
+  },
+  professionalVerification: {
+    businessTypes: {
+      seller: 'بائع',
+      trainer: 'مدرب',
+    },
+  },
+})
+
+messages.en = deepMerge(messages.en, {
+  marketplace: {
+    publishShortcut: 'Publish in YaZoo Market',
+    completeProfessionalVerification: 'Verify my business to publish',
+  },
+  professionalVerification: {
+    businessTypes: {
+      seller: 'Seller',
+      trainer: 'Trainer',
+    },
+  },
+})
+
 function deepMerge(base, override = {}) {
   const result = { ...base }
 

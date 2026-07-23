@@ -106,14 +106,17 @@ for (const viewport of requestedAppViewports) {
 
     const sidebar = page.getByTestId('desktop-sidebar')
     const messagesDock = page.getByTestId('desktop-messages-dock')
+    const marketplacePublish = page.getByTestId('desktop-marketplace-publish')
     const appHeader = page.getByTestId('app-header')
 
     if (viewport.width >= 1280) {
       await expect(sidebar).toBeVisible()
       await expect(messagesDock).toBeVisible()
+      await expect(marketplacePublish).toBeVisible()
     } else {
       await expect(sidebar).toBeHidden()
       await expect(messagesDock).toBeHidden()
+      await expect(marketplacePublish).toBeHidden()
     }
 
     if (viewport.width >= 1024) {
@@ -166,6 +169,62 @@ test('desktop messages dock opens, closes and is absent on the messages page', a
 
   await page.goto('/messages')
   await expect(page.getByTestId('desktop-messages-dock')).toHaveCount(0)
+})
+
+test('desktop floating actions stay aligned and marketplace shortcut opens training', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await mockApi(page, true)
+  await setMode(page, { locale: 'fr', theme: 'light', dir: 'ltr' })
+  await page.goto('/feed')
+
+  const actions = page.getByTestId('desktop-floating-actions')
+  const messagesBox = await page.getByTestId('desktop-messages-dock').boundingBox()
+  const publishButton = page.getByTestId('desktop-marketplace-publish')
+  const publishBox = await publishButton.boundingBox()
+
+  await expect(actions).toBeVisible()
+  expect((publishBox?.x ?? 0) - ((messagesBox?.x ?? 0) + (messagesBox?.width ?? 0))).toBeGreaterThanOrEqual(10)
+  expect((publishBox?.x ?? 0) - ((messagesBox?.x ?? 0) + (messagesBox?.width ?? 0))).toBeLessThanOrEqual(14)
+
+  await publishButton.click()
+  await expect(page).toHaveURL(/\/marketplace\/services/)
+  await expect(page.getByLabel(/catégorie|categorie/i).first()).toHaveValue('training')
+  await expect(page.getByLabel(/titre/i).first()).toBeFocused()
+})
+
+test('stories span both desktop columns while posts keep their feed column', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await mockApi(page, true)
+  await setMode(page, { locale: 'fr', theme: 'light', dir: 'ltr' })
+  await page.goto('/feed')
+
+  const storiesBox = await page.getByTestId('stories-row').boundingBox()
+  const feedColumnBox = await page.getByTestId('feed-main-column').boundingBox()
+
+  expect(storiesBox?.width).toBeGreaterThan(900)
+  expect(feedColumnBox?.width).toBeLessThanOrEqual(672)
+})
+
+test('scroll top is stable and positioned next to the desktop sidebar', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await mockApi(page, true)
+  await setMode(page, { locale: 'fr', theme: 'light', dir: 'ltr' })
+  await page.goto('/feed')
+
+  await page.evaluate(() => {
+    document.body.style.minHeight = '2400px'
+    window.scrollTo(0, 500)
+  })
+
+  const scrollTop = page.getByRole('button', { name: /haut/i })
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(200)
+  await expect(scrollTop).toHaveClass(/pointer-events-auto/)
+  const buttonBox = await scrollTop.boundingBox()
+
+  expect(buttonBox?.x).toBeGreaterThanOrEqual(100)
+  expect(buttonBox?.x).toBeLessThanOrEqual(112)
+  await scrollTop.click()
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(200)
 })
 
 test('Arabic desktop sidebar stays on the left and uses RTL internally', async ({ page }) => {
@@ -279,6 +338,13 @@ const userFixture = {
   name: 'Admin YaZoo',
   email: 'admin@yazoo.test',
   isAdmin: true,
+  marketplacePublishing: {
+    canPublish: true,
+    businessType: 'trainer',
+    verificationStatus: 'approved',
+    destination: 'services',
+    serviceType: 'training',
+  },
 }
 
 const animalFixture = {

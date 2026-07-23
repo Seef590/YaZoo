@@ -14,6 +14,8 @@ class ProfessionalVerification extends Model
         'veterinarian',
         'pet_shop',
         'breeder',
+        'seller',
+        'trainer',
         'shelter',
         'service_provider',
         'association',

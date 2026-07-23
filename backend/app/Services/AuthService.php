@@ -22,6 +22,7 @@ class AuthService
 {
     public function __construct(
         protected PhoneOtpBroker $phoneOtpBroker,
+        protected MarketplacePublishingResolver $marketplacePublishingResolver,
     ) {}
 
     /**
@@ -228,6 +229,7 @@ class AuthService
             'isAdmin' => (bool) $user->is_admin,
             'isPhoneVerified' => $user->hasVerifiedPhone(),
             'preferredLocale' => $user->preferred_locale ?? 'fr',
+            'marketplacePublishing' => $this->marketplacePublishingResolver->resolve($user),
             'created_at' => $user->created_at?->toISOString(),
             'updated_at' => $user->updated_at?->toISOString(),
         ];

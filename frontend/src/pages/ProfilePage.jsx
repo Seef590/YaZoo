@@ -21,7 +21,6 @@ import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import ComplianceBadge from '../components/ui/ComplianceBadge'
 import FollowButton from '../components/ui/FollowButton'
-import ScrollTopButton from '../components/ui/ScrollTopButton'
 import VerifiedPhoneBadge from '../components/ui/VerifiedPhoneBadge'
 import { useAuth } from '../hooks/useAuth'
 import { useI18n } from '../hooks/useI18n'
@@ -873,7 +872,6 @@ function ProfilePage() {
         />
       ) : null}
 
-      <ScrollTopButton />
     </section>
   )
 }

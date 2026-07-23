@@ -9,6 +9,7 @@ import CollapsiblePanel from '../components/ui/CollapsiblePanel'
 import SkeletonBlock from '../components/ui/SkeletonBlock'
 import trainerHeroImage from '../assets/images/dresseur.png'
 import { useAuth } from '../hooks/useAuth'
+import { useMarketplaceCreateIntent } from '../hooks/useMarketplaceCreateIntent'
 import { useI18n } from '../hooks/useI18n'
 
 const defaultServiceForm = {
@@ -37,6 +38,14 @@ function ServicesMarketplacePage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const activeFiltersCount = type ? 1 : 0
+  const openCreatePanel = useCallback(() => setIsCreateOpen(true), [])
+  const selectRequestedServiceType = useCallback((requestedType) => {
+    setServiceForm((current) => ({ ...current, type: requestedType }))
+  }, [])
+  const createPanelRef = useMarketplaceCreateIntent({
+    onOpen: openCreatePanel,
+    onServiceType: selectRequestedServiceType,
+  })
 
   const loadServices = useCallback(async () => {
     setIsLoading(true)
@@ -143,16 +152,17 @@ function ServicesMarketplacePage() {
         ]}
       />
 
-      <CollapsiblePanel
-        kicker={t('services.publish')}
-        title={t('services.add')}
-        description={isAuthenticated ? t('services.createHint') : t('services.signInToPublish')}
-        summary={isAuthenticated ? t('services.create') : t('common.login')}
-        isOpen={isCreateOpen}
-        onToggle={() => setIsCreateOpen((current) => !current)}
-        showLabel={t('services.add')}
-        hideLabel={t('common.hide')}
-      >
+      <div ref={createPanelRef}>
+        <CollapsiblePanel
+          kicker={t('services.publish')}
+          title={t('services.add')}
+          description={isAuthenticated ? t('services.createHint') : t('services.signInToPublish')}
+          summary={isAuthenticated ? t('services.create') : t('common.login')}
+          isOpen={isCreateOpen}
+          onToggle={() => setIsCreateOpen((current) => !current)}
+          showLabel={t('services.add')}
+          hideLabel={t('common.hide')}
+        >
         {!isBootstrapping && !isAuthenticated ? (
           <div className="rounded-[24px] border border-violet-100 bg-violet-50/70 px-5 py-5 text-sm text-stone-700 dark:border-violet-300/18 dark:bg-white/10 dark:text-violet-50">
             <p>{t('services.signInToPublish')}</p>
@@ -233,7 +243,8 @@ function ServicesMarketplacePage() {
             </div>
           </form>
         )}
-      </CollapsiblePanel>
+        </CollapsiblePanel>
+      </div>
 
       <CollapsiblePanel
         kicker={t('services.assistance')}

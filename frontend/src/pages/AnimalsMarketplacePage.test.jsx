@@ -1,6 +1,6 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, useLocation } from 'react-router-dom'
 import { vi } from 'vitest'
 
 import AnimalsMarketplacePage from './AnimalsMarketplacePage'
@@ -66,4 +66,32 @@ describe('AnimalsMarketplacePage', () => {
     expect(formData.get('listing_status')).toBe('available')
     expect(await screen.findByText('Annonce animal creee avec succes.')).toBeInTheDocument()
   })
+
+  it('ouvre et focalise le formulaire animal depuis create=1', async () => {
+    render(
+      <MemoryRouter
+        initialEntries={['/marketplace/animals?create=1&city=Rabat']}
+        future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+      >
+        <I18nProvider>
+          <AnimalsMarketplacePage />
+          <LocationProbe />
+        </I18nProvider>
+      </MemoryRouter>,
+    )
+
+    const nameField = await screen.findByLabelText('Nom')
+
+    await waitFor(() => {
+      expect(nameField).toHaveFocus()
+      expect(screen.getByTestId('location-search')).toHaveTextContent('?city=Rabat')
+    })
+    expect(animalService.createAnimal).not.toHaveBeenCalled()
+  })
 })
+
+function LocationProbe() {
+  const location = useLocation()
+
+  return <output data-testid="location-search">{location.search}</output>
+}

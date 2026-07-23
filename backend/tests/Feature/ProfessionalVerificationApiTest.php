@@ -9,11 +9,37 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class ProfessionalVerificationApiTest extends TestCase
 {
     use RefreshDatabase;
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function addedBusinessTypes(): array
+    {
+        return [
+            'seller' => ['seller'],
+            'trainer' => ['trainer'],
+        ];
+    }
+
+    #[DataProvider('addedBusinessTypes')]
+    public function test_user_can_submit_new_business_types(string $businessType): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user, ['*']);
+
+        $this->postJson('/api/professional-verifications', [
+            'business_type' => $businessType,
+        ])
+            ->assertCreated()
+            ->assertJsonPath('verification.businessType', $businessType)
+            ->assertJsonPath('verification.documentPath', null);
+    }
 
     public function test_user_can_submit_and_list_professional_verification_requests(): void
     {

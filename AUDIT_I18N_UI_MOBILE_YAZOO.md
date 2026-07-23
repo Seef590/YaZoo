@@ -1,10 +1,10 @@
 # AUDIT I18N UI MOBILE YAZOO
 
-Date: 2026-07-07T19:34:11.612Z
+Date: 2026-07-23T20:21:16.982Z
 
 ## Fichiers audites
 
-- 138 fichiers frontend dans frontend/src
+- 146 fichiers frontend dans frontend/src
 - backend/app/Http, backend/lang et routes API audites manuellement pendant la correction
 
 ## Domaines i18n verifies
@@ -33,8 +33,8 @@ Date: 2026-07-07T19:34:11.612Z
 
 ## Cles utilisees
 
-- 1218 cles t(...) detectees
-- 35 cles dynamiques detectees
+- 1219 cles t(...) detectees
+- 34 cles dynamiques detectees
 
 ## Domaines sans cle detectee
 
@@ -50,7 +50,6 @@ Date: 2026-07-07T19:34:11.612Z
 - adminUsers.actions.${modal.action}
 - animals.documentaryStatuses.${safeStatus}
 - compliance.badges.${type}
-- messages.dropdown.${tab}
 - moderationActions.actions.${action.action}
 - notifications.tabs.${filter}
 - notifications.tabs.${tab}

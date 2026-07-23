@@ -9,13 +9,14 @@ import {
   markNotificationReadRequest,
 } from '../api/notifications'
 import { searchUsersRequest } from '../api/search'
-import DesktopMessagesDock from '../components/messages/DesktopMessagesDock'
+import DesktopFloatingActions from '../components/navigation/DesktopFloatingActions'
 import DesktopSidebar from '../components/navigation/DesktopSidebar'
 import AppIcon from '../components/ui/AppIcon'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import Footer from '../components/ui/Footer'
 import OnboardingPrompt from '../components/ui/OnboardingPrompt'
+import ScrollTopButton from '../components/ui/ScrollTopButton'
 import { useAuth } from '../hooks/useAuth'
 import { useI18n } from '../hooks/useI18n'
 import { useNotifications } from '../hooks/useNotifications'
@@ -478,17 +479,19 @@ function Layout() {
         notificationsCount={unreadCount}
       />
       {!location.pathname.startsWith('/messages') ? (
-        <DesktopMessagesDock
+        <DesktopFloatingActions
           conversations={messagePreview}
           isLoading={isMessagesLoading}
-          isOpen={isMessagesOpen}
+          isMessagesOpen={isMessagesOpen}
           isRtl={isRtl}
-          onToggle={handleToggleMessages}
+          marketplacePublishing={user?.marketplacePublishing}
+          onToggleMessages={handleToggleMessages}
           refObject={desktopMessagesDockRef}
           t={t}
           unreadCount={unreadMessagesCount}
         />
       ) : null}
+      <ScrollTopButton />
       <OnboardingPrompt userId={user?.id} />
     </div>
   )

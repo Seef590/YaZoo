@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\ProfessionalVerification;
 use App\Models\User;
 use App\Services\AuthService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -38,6 +39,8 @@ class AuthApiTest extends TestCase
         $response
             ->assertCreated()
             ->assertCookie('yazoo_api_token')
+            ->assertJsonPath('user.marketplacePublishing.canPublish', false)
+            ->assertJsonPath('user.marketplacePublishing.destination', null)
             ->assertJsonStructure([
                 'message',
                 'user' => ['id', 'name', 'email', 'phone', 'country', 'city', 'isAdmin'],
@@ -59,6 +62,12 @@ class AuthApiTest extends TestCase
             'email' => 'existing@yazoo.app',
             'password' => 'password123',
         ]);
+        ProfessionalVerification::query()->create([
+            'user_id' => $user->id,
+            'business_type' => 'seller',
+            'status' => 'approved',
+            'document_path' => 'professional-verifications/private.pdf',
+        ]);
 
         $loginResponse = $this->postJson('/api/auth/login', [
             'email' => 'existing@yazoo.app',
@@ -72,15 +81,20 @@ class AuthApiTest extends TestCase
             ->assertOk()
             ->assertCookie('yazoo_api_token')
             ->assertJsonPath('user.email', $user->email)
-            ->assertJsonPath('user.isAdmin', true);
+            ->assertJsonPath('user.isAdmin', true)
+            ->assertJsonPath('user.marketplacePublishing.canPublish', true)
+            ->assertJsonPath('user.marketplacePublishing.destination', 'products');
 
         $this->assertArrayNotHasKey('token', $loginResponse->json());
+        $this->assertArrayNotHasKey('documentPath', $loginResponse->json('user.marketplacePublishing'));
+        $this->assertArrayNotHasKey('document_path', $loginResponse->json('user.marketplacePublishing'));
 
         $this->withHeader('Authorization', 'Bearer '.$token)
             ->getJson('/api/auth/me')
             ->assertOk()
             ->assertJsonPath('user.email', $user->email)
-            ->assertJsonPath('user.isAdmin', true);
+            ->assertJsonPath('user.isAdmin', true)
+            ->assertJsonPath('user.marketplacePublishing.destination', 'products');
 
         $this->withHeader('Authorization', 'Bearer '.$token)
             ->postJson('/api/auth/logout')
@@ -387,6 +401,16 @@ class AuthApiTest extends TestCase
         ));
 
         $this->assertFalse($result->user->is_admin);
+        $this->assertSame(
+            [
+                'canPublish' => false,
+                'businessType' => null,
+                'verificationStatus' => null,
+                'destination' => null,
+                'serviceType' => null,
+            ],
+            app(AuthService::class)->userPayload($result->user)['marketplacePublishing'],
+        );
         $this->assertDatabaseHas('users', [
             'email' => 'google-user@yazoo.app',
             'is_admin' => false,

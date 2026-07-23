@@ -15,6 +15,8 @@ const BUSINESS_TYPES = [
   'veterinarian',
   'pet_shop',
   'breeder',
+  'seller',
+  'trainer',
   'shelter',
   'service_provider',
   'association',
