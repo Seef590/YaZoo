@@ -33,6 +33,12 @@ function RegisterPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const googleAuthEnabled = isGoogleAuthEnabled()
   const authError = searchParams.get('auth_error')
+  const googleAuthErrorMessage =
+    authError === 'google_not_configured'
+      ? t('auth.register.googleNotConfigured')
+      : authError === 'google'
+        ? t('auth.register.googleFailed')
+        : ''
   const onboardingNotes = useMemo(
     () => [
       t('auth.register.highlights.one'),
@@ -239,9 +245,9 @@ function RegisterPage() {
               <span>{t('privacy.settings.smsOtpConsent')}</span>
             </label>
 
-            {authError === 'google_not_configured' ? (
+            {googleAuthErrorMessage ? (
               <p className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-300/20 dark:bg-amber-500/12 dark:text-amber-100">
-                {t('auth.register.googleNotConfigured')}
+                {googleAuthErrorMessage}
               </p>
             ) : null}
 

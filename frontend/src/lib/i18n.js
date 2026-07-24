@@ -7423,6 +7423,140 @@ messages.en = deepMerge(messages.en, {
   },
 })
 
+messages.fr = deepMerge(messages.fr, {
+  landing: {
+    marketplaceTitle: 'Les dernières annonces du Marché YaZoo',
+    marketplaceDescription:
+      'Découvrez gratuitement les animaux, produits, services et professionnels récemment validés. Connectez-vous seulement pour contacter, réserver, enregistrer ou publier.',
+    marketplacePublish: 'Publier une annonce',
+    marketplaceAnimals: 'Animaux disponibles',
+    marketplaceProducts: 'Nouveaux produits',
+    marketplaceServices: 'Services près de vous',
+    marketplaceVeterinarians: 'Vétérinaires et cabinets',
+    marketplacePrevious: 'Voir les annonces précédentes',
+    marketplaceNext: 'Voir les annonces suivantes',
+    marketplaceDetails: 'Voir les détails',
+    marketplaceImageMissing: 'Image bientôt disponible',
+    marketplaceNoDescription: 'Aucune description disponible.',
+    marketplaceLoadError:
+      'Les annonces publiques sont temporairement indisponibles. Vous pouvez réessayer.',
+    marketplaceRetry: 'Réessayer',
+    marketplaceSectionEmpty: 'Aucune annonce approuvée dans cette catégorie pour le moment.',
+    marketplaceBadges: {
+      adoption: 'Adoption',
+      available: 'Disponible',
+      reserved: 'Réservé',
+      new: 'Neuf',
+      used: 'Occasion',
+      fixed: 'Forfait',
+      hourly: 'Par heure',
+      daily: 'Par jour',
+      session: 'Par séance',
+      negotiable: 'Négociable',
+      verified_professional: 'Professionnel vérifié',
+    },
+  },
+  auth: {
+    login: {
+      googleFailed:
+        'La connexion Google a échoué ou a été refusée. Vérifiez votre compte puis réessayez.',
+    },
+    register: {
+      googleFailed:
+        'L’inscription Google a échoué ou a été refusée. Vérifiez votre compte puis réessayez.',
+    },
+  },
+})
+
+messages.ar = deepMerge(messages.ar, {
+  landing: {
+    marketplaceTitle: 'أحدث إعلانات سوق YaZoo',
+    marketplaceDescription:
+      'تصفح مجانا الحيوانات والمنتجات والخدمات والمهنيين الذين تمت مراجعتهم مؤخرا. يلزم تسجيل الدخول فقط للتواصل أو الحجز أو الحفظ أو النشر.',
+    marketplacePublish: 'نشر إعلان',
+    marketplaceAnimals: 'حيوانات متاحة',
+    marketplaceProducts: 'منتجات جديدة',
+    marketplaceServices: 'خدمات قريبة منك',
+    marketplaceVeterinarians: 'أطباء وعيادات بيطرية',
+    marketplacePrevious: 'عرض الإعلانات السابقة',
+    marketplaceNext: 'عرض الإعلانات التالية',
+    marketplaceDetails: 'عرض التفاصيل',
+    marketplaceImageMissing: 'الصورة ستتوفر قريبا',
+    marketplaceNoDescription: 'لا يوجد وصف متاح.',
+    marketplaceLoadError: 'الإعلانات العامة غير متاحة مؤقتا. يمكنك إعادة المحاولة.',
+    marketplaceRetry: 'إعادة المحاولة',
+    marketplaceSectionEmpty: 'لا توجد حاليا إعلانات معتمدة في هذه الفئة.',
+    marketplaceBadges: {
+      adoption: 'تبنٍّ',
+      available: 'متاح',
+      reserved: 'محجوز',
+      new: 'جديد',
+      used: 'مستعمل',
+      fixed: 'سعر ثابت',
+      hourly: 'بالساعة',
+      daily: 'باليوم',
+      session: 'بالحصة',
+      negotiable: 'قابل للتفاوض',
+      verified_professional: 'مهني معتمد',
+    },
+  },
+  auth: {
+    login: {
+      googleFailed:
+        'فشل تسجيل الدخول عبر Google أو تم رفضه. تحقق من حسابك ثم أعد المحاولة.',
+    },
+    register: {
+      googleFailed:
+        'فشل التسجيل عبر Google أو تم رفضه. تحقق من حسابك ثم أعد المحاولة.',
+    },
+  },
+})
+
+messages.en = deepMerge(messages.en, {
+  landing: {
+    marketplaceTitle: 'Latest YaZoo Marketplace listings',
+    marketplaceDescription:
+      'Browse recently reviewed animals, products, services, and professionals for free. Sign in only when you want to contact, book, save, or publish.',
+    marketplacePublish: 'Publish a listing',
+    marketplaceAnimals: 'Available animals',
+    marketplaceProducts: 'New products',
+    marketplaceServices: 'Services near you',
+    marketplaceVeterinarians: 'Veterinarians and clinics',
+    marketplacePrevious: 'View previous listings',
+    marketplaceNext: 'View next listings',
+    marketplaceDetails: 'View details',
+    marketplaceImageMissing: 'Image coming soon',
+    marketplaceNoDescription: 'No description is available.',
+    marketplaceLoadError:
+      'Public listings are temporarily unavailable. You can try again.',
+    marketplaceRetry: 'Try again',
+    marketplaceSectionEmpty: 'There are no approved listings in this category yet.',
+    marketplaceBadges: {
+      adoption: 'Adoption',
+      available: 'Available',
+      reserved: 'Reserved',
+      new: 'New',
+      used: 'Used',
+      fixed: 'Fixed price',
+      hourly: 'Hourly',
+      daily: 'Daily',
+      session: 'Per session',
+      negotiable: 'Negotiable',
+      verified_professional: 'Verified professional',
+    },
+  },
+  auth: {
+    login: {
+      googleFailed:
+        'Google sign-in failed or was refused. Check your account and try again.',
+    },
+    register: {
+      googleFailed:
+        'Google sign-up failed or was refused. Check your account and try again.',
+    },
+  },
+})
+
 function deepMerge(base, override = {}) {
   const result = { ...base }
 

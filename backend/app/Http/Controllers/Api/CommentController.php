@@ -56,6 +56,11 @@ class CommentController extends Controller
      */
     public function react(Request $request, Comment $comment): JsonResponse
     {
+        abort_unless(
+            $request->user()->is($comment->user) || (bool) $request->user()->is_admin,
+            403,
+        );
+
         $validated = $request->validate([
             'reaction' => ['nullable', 'string', 'max:24'],
         ]);

@@ -29,6 +29,7 @@ use App\Http\Controllers\Api\PrivacyController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\ProfessionalVerificationController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\PublicMarketplaceController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\ReservationController;
 use App\Http\Controllers\Api\ReservationReviewController;
@@ -75,6 +76,9 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
     Route::get('/payments/config', [PaymentController::class, 'config'])
         ->middleware('throttle:30,1');
 
+    Route::get('/marketplace/public-preview', PublicMarketplaceController::class)
+        ->middleware('throttle:60,1');
+
     Route::post('/payments/cmi/callback', [PaymentController::class, 'cmiCallback'])
         ->middleware('throttle:30,1');
 
@@ -82,8 +86,10 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
         Route::post('/otp/request', [AuthController::class, 'requestOtp'])->middleware('throttle:5,1');
         Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:10,1');
         Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
-        Route::get('/google', [AuthController::class, 'redirectToGoogle'])->middleware('throttle:10,1');
-        Route::get('/google/callback', [AuthController::class, 'handleGoogleCallback'])->middleware('throttle:10,1');
+        Route::get('/google', [AuthController::class, 'redirectToGoogle'])
+            ->middleware(['web', 'throttle:10,1']);
+        Route::get('/google/callback', [AuthController::class, 'handleGoogleCallback'])
+            ->middleware(['web', 'throttle:10,1']);
 
         Route::middleware(['cookie_csrf', UseSanctumTokenFromCookie::class, 'auth:sanctum', 'active_mutation'])->group(function (): void {
             Route::get('/me', [AuthController::class, 'me']);
@@ -92,9 +98,6 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
     });
 
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
-
-    Route::get('/veterinarians', [VeterinarianController::class, 'index']);
-    Route::get('/veterinarians/{veterinarian}', [VeterinarianController::class, 'show']);
 
     Route::middleware(['cookie_csrf', UseSanctumTokenFromCookie::class, 'auth:sanctum', 'active_mutation'])->group(function (): void {
         Route::get('/posts', [PostController::class, 'index']);
@@ -137,6 +140,9 @@ Route::middleware([ForceJsonResponse::class, SetApiLocale::class, 'throttle:api'
         Route::get('/my/services', [ServiceListingController::class, 'mine']);
         Route::get('/services/types', [ServiceListingController::class, 'types']);
         Route::get('/services/{service}', [ServiceListingController::class, 'show']);
+
+        Route::get('/veterinarians', [VeterinarianController::class, 'index']);
+        Route::get('/veterinarians/{veterinarian}', [VeterinarianController::class, 'show']);
 
         Route::middleware(['throttle:marketplace-write', 'not_suspended'])->group(function (): void {
             Route::post('/animals', [AnimalController::class, 'store']);

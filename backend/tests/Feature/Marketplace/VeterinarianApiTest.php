@@ -14,27 +14,21 @@ class VeterinarianApiTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_guest_can_list_active_veterinarians(): void
+    public function test_guest_cannot_access_veterinarian_contact_routes(): void
     {
-        Veterinarian::factory()->create([
+        $veterinarian = Veterinarian::factory()->create([
             'name' => 'Dr Public Vet',
             'is_active' => true,
         ]);
 
-        Veterinarian::factory()->create([
-            'name' => 'Inactive Vet',
-            'is_active' => false,
-        ]);
-
-        $this->getJson('/api/veterinarians')
-            ->assertOk()
-            ->assertJsonCount(1, 'data')
-            ->assertJsonPath('data.0.name', 'Dr Public Vet');
+        $this->getJson('/api/veterinarians')->assertUnauthorized();
+        $this->getJson("/api/veterinarians/{$veterinarian->id}")->assertUnauthorized();
     }
 
     public function test_pagination_links_honor_forwarded_https_proxy_headers(): void
     {
         Veterinarian::factory()->count(13)->create(['is_active' => true]);
+        Sanctum::actingAs(User::factory()->create(), ['*']);
 
         TrustProxies::at('*');
         TrustProxies::withHeaders(
@@ -61,18 +55,6 @@ class VeterinarianApiTest extends TestCase
 
         $this->assertStringStartsWith('https://yazoo-api.azurewebsites.net', $response->json('links.first'));
         $this->assertStringStartsWith('https://yazoo-api.azurewebsites.net', $response->json('meta.path'));
-    }
-
-    public function test_guest_can_view_active_veterinarian(): void
-    {
-        $veterinarian = Veterinarian::factory()->create([
-            'name' => 'Dr Public Detail',
-            'is_active' => true,
-        ]);
-
-        $this->getJson("/api/veterinarians/{$veterinarian->id}")
-            ->assertOk()
-            ->assertJsonPath('data.name', 'Dr Public Detail');
     }
 
     public function test_guest_cannot_create_veterinarian(): void

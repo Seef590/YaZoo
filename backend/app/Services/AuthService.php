@@ -149,23 +149,38 @@ class AuthService
 
     public function loginWithGoogle(SocialiteUser $googleUser): AuthResult
     {
-        $email = $googleUser->getEmail();
+        $email = Str::lower(trim((string) $googleUser->getEmail()));
+        $googleId = trim((string) $googleUser->getId());
 
-        if (! $email) {
+        if ($email === '' || $googleId === '' || mb_strlen($googleId) > 255) {
             throw ValidationException::withMessages([
-                'email' => ['Google n a pas retourne d adresse email utilisable.'],
+                'email' => [__('messages.auth.google_identity_missing')],
             ]);
         }
 
-        $user = DB::transaction(function () use ($googleUser, $email): User {
-            $isFirstAdmin = $this->shouldBootstrapFirstAdmin();
-            $userQuery = User::query()->where('email', $email);
+        $user = DB::transaction(function () use ($googleUser, $email, $googleId): User {
+            $userByGoogleId = User::query()->where('google_id', $googleId)->first();
+            $userByEmail = User::query()
+                ->whereRaw('LOWER(email) = ?', [$email])
+                ->first();
 
-            if ($googleUser->getId()) {
-                $userQuery->orWhere('google_id', $googleUser->getId());
+            if (
+                $userByGoogleId
+                && $userByEmail
+                && ! $userByGoogleId->is($userByEmail)
+            ) {
+                throw ValidationException::withMessages([
+                    'email' => [__('messages.auth.google_account_conflict')],
+                ]);
             }
 
-            $user = $userQuery->first();
+            $user = $userByGoogleId ?? $userByEmail;
+
+            if ($user?->google_id && $user->google_id !== $googleId) {
+                throw ValidationException::withMessages([
+                    'email' => [__('messages.auth.google_account_conflict')],
+                ]);
+            }
 
             if (! $user) {
                 return User::create([
@@ -174,15 +189,17 @@ class AuthService
                     'email_verified_at' => now(),
                     'password' => Str::random(32),
                     'avatar' => $googleUser->getAvatar(),
-                    'google_id' => $googleUser->getId(),
+                    'google_id' => $googleId,
                     'google_avatar' => $googleUser->getAvatar(),
                     'preferred_locale' => app()->getLocale(),
-                    'is_admin' => $isFirstAdmin,
+                    'is_admin' => false,
                 ]);
             }
 
+            $this->ensureCanAuthenticate($user, 'email');
+
             $updates = [
-                'google_id' => $googleUser->getId(),
+                'google_id' => $googleId,
                 'google_avatar' => $googleUser->getAvatar(),
             ];
 
