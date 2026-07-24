@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { getPublicMarketplacePreviewRequest } from '../../api/publicMarketplace'
 import { I18nProvider } from '../../contexts/I18nContext'
+import { messages, translate } from '../../lib/i18n'
 import PublicMarketplaceShowcase from './PublicMarketplaceShowcase'
 
 vi.mock('../../api/publicMarketplace', () => ({
@@ -113,6 +114,43 @@ describe('PublicMarketplaceShowcase', () => {
       await screen.findByRole('heading', { name: 'أحدث إعلانات سوق YaZoo' }),
     ).toBeInTheDocument()
     expect(document.documentElement).toHaveAttribute('dir', 'rtl')
+  })
+
+  it.each([
+    ['fr', 'landing.marketplaceTitle', 'Les dernières annonces du Marché YaZoo'],
+    ['ar', 'landing.marketplaceTitle', 'أحدث إعلانات سوق YaZoo'],
+    ['en', 'landing.marketplaceTitle', 'Latest YaZoo Marketplace listings'],
+    ['fr', 'landing.marketplaceBadges.verified_professional', 'Professionnel vérifié'],
+    ['ar', 'landing.marketplaceBadges.verified_professional', 'مهني معتمد'],
+    ['en', 'landing.marketplaceBadges.verified_professional', 'Verified professional'],
+    [
+      'fr',
+      'auth.login.googleFailed',
+      'La connexion Google a échoué ou a été refusée. Vérifiez votre compte puis réessayez.',
+    ],
+    [
+      'ar',
+      'auth.register.googleFailed',
+      'فشل التسجيل عبر Google أو تم رفضه. تحقق من حسابك ثم أعد المحاولة.',
+    ],
+    [
+      'en',
+      'auth.register.googleFailed',
+      'Google sign-up failed or was refused. Check your account and try again.',
+    ],
+  ])('conserve la traduction %s de %s', (locale, key, expected) => {
+    expect(translate(locale, key)).toBe(expected)
+  })
+
+  it('reconstruit des objets marketplace independants pour chaque locale', () => {
+    expect(messages.fr.landing).not.toBe(messages.ar.landing)
+    expect(messages.fr.landing).not.toBe(messages.en.landing)
+    expect(messages.fr.landing.marketplaceBadges).not.toBe(
+      messages.ar.landing.marketplaceBadges,
+    )
+    expect(messages.ar.landing.marketplaceBadges).not.toBe(
+      messages.en.landing.marketplaceBadges,
+    )
   })
 })
 

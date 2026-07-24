@@ -222,7 +222,7 @@ class PublicMarketplaceController extends Controller
 
         $sanitized = preg_replace('/\s{2,}/u', ' ', $sanitized);
         $sanitized = is_string($sanitized) ? trim($sanitized) : '';
-        $sanitized = preg_replace('/^[,;·-]+|[,;·-]+$/u', '', $sanitized);
+        $sanitized = preg_replace('/(?:^[,;·-]+)|(?:[,;·-]+$)/u', '', $sanitized);
         $sanitized = is_string($sanitized) ? trim($sanitized) : '';
 
         return $sanitized !== '' ? $sanitized : null;

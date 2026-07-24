@@ -7423,139 +7423,186 @@ messages.en = deepMerge(messages.en, {
   },
 })
 
-messages.fr = deepMerge(messages.fr, {
+const PUBLIC_MARKETPLACE_TRANSLATIONS = {
   landing: {
-    marketplaceTitle: 'Les dernières annonces du Marché YaZoo',
-    marketplaceDescription:
-      'Découvrez gratuitement les animaux, produits, services et professionnels récemment validés. Connectez-vous seulement pour contacter, réserver, enregistrer ou publier.',
-    marketplacePublish: 'Publier une annonce',
-    marketplaceAnimals: 'Animaux disponibles',
-    marketplaceProducts: 'Nouveaux produits',
-    marketplaceServices: 'Services près de vous',
-    marketplaceVeterinarians: 'Vétérinaires et cabinets',
-    marketplacePrevious: 'Voir les annonces précédentes',
-    marketplaceNext: 'Voir les annonces suivantes',
-    marketplaceDetails: 'Voir les détails',
-    marketplaceImageMissing: 'Image bientôt disponible',
-    marketplaceNoDescription: 'Aucune description disponible.',
-    marketplaceLoadError:
-      'Les annonces publiques sont temporairement indisponibles. Vous pouvez réessayer.',
-    marketplaceRetry: 'Réessayer',
-    marketplaceSectionEmpty: 'Aucune annonce approuvée dans cette catégorie pour le moment.',
+    marketplaceTitle: {
+      fr: 'Les dernières annonces du Marché YaZoo',
+      ar: 'أحدث إعلانات سوق YaZoo',
+      en: 'Latest YaZoo Marketplace listings',
+    },
+    marketplaceDescription: {
+      fr: 'Découvrez gratuitement les animaux, produits, services et professionnels récemment validés. Connectez-vous seulement pour contacter, réserver, enregistrer ou publier.',
+      ar: 'تصفح مجانا الحيوانات والمنتجات والخدمات والمهنيين الذين تمت مراجعتهم مؤخرا. يلزم تسجيل الدخول فقط للتواصل أو الحجز أو الحفظ أو النشر.',
+      en: 'Browse recently reviewed animals, products, services, and professionals for free. Sign in only when you want to contact, book, save, or publish.',
+    },
+    marketplacePublish: {
+      fr: 'Publier une annonce',
+      ar: 'نشر إعلان',
+      en: 'Publish a listing',
+    },
+    marketplaceAnimals: {
+      fr: 'Animaux disponibles',
+      ar: 'حيوانات متاحة',
+      en: 'Available animals',
+    },
+    marketplaceProducts: {
+      fr: 'Nouveaux produits',
+      ar: 'منتجات جديدة',
+      en: 'New products',
+    },
+    marketplaceServices: {
+      fr: 'Services près de vous',
+      ar: 'خدمات قريبة منك',
+      en: 'Services near you',
+    },
+    marketplaceVeterinarians: {
+      fr: 'Vétérinaires et cabinets',
+      ar: 'أطباء وعيادات بيطرية',
+      en: 'Veterinarians and clinics',
+    },
+    marketplacePrevious: {
+      fr: 'Voir les annonces précédentes',
+      ar: 'عرض الإعلانات السابقة',
+      en: 'View previous listings',
+    },
+    marketplaceNext: {
+      fr: 'Voir les annonces suivantes',
+      ar: 'عرض الإعلانات التالية',
+      en: 'View next listings',
+    },
+    marketplaceDetails: {
+      fr: 'Voir les détails',
+      ar: 'عرض التفاصيل',
+      en: 'View details',
+    },
+    marketplaceImageMissing: {
+      fr: 'Image bientôt disponible',
+      ar: 'الصورة ستتوفر قريبا',
+      en: 'Image coming soon',
+    },
+    marketplaceNoDescription: {
+      fr: 'Aucune description disponible.',
+      ar: 'لا يوجد وصف متاح.',
+      en: 'No description is available.',
+    },
+    marketplaceLoadError: {
+      fr: 'Les annonces publiques sont temporairement indisponibles. Vous pouvez réessayer.',
+      ar: 'الإعلانات العامة غير متاحة مؤقتا. يمكنك إعادة المحاولة.',
+      en: 'Public listings are temporarily unavailable. You can try again.',
+    },
+    marketplaceRetry: {
+      fr: 'Réessayer',
+      ar: 'إعادة المحاولة',
+      en: 'Try again',
+    },
+    marketplaceSectionEmpty: {
+      fr: 'Aucune annonce approuvée dans cette catégorie pour le moment.',
+      ar: 'لا توجد حاليا إعلانات معتمدة في هذه الفئة.',
+      en: 'There are no approved listings in this category yet.',
+    },
     marketplaceBadges: {
-      adoption: 'Adoption',
-      available: 'Disponible',
-      reserved: 'Réservé',
-      new: 'Neuf',
-      used: 'Occasion',
-      fixed: 'Forfait',
-      hourly: 'Par heure',
-      daily: 'Par jour',
-      session: 'Par séance',
-      negotiable: 'Négociable',
-      verified_professional: 'Professionnel vérifié',
+      adoption: {
+        fr: 'Adoption',
+        ar: 'تبنٍّ',
+        en: 'Adoption',
+      },
+      available: {
+        fr: 'Disponible',
+        ar: 'متاح',
+        en: 'Available',
+      },
+      reserved: {
+        fr: 'Réservé',
+        ar: 'محجوز',
+        en: 'Reserved',
+      },
+      new: {
+        fr: 'Neuf',
+        ar: 'جديد',
+        en: 'New',
+      },
+      used: {
+        fr: 'Occasion',
+        ar: 'مستعمل',
+        en: 'Used',
+      },
+      fixed: {
+        fr: 'Forfait',
+        ar: 'سعر ثابت',
+        en: 'Fixed price',
+      },
+      hourly: {
+        fr: 'Par heure',
+        ar: 'بالساعة',
+        en: 'Hourly',
+      },
+      daily: {
+        fr: 'Par jour',
+        ar: 'باليوم',
+        en: 'Daily',
+      },
+      session: {
+        fr: 'Par séance',
+        ar: 'بالحصة',
+        en: 'Per session',
+      },
+      negotiable: {
+        fr: 'Négociable',
+        ar: 'قابل للتفاوض',
+        en: 'Negotiable',
+      },
+      verified_professional: {
+        fr: 'Professionnel vérifié',
+        ar: 'مهني معتمد',
+        en: 'Verified professional',
+      },
     },
   },
   auth: {
     login: {
-      googleFailed:
-        'La connexion Google a échoué ou a été refusée. Vérifiez votre compte puis réessayez.',
+      googleFailed: {
+        fr: 'La connexion Google a échoué ou a été refusée. Vérifiez votre compte puis réessayez.',
+        ar: 'فشل تسجيل الدخول عبر Google أو تم رفضه. تحقق من حسابك ثم أعد المحاولة.',
+        en: 'Google sign-in failed or was refused. Check your account and try again.',
+      },
     },
     register: {
-      googleFailed:
-        'L’inscription Google a échoué ou a été refusée. Vérifiez votre compte puis réessayez.',
+      googleFailed: {
+        fr: 'L’inscription Google a échoué ou a été refusée. Vérifiez votre compte puis réessayez.',
+        ar: 'فشل التسجيل عبر Google أو تم رفضه. تحقق من حسابك ثم أعد المحاولة.',
+        en: 'Google sign-up failed or was refused. Check your account and try again.',
+      },
     },
   },
-})
+}
 
-messages.ar = deepMerge(messages.ar, {
-  landing: {
-    marketplaceTitle: 'أحدث إعلانات سوق YaZoo',
-    marketplaceDescription:
-      'تصفح مجانا الحيوانات والمنتجات والخدمات والمهنيين الذين تمت مراجعتهم مؤخرا. يلزم تسجيل الدخول فقط للتواصل أو الحجز أو الحفظ أو النشر.',
-    marketplacePublish: 'نشر إعلان',
-    marketplaceAnimals: 'حيوانات متاحة',
-    marketplaceProducts: 'منتجات جديدة',
-    marketplaceServices: 'خدمات قريبة منك',
-    marketplaceVeterinarians: 'أطباء وعيادات بيطرية',
-    marketplacePrevious: 'عرض الإعلانات السابقة',
-    marketplaceNext: 'عرض الإعلانات التالية',
-    marketplaceDetails: 'عرض التفاصيل',
-    marketplaceImageMissing: 'الصورة ستتوفر قريبا',
-    marketplaceNoDescription: 'لا يوجد وصف متاح.',
-    marketplaceLoadError: 'الإعلانات العامة غير متاحة مؤقتا. يمكنك إعادة المحاولة.',
-    marketplaceRetry: 'إعادة المحاولة',
-    marketplaceSectionEmpty: 'لا توجد حاليا إعلانات معتمدة في هذه الفئة.',
-    marketplaceBadges: {
-      adoption: 'تبنٍّ',
-      available: 'متاح',
-      reserved: 'محجوز',
-      new: 'جديد',
-      used: 'مستعمل',
-      fixed: 'سعر ثابت',
-      hourly: 'بالساعة',
-      daily: 'باليوم',
-      session: 'بالحصة',
-      negotiable: 'قابل للتفاوض',
-      verified_professional: 'مهني معتمد',
-    },
-  },
-  auth: {
-    login: {
-      googleFailed:
-        'فشل تسجيل الدخول عبر Google أو تم رفضه. تحقق من حسابك ثم أعد المحاولة.',
-    },
-    register: {
-      googleFailed:
-        'فشل التسجيل عبر Google أو تم رفضه. تحقق من حسابك ثم أعد المحاولة.',
-    },
-  },
-})
+for (const locale of SUPPORTED_LOCALES) {
+  messages[locale] = deepMerge(
+    messages[locale],
+    buildLocalizedMessages(PUBLIC_MARKETPLACE_TRANSLATIONS, locale),
+  )
+}
 
-messages.en = deepMerge(messages.en, {
-  landing: {
-    marketplaceTitle: 'Latest YaZoo Marketplace listings',
-    marketplaceDescription:
-      'Browse recently reviewed animals, products, services, and professionals for free. Sign in only when you want to contact, book, save, or publish.',
-    marketplacePublish: 'Publish a listing',
-    marketplaceAnimals: 'Available animals',
-    marketplaceProducts: 'New products',
-    marketplaceServices: 'Services near you',
-    marketplaceVeterinarians: 'Veterinarians and clinics',
-    marketplacePrevious: 'View previous listings',
-    marketplaceNext: 'View next listings',
-    marketplaceDetails: 'View details',
-    marketplaceImageMissing: 'Image coming soon',
-    marketplaceNoDescription: 'No description is available.',
-    marketplaceLoadError:
-      'Public listings are temporarily unavailable. You can try again.',
-    marketplaceRetry: 'Try again',
-    marketplaceSectionEmpty: 'There are no approved listings in this category yet.',
-    marketplaceBadges: {
-      adoption: 'Adoption',
-      available: 'Available',
-      reserved: 'Reserved',
-      new: 'New',
-      used: 'Used',
-      fixed: 'Fixed price',
-      hourly: 'Hourly',
-      daily: 'Daily',
-      session: 'Per session',
-      negotiable: 'Negotiable',
-      verified_professional: 'Verified professional',
-    },
-  },
-  auth: {
-    login: {
-      googleFailed:
-        'Google sign-in failed or was refused. Check your account and try again.',
-    },
-    register: {
-      googleFailed:
-        'Google sign-up failed or was refused. Check your account and try again.',
-    },
-  },
-})
+function buildLocalizedMessages(node, locale) {
+  if (isLocalizedMessage(node)) {
+    return node[locale]
+  }
+
+  return Object.fromEntries(
+    Object.entries(node).map(([key, value]) => [
+      key,
+      buildLocalizedMessages(value, locale),
+    ]),
+  )
+}
+
+function isLocalizedMessage(node) {
+  return (
+    node !== null &&
+    typeof node === 'object' &&
+    SUPPORTED_LOCALES.every((locale) => typeof node[locale] === 'string')
+  )
+}
 
 function deepMerge(base, override = {}) {
   const result = { ...base }

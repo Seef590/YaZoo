@@ -78,13 +78,14 @@ test('aperçu public reste responsive sans débordement et supporte sombre et RT
   const consoleErrors = []
   const unexpectedHttpErrors = []
   const failedRequests = []
+  const expectedGuestAuth401Urls = new Set()
 
   page.on('console', (message) => {
-    if (
-      message.type() === 'error' &&
-      !message.text().startsWith('Failed to load resource:')
-    ) {
-      consoleErrors.push(message.text())
+    if (message.type() === 'error') {
+      consoleErrors.push({
+        text: message.text(),
+        url: message.location().url,
+      })
     }
   })
   page.on('response', (response) => {
@@ -92,13 +93,16 @@ test('aperçu public reste responsive sans débordement et supporte sombre et RT
       return
     }
 
-    const responsePath = new URL(response.url()).pathname
+    const responsePath = getUrlPathname(response.url())
     const isExpectedGuestAuthProbe =
       response.status() === 401 && responsePath === '/api/auth/me'
 
-    if (!isExpectedGuestAuthProbe) {
-      unexpectedHttpErrors.push(`${response.status()} ${response.url()}`)
+    if (isExpectedGuestAuthProbe) {
+      expectedGuestAuth401Urls.add(response.url())
+      return
     }
+
+    unexpectedHttpErrors.push(`${response.status()} ${response.url()}`)
   })
   page.on('requestfailed', (request) => {
     failedRequests.push(
@@ -115,11 +119,56 @@ test('aperçu public reste responsive sans débordement et supporte sombre et RT
   const hasGlobalHorizontalOverflow = await page.evaluate(
     () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
   )
+  const unexpectedConsoleErrors = consoleErrors.filter(
+    (consoleError) =>
+      !isExpectedGuestAuthConsoleError(consoleError, expectedGuestAuth401Urls),
+  )
 
   expect(hasGlobalHorizontalOverflow).toBe(false)
-  expect(consoleErrors).toEqual([])
+  expect(unexpectedConsoleErrors).toEqual([])
   expect(unexpectedHttpErrors).toEqual([])
   expect(failedRequests).toEqual([])
+})
+
+test('seul le message console du 401 exact de auth me est attendu', () => {
+  const expectedUrls = new Set(['http://localhost:4173/api/auth/me'])
+
+  expect(
+    isExpectedGuestAuthConsoleError(
+      {
+        text: 'Failed to load resource: the server responded with a status of 401',
+        url: 'http://localhost:4173/api/auth/me',
+      },
+      expectedUrls,
+    ),
+  ).toBe(true)
+  expect(
+    isExpectedGuestAuthConsoleError(
+      {
+        text: 'Failed to load resource: the server responded with a status of 403',
+        url: 'http://localhost:4173/api/auth/me',
+      },
+      expectedUrls,
+    ),
+  ).toBe(false)
+  expect(
+    isExpectedGuestAuthConsoleError(
+      {
+        text: 'Failed to load resource: the server responded with a status of 401',
+        url: 'http://localhost:4173/api/private',
+      },
+      expectedUrls,
+    ),
+  ).toBe(false)
+  expect(
+    isExpectedGuestAuthConsoleError(
+      {
+        text: 'Failed to load resource: the server responded with a status of 401',
+        url: '',
+      },
+      expectedUrls,
+    ),
+  ).toBe(false)
 })
 
 test('page confiance et securite reste publique', async ({ page }) => {
@@ -149,3 +198,20 @@ test('marketplace protege redirige vers login si invite', async ({ page }) => {
   await expect(page).toHaveURL(/\/login$/)
   await expect(page.getByRole('heading', { name: /Welcome back/i })).toBeVisible()
 })
+
+function isExpectedGuestAuthConsoleError(consoleError, expectedUrls) {
+  return (
+    consoleError.text.startsWith('Failed to load resource:') &&
+    /\b401\b/.test(consoleError.text) &&
+    getUrlPathname(consoleError.url) === '/api/auth/me' &&
+    expectedUrls.has(consoleError.url)
+  )
+}
+
+function getUrlPathname(value) {
+  try {
+    return new URL(value).pathname
+  } catch {
+    return null
+  }
+}

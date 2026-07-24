@@ -141,6 +141,29 @@ class PublicMarketplaceApiTest extends TestCase
             ->assertJsonCount(12, 'data.animals');
     }
 
+    public function test_public_text_cleanup_only_removes_separators_at_the_edges(): void
+    {
+        $seller = User::factory()->create([
+            'name' => '--- Association YaZoo ;;;',
+            'city' => '--- Casablanca ;;;',
+        ]);
+
+        Animal::factory()->create([
+            'user_id' => $seller->id,
+            'name' => '--- Animal visible ;;;',
+            'description' => ';;; Texte - utile ---',
+            'legal_status' => 'approved',
+            'listing_status' => 'available',
+        ]);
+
+        $this->getJson('/api/marketplace/public-preview')
+            ->assertOk()
+            ->assertJsonPath('data.animals.0.title', 'Animal visible')
+            ->assertJsonPath('data.animals.0.description', 'Texte - utile')
+            ->assertJsonPath('data.animals.0.location', 'Casablanca')
+            ->assertJsonPath('data.animals.0.author.name', 'Association YaZoo');
+    }
+
     private function assertNoSensitiveKeys(array $payload): void
     {
         $sensitiveKeys = [
