@@ -6,6 +6,7 @@ import heroImage from '../assets/images/hero-bond.webp'
 import hero1Image from '../assets/images/hero1.webp'
 import hero2Image from '../assets/images/hero2.webp'
 import hero3Image from '../assets/images/hero3.webp'
+import PublicMarketplaceShowcase from '../components/marketplace/PublicMarketplaceShowcase'
 import Footer from '../components/ui/Footer'
 import { useAuth } from '../hooks/useAuth'
 import { useI18n } from '../hooks/useI18n'
@@ -77,7 +78,7 @@ function LandingPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.18),_transparent_24%),radial-gradient(circle_at_top_right,_rgba(244,208,255,0.22),_transparent_20%),linear-gradient(180deg,_#fffaff_0%,_#f6efff_100%)] px-3 py-4 transition-colors dark:bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.34),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(76,29,149,0.38),_transparent_24%),linear-gradient(180deg,_#05030a_0%,_#10091a_46%,_#1b1030_100%)] sm:px-4 sm:py-5">
+    <main className="min-h-screen overflow-x-clip bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.18),_transparent_24%),radial-gradient(circle_at_top_right,_rgba(244,208,255,0.22),_transparent_20%),linear-gradient(180deg,_#fffaff_0%,_#f6efff_100%)] px-3 py-4 transition-colors dark:bg-[radial-gradient(circle_at_top_left,_rgba(168,85,247,0.34),_transparent_28%),radial-gradient(circle_at_bottom_right,_rgba(76,29,149,0.38),_transparent_24%),linear-gradient(180deg,_#05030a_0%,_#10091a_46%,_#1b1030_100%)] sm:px-4 sm:py-5">
       <div className="w-full lg:px-6">
         <header className="sticky top-3 z-30 rounded-[26px] border border-white/55 bg-[linear-gradient(135deg,_rgba(255,255,255,0.52),_rgba(248,240,255,0.36),_rgba(255,255,255,0.28))] px-4 py-3.5 shadow-[0_24px_60px_rgba(124,58,237,0.1)] backdrop-blur-2xl dark:border-violet-300/16 dark:bg-[linear-gradient(135deg,_rgba(5,3,10,0.96),_rgba(30,15,52,0.9))] sm:top-4 sm:rounded-[30px] sm:py-4 md:px-6">
           <div className="flex items-center justify-between gap-4">
@@ -198,6 +199,8 @@ function LandingPage() {
             </div>
           </div>
         </section>
+
+        <PublicMarketplaceShowcase />
 
         <section
           id="features"

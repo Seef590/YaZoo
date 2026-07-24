@@ -2,11 +2,13 @@ import { useContext, useMemo, useState } from 'react'
 import { Link, Navigate, useSearchParams } from 'react-router-dom'
 
 import { getGoogleAuthUrl, isGoogleAuthEnabled } from '../api/auth'
+import GoogleAuthErrorNotice from '../components/auth/GoogleAuthErrorNotice'
 import Button from '../components/ui/Button'
 import Footer from '../components/ui/Footer'
 import PasswordField from '../components/ui/PasswordField'
 import { I18nContext } from '../contexts/i18n-context'
 import { useAuth } from '../hooks/useAuth'
+import { getGoogleAuthErrorMessage } from '../lib/googleAuthErrors'
 import { translate } from '../lib/i18n'
 import { getErrorMessage } from '../utils/getErrorMessage'
 
@@ -24,6 +26,7 @@ function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const googleAuthEnabled = isGoogleAuthEnabled()
   const authError = searchParams.get('auth_error')
+  const googleAuthErrorMessage = getGoogleAuthErrorMessage(authError, 'login', t)
   const highlights = useMemo(
     () => [
       t('auth.login.highlights.one'),
@@ -144,11 +147,7 @@ function LoginPage() {
               hideLabel={t('auth.hidePassword')}
             />
 
-            {authError === 'google_not_configured' ? (
-              <p className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-300/20 dark:bg-amber-500/12 dark:text-amber-100">
-                {t('auth.login.googleNotConfigured')}
-              </p>
-            ) : null}
+            <GoogleAuthErrorNotice message={googleAuthErrorMessage} />
 
             {errorMessage ? (
               <p className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-300/20 dark:bg-rose-500/12 dark:text-rose-100">

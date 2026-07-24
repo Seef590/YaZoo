@@ -15,6 +15,12 @@ class FeedApiTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_guest_cannot_access_feed_or_stories(): void
+    {
+        $this->getJson('/api/posts')->assertUnauthorized();
+        $this->getJson('/api/stories')->assertUnauthorized();
+    }
+
     protected function fakeImageUpload(string $name): UploadedFile
     {
         return UploadedFile::fake()->createWithContent(
@@ -214,6 +220,27 @@ class FeedApiTest extends TestCase
         ])
             ->assertOk()
             ->assertJsonPath('data.reaction', 'wow');
+    }
+
+    public function test_authenticated_user_cannot_change_another_users_comment_reaction(): void
+    {
+        $owner = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $comment = Comment::factory()->create([
+            'user_id' => $owner->id,
+            'reaction' => 'love',
+        ]);
+
+        Sanctum::actingAs($otherUser, ['*']);
+
+        $this->postJson("/api/comments/{$comment->id}/reaction", [
+            'reaction' => 'angry',
+        ])->assertForbidden();
+
+        $this->assertDatabaseHas('comments', [
+            'id' => $comment->id,
+            'reaction' => 'love',
+        ]);
     }
 
     public function test_commenting_another_users_post_creates_a_notification(): void

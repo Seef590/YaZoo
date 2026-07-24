@@ -417,21 +417,141 @@ class AuthApiTest extends TestCase
         ]);
     }
 
-    public function test_google_oauth_refuses_existing_banned_user(): void
+    public function test_google_oauth_creates_a_normalized_non_admin_account(): void
+    {
+        config(['auth.admin_bootstrap.enabled' => true]);
+
+        $result = app(AuthService::class)->loginWithGoogle($this->googleUser(
+            'google-new-user',
+            '  NEW-GOOGLE@YAZOO.APP  ',
+            'New Google User',
+        ));
+
+        $this->assertSame('new-google@yazoo.app', $result->user->email);
+        $this->assertSame('google-new-user', $result->user->google_id);
+        $this->assertFalse($result->user->is_admin);
+        $this->assertNotEmpty($result->plainTextToken);
+    }
+
+    public function test_google_oauth_links_an_existing_email_account_without_replacing_identity(): void
+    {
+        $existing = User::factory()->create([
+            'email' => 'Existing-Google@YaZoo.App',
+            'google_id' => null,
+            'is_admin' => false,
+        ]);
+
+        $result = app(AuthService::class)->loginWithGoogle($this->googleUser(
+            'google-existing-user',
+            'existing-google@yazoo.app',
+            'Existing Google User',
+        ));
+
+        $this->assertTrue($result->user->is($existing));
+        $this->assertSame('google-existing-user', $existing->refresh()->google_id);
+        $this->assertFalse($existing->is_admin);
+    }
+
+    public function test_google_oauth_rejects_conflicting_google_identity_links(): void
     {
         User::factory()->create([
-            'email' => 'banned-google@yazoo.app',
-            'banned_at' => now(),
-            'banned_reason' => 'Abus',
+            'email' => 'first-google@yazoo.app',
+            'google_id' => 'google-conflict',
+        ]);
+
+        User::factory()->create([
+            'email' => 'second-google@yazoo.app',
+            'google_id' => null,
         ]);
 
         $this->expectException(ValidationException::class);
 
         app(AuthService::class)->loginWithGoogle($this->googleUser(
-            'google-banned',
-            'banned-google@yazoo.app',
-            'Banned Google User',
+            'google-conflict',
+            'second-google@yazoo.app',
+            'Conflicting Google User',
         ));
+    }
+
+    public function test_google_oauth_never_replaces_an_existing_google_link(): void
+    {
+        User::factory()->create([
+            'email' => 'linked-google@yazoo.app',
+            'google_id' => 'google-original',
+        ]);
+
+        $this->expectException(ValidationException::class);
+
+        app(AuthService::class)->loginWithGoogle($this->googleUser(
+            'google-attacker',
+            'linked-google@yazoo.app',
+            'Different Google User',
+        ));
+    }
+
+    public function test_google_oauth_rejects_an_empty_google_identifier(): void
+    {
+        $this->expectException(ValidationException::class);
+
+        app(AuthService::class)->loginWithGoogle($this->googleUser(
+            '',
+            'missing-id@yazoo.app',
+            'Missing Google Id',
+        ));
+    }
+
+    public function test_google_oauth_refuses_existing_banned_user(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'banned-google@yazoo.app',
+            'google_id' => null,
+            'banned_at' => now(),
+            'banned_reason' => 'Abus',
+        ]);
+
+        try {
+            app(AuthService::class)->loginWithGoogle($this->googleUser(
+                'google-banned',
+                'banned-google@yazoo.app',
+                'Banned Google User',
+            ));
+            $this->fail('A banned account must not authenticate with Google.');
+        } catch (ValidationException) {
+            $this->assertNull($user->refresh()->google_id);
+            $this->assertDatabaseCount('personal_access_tokens', 0);
+        }
+    }
+
+    public function test_google_oauth_missing_configuration_returns_a_clean_frontend_error(): void
+    {
+        config([
+            'services.google.client_id' => null,
+            'services.google.client_secret' => null,
+            'services.google.redirect' => null,
+            'services.google.login_redirect' => 'https://yazoo.test/login',
+        ]);
+
+        $this->get('/api/auth/google')
+            ->assertRedirect('https://yazoo.test/login?auth_error=google_not_configured');
+    }
+
+    public function test_google_oauth_redirect_uses_a_session_backed_state_value(): void
+    {
+        config([
+            'services.google.client_id' => 'test-client-id',
+            'services.google.client_secret' => 'oauth-fixture',
+            'services.google.redirect' => 'https://api.yazoo.test/api/auth/google/callback',
+        ]);
+
+        $response = $this->get('/api/auth/google');
+        $location = (string) $response->headers->get('Location');
+        $query = [];
+
+        parse_str((string) parse_url($location, PHP_URL_QUERY), $query);
+
+        $response->assertRedirect();
+        $this->assertNotEmpty($query['state'] ?? null);
+        $this->assertSame($query['state'], session('state'));
     }
 
     public function test_create_admin_command_can_create_an_admin(): void

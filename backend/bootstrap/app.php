@@ -77,6 +77,11 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withSchedule(function (Schedule $schedule): void {
+        $schedule
+            ->command('sanctum:prune-expired --hours=0')
+            ->daily()
+            ->withoutOverlapping();
+
         if (! (bool) env('MEDIA_BACKUP_ENABLED', false)) {
             return;
         }

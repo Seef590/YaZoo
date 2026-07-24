@@ -18,6 +18,8 @@ return [
         'contact_required_register' => 'An email or phone number is required to create an account.',
         'phone_already_exists' => 'This phone number is already used.',
         'phone_not_found' => 'No account is associated with this phone number.',
+        'google_identity_missing' => 'Google did not return a complete usable identity.',
+        'google_account_conflict' => 'This Google account is already linked to another YaZoo account.',
     ],
     'reviews' => [
         'created' => 'Review sent successfully.',

@@ -70,7 +70,6 @@ class AuthController extends Controller
         }
 
         return Socialite::driver('google')
-            ->stateless()
             ->scopes(['openid', 'email', 'profile'])
             ->redirect();
     }
@@ -80,16 +79,17 @@ class AuthController extends Controller
         $frontendRedirect = (string) config('services.google.frontend_redirect');
 
         try {
-            $googleUser = Socialite::driver('google')->stateless()->user();
+            $googleUser = Socialite::driver('google')->user();
             $result = $this->auth->loginWithGoogle($googleUser);
 
             return redirect()
                 ->away($frontendRedirect)
                 ->withCookie($this->auth->makeAuthCookie($result->plainTextToken));
         } catch (Throwable) {
-            $separator = str_contains($frontendRedirect, '?') ? '&' : '?';
+            $loginRedirect = (string) config('services.google.login_redirect');
+            $separator = str_contains($loginRedirect, '?') ? '&' : '?';
 
-            return redirect()->away($frontendRedirect.$separator.'auth_error=google');
+            return redirect()->away($loginRedirect.$separator.'auth_error=google');
         }
     }
 

@@ -1,0 +1,230 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\Animal;
+use App\Models\Product;
+use App\Models\ServiceListing;
+use App\Models\Veterinarian;
+use App\Support\MarketplaceMedia;
+use App\Support\MediaStorage;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class PublicMarketplaceController extends Controller
+{
+    public function __invoke(Request $request): JsonResponse
+    {
+        $perSection = min(max($request->integer('per_section', 6), 1), 12);
+
+        return response()->json([
+            'data' => [
+                'animals' => Animal::query()
+                    ->select([
+                        'id',
+                        'user_id',
+                        'name',
+                        'type',
+                        'breed',
+                        'description',
+                        'price',
+                        'photo_url',
+                        'is_for_adoption',
+                        'listing_status',
+                        'created_at',
+                    ])
+                    ->with('user:id,name,avatar,city')
+                    ->where('legal_status', 'approved')
+                    ->whereIn('listing_status', ['available', 'reserved'])
+                    ->latest()
+                    ->limit($perSection)
+                    ->get()
+                    ->map(fn (Animal $animal): array => $this->animalPayload($animal))
+                    ->values(),
+                'products' => Product::query()
+                    ->select([
+                        'id',
+                        'user_id',
+                        'name',
+                        'category',
+                        'description',
+                        'price',
+                        'image_url',
+                        'condition_status',
+                        'created_at',
+                    ])
+                    ->with('user:id,name,avatar,city')
+                    ->where('moderation_status', 'active')
+                    ->whereIn('listing_status', ['available', 'reserved'])
+                    ->where('stock', '>', 0)
+                    ->latest()
+                    ->limit($perSection)
+                    ->get()
+                    ->map(fn (Product $product): array => $this->productPayload($product))
+                    ->values(),
+                'services' => ServiceListing::query()
+                    ->select([
+                        'id',
+                        'user_id',
+                        'title',
+                        'type',
+                        'description',
+                        'city',
+                        'price',
+                        'price_type',
+                        'media',
+                        'created_at',
+                    ])
+                    ->with('user:id,name,avatar,city')
+                    ->where('status', 'active')
+                    ->where('moderation_status', 'active')
+                    ->latest()
+                    ->limit($perSection)
+                    ->get()
+                    ->map(fn (ServiceListing $service): array => $this->servicePayload($service))
+                    ->values(),
+                'veterinarians' => Veterinarian::query()
+                    ->select([
+                        'id',
+                        'user_id',
+                        'name',
+                        'clinic_name',
+                        'description',
+                        'city',
+                        'image_path',
+                        'created_at',
+                    ])
+                    ->with('user:id,name,avatar,city')
+                    ->where('is_active', true)
+                    ->where('moderation_status', 'active')
+                    ->latest()
+                    ->limit($perSection)
+                    ->get()
+                    ->map(fn (Veterinarian $veterinarian): array => $this->veterinarianPayload($veterinarian))
+                    ->values(),
+            ],
+        ]);
+    }
+
+    private function animalPayload(Animal $animal): array
+    {
+        return $this->basePayload(
+            $animal,
+            'animal',
+            $animal->name,
+            collect([$animal->type, $animal->breed])->filter()->join(' · '),
+            $animal->description,
+            $animal->user?->city,
+            $animal->is_for_adoption ? null : $animal->price,
+            MarketplaceMedia::resolveUrl($animal->photo_url),
+            $animal->is_for_adoption ? 'adoption' : $animal->listing_status,
+        );
+    }
+
+    private function productPayload(Product $product): array
+    {
+        return $this->basePayload(
+            $product,
+            'product',
+            $product->name,
+            $product->category,
+            $product->description,
+            $product->user?->city,
+            $product->price,
+            MarketplaceMedia::resolveUrl($product->image_url),
+            $product->condition_status,
+        );
+    }
+
+    private function servicePayload(ServiceListing $service): array
+    {
+        $firstMedia = collect($service->media ?? [])->first();
+
+        return $this->basePayload(
+            $service,
+            'service',
+            $service->title,
+            $service->type,
+            $service->description,
+            $service->city,
+            $service->price,
+            is_string($firstMedia) ? MediaStorage::resolveUrl($firstMedia) : null,
+            $service->price_type,
+        );
+    }
+
+    private function veterinarianPayload(Veterinarian $veterinarian): array
+    {
+        return $this->basePayload(
+            $veterinarian,
+            'veterinarian',
+            $veterinarian->name,
+            $veterinarian->clinic_name,
+            $veterinarian->description,
+            $veterinarian->city,
+            null,
+            MarketplaceMedia::resolveUrl($veterinarian->image_path),
+            'verified_professional',
+        );
+    }
+
+    private function basePayload(
+        Model $listing,
+        string $type,
+        ?string $title,
+        ?string $subtitle,
+        ?string $description,
+        ?string $location,
+        mixed $price,
+        ?string $imageUrl,
+        ?string $badge,
+    ): array {
+        return [
+            'id' => $listing->getKey(),
+            'type' => $type,
+            'title' => $this->sanitizePublicText($title),
+            'subtitle' => $this->sanitizePublicText($subtitle),
+            'description' => $this->sanitizePublicText($description),
+            'location' => $this->sanitizePublicText($location),
+            'price' => $price !== null ? (float) $price : null,
+            'imageUrl' => $imageUrl,
+            'badge' => $badge,
+            'createdAt' => $listing->created_at?->toISOString(),
+            'author' => [
+                'name' => $this->sanitizePublicText($listing->user?->name),
+                'avatar' => MediaStorage::resolveUrl($listing->user?->avatar),
+            ],
+        ];
+    }
+
+    private function sanitizePublicText(?string $value): ?string
+    {
+        if (! is_string($value) || trim($value) === '') {
+            return null;
+        }
+
+        $sanitized = preg_replace(
+            [
+                '/https?:\/\/\S+|www\.\S+/iu',
+                '/[\p{L}\p{N}._%+\-]+@[\p{L}\p{N}.\-]+\.[\p{L}]{2,}/iu',
+                '/(?<![\p{L}\p{N}])(?:\+?\d[\d\s().\-]{7,}\d)(?![\p{L}\p{N}])/u',
+                '/(?<!\d)-?\d{1,3}\.\d{4,}\s*[,;]\s*-?\d{1,3}\.\d{4,}(?!\d)/u',
+            ],
+            '',
+            trim($value),
+        );
+
+        if (! is_string($sanitized)) {
+            return null;
+        }
+
+        $sanitized = preg_replace('/\s{2,}/u', ' ', $sanitized);
+        $sanitized = is_string($sanitized) ? trim($sanitized) : '';
+        $sanitized = preg_replace('/(?:^[,;·-]+)|(?:[,;·-]+$)/u', '', $sanitized);
+        $sanitized = is_string($sanitized) ? trim($sanitized) : '';
+
+        return $sanitized !== '' ? $sanitized : null;
+    }
+}
